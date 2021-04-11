@@ -7,9 +7,17 @@ version '0.1'
 
 repositories {
     mavenCentral()
+
+    maven { url 'https://repo.spongepowered.org/maven' }
+    maven { url 'https://repo.velocitypowered.com/snapshots/' }
+    maven { url 'https://libraries.minecraft.net' }
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
+    implementation 'com.github.Minestom:Minestom:update_structure_packet-SNAPSHOT'
+//    implementation 'com.github.Minestom:Minestom:25176e9b9d'
+
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 }

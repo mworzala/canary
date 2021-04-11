@@ -1,3 +1,8 @@
 .idea
 build
 .gradle
+
+# Minestom
+.minestom_tmp
+extensions
+.mixin_out
