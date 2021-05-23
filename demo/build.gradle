@@ -1,0 +1,27 @@
+plugins {
+    id 'java'
+}
+
+group 'com.mattworzala.canary'
+version '0.1'
+
+repositories {
+    mavenCentral()
+
+    // Minestom
+    maven { url 'https://repo.spongepowered.org/maven' }
+    maven { url 'https://repo.velocitypowered.com/snapshots/' }
+    maven { url 'https://libraries.minecraft.net' }
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+
+    testImplementation rootProject
+}
+
+test {
+    useJUnitPlatform()
+}

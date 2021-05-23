@@ -50,7 +50,7 @@ public class DebugServer extends HeadlessServer {
             player.setPermissionLevel(4);
         });
         globalEventHandler.addEventCallback(PlayerSpawnEvent.class, event -> {
-            event.getPlayer().getInventory().addItemStack(new ItemStack(Material.STRUCTURE_BLOCK));
+            event.getPlayer().getInventory().addItemStack(ItemStack.of(Material.STRUCTURE_BLOCK));
             event.getPlayer().setGameMode(GameMode.CREATIVE);
             event.getPlayer().setPermissionLevel(4);
         });
