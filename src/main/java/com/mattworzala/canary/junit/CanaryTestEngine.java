@@ -2,9 +2,8 @@ package com.mattworzala.canary.junit;
 
 import com.mattworzala.canary.junit.descriptor.CanaryEngineDescriptor;
 import com.mattworzala.canary.junit.descriptor.CanaryTestDescriptor;
-import com.mattworzala.canary.junit.descriptor.RunnerTestDescriptor;
 import com.mattworzala.canary.junit.discovery.CanaryDiscoverer;
-import com.mattworzala.canary.junit.execution.RunnerExecutor;
+import com.mattworzala.canary.junit.execution.CanaryTestExecutor;
 import org.junit.platform.engine.*;
 
 import java.util.Iterator;
@@ -38,7 +37,7 @@ public class CanaryTestEngine implements TestEngine {
 
     @Override
     public TestDescriptor discover(EngineDiscoveryRequest discoveryRequest, UniqueId uniqueId) {
-        return new CanaryDiscoverer().discover(discoveryRequest, uniqueId);
+        return CanaryDiscoverer.discover(discoveryRequest, uniqueId);
     }
 
     @Override
@@ -51,10 +50,10 @@ public class CanaryTestEngine implements TestEngine {
     }
 
     private void executeAllChildren(CanaryEngineDescriptor engineDescriptor, EngineExecutionListener listener) {
-        RunnerExecutor runner = new RunnerExecutor(listener);
+        CanaryTestExecutor runner = new CanaryTestExecutor(listener);
         Iterator<TestDescriptor> iterator = engineDescriptor.getChildrenMutable().iterator();
         while (iterator.hasNext()) {
-            runner.execute((RunnerTestDescriptor) iterator.next());
+            runner.execute((CanaryTestDescriptor) iterator.next());
             iterator.remove();
         }
     }

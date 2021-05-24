@@ -1,17 +1,20 @@
 package com.mattworzala.canary.junit.descriptor;
 
+import com.mattworzala.canary.junit.CanaryTestEngine;
+import org.jetbrains.annotations.NotNull;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.support.descriptor.EngineDescriptor;
 
-import java.util.Set;
+import java.util.Collection;
 
 public class CanaryEngineDescriptor extends EngineDescriptor {
     public CanaryEngineDescriptor(UniqueId uniqueId) {
-        super(uniqueId, "Canary");
+        super(uniqueId, CanaryTestEngine.NAME);
     }
 
-    public Set<TestDescriptor> getChildrenMutable() {
+    @NotNull
+    public Collection<TestDescriptor> getChildrenMutable() {
         return children;
     }
 }
