@@ -1,6 +1,6 @@
-package com.mattworzala.canary.junit.descriptor;
+package com.mattworzala.canary.test.junit.descriptor;
 
-import com.mattworzala.canary.junit.CanaryTestEngine;
+import com.mattworzala.canary.test.junit.CanaryTestEngine;
 import org.jetbrains.annotations.NotNull;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.UniqueId;

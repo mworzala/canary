@@ -1,8 +1,7 @@
-package com.mattworzala.canary.junit.discovery;
+package com.mattworzala.canary.test.junit.discovery;
 
-import com.mattworzala.canary.junit.InWorldTest;
-import com.mattworzala.canary.junit.descriptor.CanaryEngineDescriptor;
-import com.mattworzala.canary.junit.descriptor.CanaryTestDescriptor;
+import com.mattworzala.canary.test.junit.InWorldTest;
+import com.mattworzala.canary.test.junit.descriptor.JupiterCanaryTestDescriptor;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.commons.util.ClassUtils;
@@ -20,13 +19,11 @@ public class TestDescriptorPostProcessor {
         this.isPotentialTestClass = isPotentialTestClass;
     }
 
-    public void process(CanaryTestDescriptor test) {
+    public void process(JupiterCanaryTestDescriptor test) {
         addChildrenRecursive(test);
     }
 
-    private void addChildrenRecursive(CanaryTestDescriptor parent) {
-        if (parent.isTest()) return;
-
+    private void addChildrenRecursive(JupiterCanaryTestDescriptor parent) {
         Class<?> testClass = parent.getTestClass();
         for (Method method : testClass.getMethods()) {
             InWorldTest testAnnotation = method.getAnnotation(InWorldTest.class);
@@ -35,7 +32,8 @@ public class TestDescriptorPostProcessor {
             logger.info(() -> "Found test method " + method.getName());
             String methodId = String.format("%s(%s)", method.getName(), ClassUtils.nullSafeToString(method.getParameterTypes()));
             UniqueId uniqueId = parent.getUniqueId().append("test", methodId);
-            parent.addChild(new CanaryTestDescriptor(uniqueId, method));
+            var child = new JupiterCanaryTestDescriptor(uniqueId, method);
+            parent.addChild(child);
         }
     }
 }

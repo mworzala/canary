@@ -1,17 +1,15 @@
-package com.mattworzala.canary.junit.discovery;
+package com.mattworzala.canary.test.junit.discovery;
 
-import com.mattworzala.canary.junit.descriptor.CanaryTestDescriptor;
+import com.mattworzala.canary.test.junit.descriptor.JupiterCanaryTestDescriptor;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.commons.util.ClassFilter;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.discovery.ClassSelector;
-import org.junit.platform.engine.discovery.UniqueIdSelector;
 import org.junit.platform.engine.support.discovery.SelectorResolver;
 
 import java.util.Optional;
-import java.util.function.Predicate;
 
 public class ClassSelectorResolver implements SelectorResolver {
     private static final Logger logger = LoggerFactory.getLogger(ClassSelectorResolver.class);
@@ -38,8 +36,8 @@ public class ClassSelectorResolver implements SelectorResolver {
                 .orElse(Resolution.unresolved());
     }
 
-    private CanaryTestDescriptor createTestDescriptor(TestDescriptor parent, Class<?> testClass) {
-        UniqueId uniqueId = parent.getUniqueId().append("runner", testClass.getName());
-        return new CanaryTestDescriptor(uniqueId, testClass);
+    private JupiterCanaryTestDescriptor createTestDescriptor(TestDescriptor parent, Class<?> testClass) {
+        UniqueId uniqueId = parent.getUniqueId().append("class", testClass.getSimpleName());
+        return new JupiterCanaryTestDescriptor(uniqueId, testClass);
     }
 }

@@ -1,4 +1,4 @@
-package com.mattworzala.canary.junit;
+package com.mattworzala.canary.test.junit;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

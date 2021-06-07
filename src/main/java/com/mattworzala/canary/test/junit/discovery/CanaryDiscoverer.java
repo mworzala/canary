@@ -1,7 +1,7 @@
-package com.mattworzala.canary.junit.discovery;
+package com.mattworzala.canary.test.junit.discovery;
 
-import com.mattworzala.canary.junit.descriptor.CanaryEngineDescriptor;
-import com.mattworzala.canary.junit.descriptor.CanaryTestDescriptor;
+import com.mattworzala.canary.test.junit.descriptor.CanaryEngineDescriptor;
+import com.mattworzala.canary.test.junit.descriptor.JupiterCanaryTestDescriptor;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.commons.util.ClassFilter;
@@ -34,7 +34,7 @@ public class CanaryDiscoverer {
         resolver.resolve(discoveryRequest, engineDescriptor);
         TestDescriptorPostProcessor postProcessor = new TestDescriptorPostProcessor(isPotentialTestClass);
         for (TestDescriptor testDescriptor : engineDescriptor.getChildren()) {
-            postProcessor.process((CanaryTestDescriptor) testDescriptor);
+            postProcessor.process((JupiterCanaryTestDescriptor) testDescriptor);
         }
         return engineDescriptor;
     }

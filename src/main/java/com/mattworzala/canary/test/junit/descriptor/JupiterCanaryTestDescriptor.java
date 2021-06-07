@@ -1,23 +1,22 @@
-package com.mattworzala.canary.junit.descriptor;
+package com.mattworzala.canary.test.junit.descriptor;
 
-import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor;
 
 import java.lang.reflect.Method;
 
-public class CanaryTestDescriptor extends AbstractTestDescriptor {
+public class JupiterCanaryTestDescriptor extends AbstractTestDescriptor {
     private final Class<?> testClass;
     private final Method testMethod;
 
 
-    public CanaryTestDescriptor(UniqueId uniqueId, Class<?> testClass) {
+    public JupiterCanaryTestDescriptor(UniqueId uniqueId, Class<?> testClass) {
         super(uniqueId, uniqueId.getLastSegment().getValue());
         this.testClass = testClass;
         this.testMethod = null;
     }
 
-    public CanaryTestDescriptor(UniqueId uniqueId, Method testMethod) {
+    public JupiterCanaryTestDescriptor(UniqueId uniqueId, Method testMethod) {
         super(uniqueId, uniqueId.getLastSegment().getValue());
         this.testClass = testMethod.getDeclaringClass();
         this.testMethod = testMethod;
@@ -25,7 +24,8 @@ public class CanaryTestDescriptor extends AbstractTestDescriptor {
 
     @Override
     public Type getType() {
-        return this.testMethod == null ? Type.CONTAINER : Type.TEST;
+        return Type.TEST;
+//        return this.testMethod == null ? Type.CONTAINER : Type.TEST;
 //        return this.testMethod == null ? Type.CONTAINER_AND_TEST : Type.TEST;
     }
 
