@@ -1,7 +1,6 @@
 package com.mattworzala.canary.test.junit;
 
 import com.mattworzala.canary.test.junit.descriptor.CanaryEngineDescriptor;
-import com.mattworzala.canary.test.junit.descriptor.TestTestDescriptor;
 import com.mattworzala.canary.test.junit.discovery.CanaryDiscoverer;
 import com.mattworzala.canary.test.junit.execution.CanaryTestExecutor;
 import org.junit.platform.commons.logging.Logger;
