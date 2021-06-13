@@ -1,7 +1,7 @@
 package com.mattworzala.canary.test.junit.discovery;
 
-import com.mattworzala.canary.test.junit.InWorldTest;
-import com.mattworzala.canary.test.junit.descriptor.JupiterCanaryTestDescriptor;
+import com.mattworzala.canary.test.InWorldTest;
+import com.mattworzala.canary.test.junit.descriptor.CanaryTestDescriptor;
 import org.junit.platform.commons.util.ClassUtils;
 import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.discovery.MethodSelector;
@@ -20,7 +20,7 @@ public class MethodSelectorResolver implements SelectorResolver {
         return context.addToParent(parent -> {
             String methodId = String.format("%s(%s)", method.getName(), ClassUtils.nullSafeToString(method.getParameterTypes()));
             UniqueId uniqueId = parent.getUniqueId().append("runner", methodId);
-            return Optional.of(new JupiterCanaryTestDescriptor(uniqueId, (Class<?>) null /*todo */));
+            return Optional.of(new CanaryTestDescriptor(uniqueId, (Class<?>) null /*todo */));
         })
                 .map(Match::exact)
                 .map(Resolution::match)

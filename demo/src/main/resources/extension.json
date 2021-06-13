@@ -1,0 +1,5 @@
+{
+  "entrypoint": "com.example.ExampleExtension",
+  "name": "ExampleExtension",
+  "version": "1.0.0"
+}

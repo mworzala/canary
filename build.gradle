@@ -12,18 +12,20 @@ repositories {
     maven { url 'https://repo.velocitypowered.com/snapshots/' }
     maven { url 'https://libraries.minecraft.net' }
     maven { url 'https://jitpack.io' }
+    maven { url 'https://repo.minestom.net/repository/maven-public/' }
 }
 
 dependencies {
-    implementation 'com.github.Minestom:Minestom:6b5f755bfd'
+    implementation 'com.github.Minestom:Minestom:e098b2a89f'
 
-    implementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
-    implementation 'org.junit.jupiter:junit-jupiter-engine:5.6.0'
+    implementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
+    implementation 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
+    implementation 'org.junit.platform:junit-platform-launcher:1.7.2'
 //    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 }
 
 test {
-    useJUnitPlatform {
-        includeEngines('canary')
-    }
+//    useJUnitPlatform {
+//        includeEngines('canary')
+//    }
 }

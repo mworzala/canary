@@ -1,6 +1,6 @@
 package com.mattworzala.canary.demo;
 
-import com.mattworzala.canary.test.junit.InWorldTest;
+import com.mattworzala.canary.test.InWorldTest;
 import org.junit.jupiter.api.Test;
 
 public class TestDemo {

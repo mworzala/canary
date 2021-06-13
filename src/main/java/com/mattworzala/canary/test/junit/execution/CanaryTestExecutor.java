@@ -16,7 +16,8 @@ public class CanaryTestExecutor {
     }
 
     public void execute(TestDescriptor test) {
-        logger.info(() -> test.getUniqueId().toString());
+        //todo this should handle any CanaryTestDescriptor or CanaryEngineDescriptor
+//        logger.info(() -> test.getUniqueId().toString());
         listener.executionStarted(test);
 
 
@@ -24,7 +25,7 @@ public class CanaryTestExecutor {
         //todo actual execution
 
         for (TestDescriptor child : test.getChildren()) {
-            execute( child);
+            execute(child);
         }
 
         listener.executionFinished(test, TestExecutionResult.successful());

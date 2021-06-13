@@ -13,9 +13,13 @@ repositories {
     maven { url 'https://repo.velocitypowered.com/snapshots/' }
     maven { url 'https://libraries.minecraft.net' }
     maven { url 'https://jitpack.io' }
+    maven { url 'https://repo.minestom.net/repository/maven-public/' }
 }
 
 dependencies {
+    implementation 'com.github.Minestom:Minestom:resource_gatherer_java-SNAPSHOT'
+//    implementation 'com.github.Minestom:Minestom:e098b2a89f'
+
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 
@@ -24,4 +28,18 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+//todo this could come from a gradle plugin which configures it for you.
+task sandbox(type: Exec) {
+    dependsOn build
+    group = "verification"
+    description = "Create a testing sandbox to create or execute Canary tests."
+
+    workingDir project.buildDir
+    commandLine "${System.getProperty("java.home")}/bin/java",
+            "-Dcanary.environment=extension",
+            "-classpath", project.sourceSets.test.runtimeClasspath.getAsPath(),
+            "com.mattworzala.canary.sandbox.SandboxLauncher"
+
 }

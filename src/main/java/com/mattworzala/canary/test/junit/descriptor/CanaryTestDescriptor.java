@@ -5,18 +5,18 @@ import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor;
 
 import java.lang.reflect.Method;
 
-public class JupiterCanaryTestDescriptor extends AbstractTestDescriptor {
+public class CanaryTestDescriptor extends AbstractTestDescriptor {
     private final Class<?> testClass;
     private final Method testMethod;
 
 
-    public JupiterCanaryTestDescriptor(UniqueId uniqueId, Class<?> testClass) {
+    public CanaryTestDescriptor(UniqueId uniqueId, Class<?> testClass) {
         super(uniqueId, uniqueId.getLastSegment().getValue());
         this.testClass = testClass;
         this.testMethod = null;
     }
 
-    public JupiterCanaryTestDescriptor(UniqueId uniqueId, Method testMethod) {
+    public CanaryTestDescriptor(UniqueId uniqueId, Method testMethod) {
         super(uniqueId, uniqueId.getLastSegment().getValue());
         this.testClass = testMethod.getDeclaringClass();
         this.testMethod = testMethod;
@@ -31,5 +31,9 @@ public class JupiterCanaryTestDescriptor extends AbstractTestDescriptor {
 
     public Class<?> getTestClass() {
         return testClass;
+    }
+
+    public Method getTestMethod() {
+        return testMethod;
     }
 }

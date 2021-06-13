@@ -132,7 +132,7 @@ public class StructureBlock extends CustomBlock {
 
         // Constant tags
         {
-            nbt.setString("id", Block.STRUCTURE_BLOCK.getBlockEntityName().toString());
+            nbt.setString("id", "minecraft:structure_block");
             nbt.setByte("keepPacked", (byte) 0);
             nbt.setString("author", "?");
             nbt.setByte("ignoreEntities", (byte) 1);

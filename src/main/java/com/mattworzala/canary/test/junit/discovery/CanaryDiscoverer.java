@@ -1,7 +1,7 @@
 package com.mattworzala.canary.test.junit.discovery;
 
 import com.mattworzala.canary.test.junit.descriptor.CanaryEngineDescriptor;
-import com.mattworzala.canary.test.junit.descriptor.JupiterCanaryTestDescriptor;
+import com.mattworzala.canary.test.junit.descriptor.CanaryTestDescriptor;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.commons.util.ClassFilter;
@@ -19,7 +19,6 @@ import static org.junit.platform.commons.util.ReflectionUtils.isInnerClass;
 public class CanaryDiscoverer {
     private static final Logger logger = LoggerFactory.getLogger(CanaryDiscoverer.class);
 
-//    private static final Predicate<Class<?>> isPotentialTestClass = candidate -> true;
     private static final Predicate<Class<?>> isPotentialTestClass = candidate -> isPublic(candidate) && !isAbstract(candidate) && !isInnerClass(candidate);
 
     private static final EngineDiscoveryRequestResolver<TestDescriptor> resolver = EngineDiscoveryRequestResolver.builder()
@@ -29,12 +28,18 @@ public class CanaryDiscoverer {
             .build();
 
     public static CanaryEngineDescriptor discover(EngineDiscoveryRequest discoveryRequest, UniqueId uniqueId) {
-        logger.info(() -> "Discovering tests...");
+//        logger.info(() -> "Discovering tests...");
         CanaryEngineDescriptor engineDescriptor = new CanaryEngineDescriptor(uniqueId);
         resolver.resolve(discoveryRequest, engineDescriptor);
         TestDescriptorPostProcessor postProcessor = new TestDescriptorPostProcessor(isPotentialTestClass);
-        for (TestDescriptor testDescriptor : engineDescriptor.getChildren()) {
-            postProcessor.process((JupiterCanaryTestDescriptor) testDescriptor);
+        var iter = engineDescriptor.getChildrenMutable().iterator();
+        while (iter.hasNext()) {
+            TestDescriptor testDescriptor = iter.next();
+            postProcessor.process((CanaryTestDescriptor) testDescriptor);
+            if (testDescriptor.getChildren().isEmpty()) {
+//                logger.info(() -> "Throwing out test class " + testDescriptor.getDisplayName());
+                iter.remove();
+            }
         }
         return engineDescriptor;
     }
