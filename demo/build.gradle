@@ -17,8 +17,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.Minestom:Minestom:resource_gatherer_java-SNAPSHOT'
-//    implementation 'com.github.Minestom:Minestom:e098b2a89f'
+//    implementation 'com.github.Minestom:Minestom:resource_gatherer_java-SNAPSHOT'
+    implementation 'com.github.Minestom:Minestom:64aded8f42'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
@@ -30,7 +30,7 @@ test {
     useJUnitPlatform()
 }
 
-//todo this could come from a gradle plugin which configures it for you.
+//todo this could come from a gradle plugin which configures it for you, or maybe a useCanaryPlatform method similar to useJUnitPlatform?
 task sandbox(type: Exec) {
     dependsOn build
     group = "verification"

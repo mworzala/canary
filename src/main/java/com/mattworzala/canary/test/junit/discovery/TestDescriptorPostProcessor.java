@@ -5,7 +5,9 @@ import com.mattworzala.canary.test.junit.descriptor.CanaryTestDescriptor;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.commons.util.ClassUtils;
+import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.UniqueId;
+import org.junit.platform.engine.support.descriptor.ClassSource;
 
 import java.lang.reflect.Method;
 import java.util.function.Predicate;
@@ -24,16 +26,20 @@ public class TestDescriptorPostProcessor {
     }
 
     private void addChildrenRecursive(CanaryTestDescriptor parent) {
-        Class<?> testClass = parent.getTestClass();
-        for (Method method : testClass.getMethods()) {
-            InWorldTest testAnnotation = method.getAnnotation(InWorldTest.class);
-            if (testAnnotation == null) continue;
+        TestSource source = parent.getSource().orElse(null);
+        if (source == null) { return; }
+        if (source instanceof ClassSource classSource) {
+            var testClass = classSource.getJavaClass();
+            for (Method method : testClass.getMethods()) {
+                InWorldTest testAnnotation = method.getAnnotation(InWorldTest.class);
+                if (testAnnotation == null) continue;
 
-//            logger.info(() -> "Found test method " + method.getName());
-            String methodId = String.format("%s(%s)", method.getName(), ClassUtils.nullSafeToString(method.getParameterTypes()));
-            UniqueId uniqueId = parent.getUniqueId().append("test", methodId);
-            var child = new CanaryTestDescriptor(uniqueId, method);
-            parent.addChild(child);
+                String methodId = String.format("%s(%s)", method.getName(), ClassUtils.nullSafeToString(method.getParameterTypes()));
+                UniqueId uniqueId = parent.getUniqueId().append("test", methodId);
+                var child = new CanaryTestDescriptor(uniqueId, method);
+                parent.addChild(child);
+            }
         }
+
     }
 }

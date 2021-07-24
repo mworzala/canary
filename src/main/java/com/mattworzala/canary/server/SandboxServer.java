@@ -7,6 +7,7 @@ import com.mattworzala.canary.server.instance.BasicGenerator;
 import net.minestom.server.MinecraftServer;
 
 import net.minestom.server.command.CommandManager;
+import net.minestom.server.coordinate.Pos;
 import net.minestom.server.data.DataImpl;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
@@ -40,7 +41,7 @@ public class SandboxServer extends HeadlessServer {
         globalEventHandler.addEventCallback(PlayerLoginEvent.class, event -> {
             final Player player = event.getPlayer();
             event.setSpawningInstance(instanceContainer);
-            player.setRespawnPoint(new Position(0, 41, 0));
+            player.setRespawnPoint(new Pos(0, 41, 0));
         });
         globalEventHandler.addEventCallback(PlayerSpawnEvent.class, event -> {
             if (event.isFirstSpawn()) {
@@ -50,13 +51,13 @@ public class SandboxServer extends HeadlessServer {
         });
 
         // Structure Block
-        MinecraftServer.getBlockManager().registerCustomBlock(new StructureBlock());
-        globalEventHandler.addEventCallback(PlayerBlockPlaceEvent.class, event -> {
-            if (event.getBlockStateId() != Block.STRUCTURE_BLOCK.getBlockId())
-                return;
-            event.setCustomBlock(StructureBlock.ID);
-            event.setBlockData(new DataImpl());
-        });
+//        MinecraftServer.getBlockManager().registerCustomBlock(new StructureBlock());
+//        globalEventHandler.addEventCallback(PlayerBlockPlaceEvent.class, event -> {
+//            if (event.getBlockStateId() != Block.STRUCTURE_BLOCK.getBlockId())
+//                return;
+//            event.setCustomBlock(StructureBlock.ID);
+//            event.setBlockData(new DataImpl());
+//        });
 
         registerCommands();
 

@@ -22,7 +22,7 @@ public class SandboxLauncher {
                     if (!(testDescriptor instanceof CanaryTestDescriptor test)) {
                         return FilterResult.excluded("Not a canary test");
                     }
-                    System.out.println(test.getTestClass());
+//                    System.out.println(test.getTestClass());
                     return FilterResult.included("n/a");
                 })
                 .build();
