@@ -107,6 +107,16 @@ public class SandboxLauncher {
 
 
 
+        //todo there is a big issue here. Test discovery will load the test classes before this point and into the main class loader
+        //     In this case all of it's Minestom classes will be loaded into the main class loader and then re loaded by Minestom
+        //      into the Minestom classloader. That will not be valid.
+        //     In an ideal world, I believe we need to load the test classes into the Minestom classloader and allow all the
+        //      test utils such as assertions, test manipulation, etc to be loaded in the Minestom classloader. That being said,
+        //      I am not sure if thats possible, since the non-Minestom code probably needs to use it, which would mean it will
+        //      be loaded into both unless all code is loaded into the Minestom classloader.
+        //     Seems like the solution here is probably to load everything besides Mixins into the Minestom classloader, but this means
+        //      junit needs to be convinced to load into the Minestom classloader.
+
         MinestomRootClassLoader classLoader = MinestomRootClassLoader.getInstance();
         // Protect junit
         classLoader.protectedPackages.add("org.junit");
@@ -116,6 +126,9 @@ public class SandboxLauncher {
 
         SandboxTestExecutor.init();
 
+        //todo find a better way to do this
+        System.setProperty("minestom.extension.indevfolder.classes", "classes/java/main/");
+        System.setProperty("minestom.extension.indevfolder.resources", "resources/main/");
         Bootstrap.bootstrap("com.mattworzala.canary.server.SandboxServer", args);
 
         // Can do stuff here

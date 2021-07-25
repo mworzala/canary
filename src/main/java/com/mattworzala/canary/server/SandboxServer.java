@@ -1,7 +1,9 @@
 package com.mattworzala.canary.server;
 
 import com.mattworzala.canary.server.block.StructureBlock;
+import com.mattworzala.canary.server.command.CanaryCommand;
 import com.mattworzala.canary.server.command.StatusCommand;
+import com.mattworzala.canary.server.command.TestCommand;
 import com.mattworzala.canary.server.command.TestsCommand;
 import com.mattworzala.canary.server.instance.BasicGenerator;
 import net.minestom.server.MinecraftServer;
@@ -69,5 +71,8 @@ public class SandboxServer extends HeadlessServer {
         CommandManager commands = MinecraftServer.getCommandManager();
         commands.register(new StatusCommand());
         commands.register(new TestsCommand());
+
+        commands.register(new CanaryCommand());
+        commands.register(new TestCommand());
     }
 }

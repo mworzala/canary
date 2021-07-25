@@ -1,0 +1,40 @@
+
+
+
+/test list
+/test discover
+
+/test builder ...
+ * builder
+   * Open New       /test builder
+                    /test builder MyFile.myTestName
+                    /test builder com.mattworzala.canary.demo.MyFile.myTestName
+   * Edit existing  /test builder edit MyFile.myTestName
+   * Config         /test builder config OPTION VALUE [OPTION2 VALUE2]
+   * Exit           /test builder exit
+                    /test builder discard
+
+/test run ...
+ * run queries
+   * All        /test run
+                /test run all
+   * Passed     /test run passed
+   * Failed     /test run failed
+
+/test filter ...
+ * list                 /test filter list
+ * filter queries
+   * All                /test filter clear
+   * All in package     /test filter package com.mattworzala
+   * All in file        /test filter file TestDemo
+                        /test filter file com.mattworzala.canary.demo.TestDemo
+   * Regex pattern      /test filter regex helloWorld
+                        /test filter regex TestDemo.helloWorld
+
+/canary ...
+ * version info         /canary version
+ * logs
+   * All                /canary log
+   * level              /canary log [debug/warning/error/etc]
+   * watch              /canary log watch
+ *

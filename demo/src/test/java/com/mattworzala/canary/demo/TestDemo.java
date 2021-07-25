@@ -20,6 +20,6 @@ public class TestDemo {
     @InWorldTest
     public void anotherMinestomTest() {
         System.out.println("Hello");
-        assertEquals(1, 2);
+//        assertEquals(1, 2);
     }
 }
