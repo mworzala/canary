@@ -4,6 +4,7 @@ import com.mattworzala.canary.test.junit.CanaryTestEngine;
 import com.mattworzala.canary.test.junit.descriptor.CanaryEngineDescriptor;
 import com.mattworzala.canary.test.junit.descriptor.CanaryTestDescriptor;
 import org.jetbrains.annotations.NotNull;
+import org.junit.platform.engine.Filter;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.UniqueId;
@@ -42,6 +43,9 @@ public class SandboxTestEnvironment {
 
     public DiscoverySummary discover() {
         LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
+                .selectors(DiscoverySelectors.selectPackage(""))
+                .build();
+        LauncherDiscoveryRequestBuilder.request()
                 .selectors(DiscoverySelectors.selectPackage(""))
                 .build();
         root = (CanaryEngineDescriptor) engine.discover(request, UniqueId.forEngine(engine.getId()));
