@@ -1,0 +1,18 @@
+
+
+@InstanceConfig(
+    @TimeOfDay(1523),
+    @Weather(Weather.RAIN)
+)
+
+
+Concept Ideas:
+ - Could use a resource pack to do interesting things
+   - Hide stuff (beacons, beacon glass)
+   - Make book inventory look waaaaay better
+   - Make lectern look better
+   - Could create a HUD somewhere to show info about running tests (such as how many are running (a progress bar: black=not started, yellow=started, green=passed, red=failed), passes, fails)
+ - Dont use a lectern to display book. Can just handle some other block click or command to open the book.
+ - Some way to fake a beacon beam perhaps?
+
+

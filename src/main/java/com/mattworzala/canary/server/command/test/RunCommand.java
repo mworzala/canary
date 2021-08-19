@@ -1,5 +1,6 @@
 package com.mattworzala.canary.server.command.test;
 
+import com.mattworzala.canary.test.sandbox.SandboxTestEnvironment;
 import net.minestom.server.command.CommandSender;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.CommandContext;
@@ -36,10 +37,13 @@ public class RunCommand extends Command {
     private void onRun(CommandSender sender, CommandContext context) {
         version(sender, NAME, VERSION);
 
-        RunFilter runFilter = context.get("filter");
-        if (runFilter == null) runFilter = RunFilter.ALL;
+        SandboxTestEnvironment.getInstance().executeAll();
 
-        sender.sendMessage(runFilter.name());
+
+//        RunFilter runFilter = context.get("filter");
+//        if (runFilter == null) runFilter = RunFilter.ALL;
+//
+//        sender.sendMessage(runFilter.name());
     }
 
     private void onIncorrectFilter(CommandSender sender, ArgumentSyntaxException exception) {

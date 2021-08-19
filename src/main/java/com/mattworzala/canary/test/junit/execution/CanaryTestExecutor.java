@@ -24,6 +24,8 @@ public class CanaryTestExecutor {
     }
 
     public void execute(TestDescriptor test) {
+
+
         //todo this should handle any CanaryTestDescriptor or CanaryEngineDescriptor
 //        logger.info(() -> test.getUniqueId().toString());
         listener.executionStarted(test);
@@ -32,6 +34,7 @@ public class CanaryTestExecutor {
         TestSource source = test.getSource().orElse(null);
         if (source instanceof ClassSource classSource) {
             var target = classSource.getJavaClass();
+
             try {
                 var primaryConstructor = target.getDeclaredConstructor();
                 primaryConstructor.setAccessible(true);

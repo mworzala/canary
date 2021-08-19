@@ -1,29 +1,77 @@
 package com.mattworzala.canary.test.sandbox;
 
-import com.mattworzala.canary.test.junit.CanaryTestEngine;
-import com.mattworzala.canary.test.junit.descriptor.CanaryEngineDescriptor;
-import com.mattworzala.canary.test.junit.descriptor.CanaryTestDescriptor;
-import org.jetbrains.annotations.NotNull;
-import org.junit.platform.engine.FilterResult;
-import org.junit.platform.engine.UniqueId;
-import org.junit.platform.engine.discovery.DiscoverySelectors;
-import org.junit.platform.launcher.LauncherDiscoveryRequest;
-import org.junit.platform.launcher.PostDiscoveryFilter;
-import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
+import org.junit.platform.commons.logging.Logger;
+import org.junit.platform.commons.logging.LoggerFactory;
+import org.junit.platform.engine.EngineExecutionListener;
+import org.junit.platform.engine.TestDescriptor;
+import org.junit.platform.engine.TestExecutionResult;
+import org.junit.platform.engine.TestSource;
+import org.junit.platform.engine.support.descriptor.ClassSource;
+import org.junit.platform.engine.support.descriptor.MethodSource;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Stack;
 
 public class SandboxTestExecutor {
-    private static CanaryEngineDescriptor root;
+    private static final Logger logger = LoggerFactory.getLogger(SandboxTestExecutor.class);
 
-    @NotNull
-    public static CanaryEngineDescriptor getRoot() {
-        return root;
-    }
+    // There must be a better way of handing this
+    private Stack<Object> instances = new Stack<>();
 
-    public static void init() {
-        LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
-                .selectors(DiscoverySelectors.selectPackage(""))
-                .build();
-        CanaryTestEngine engine = new CanaryTestEngine();
-        root = (CanaryEngineDescriptor) engine.discover(request, UniqueId.forEngine(engine.getId()));
+
+    public void execute(TestDescriptor test) {
+
+
+        //todo this should handle any CanaryTestDescriptor or CanaryEngineDescriptor
+//        logger.info(() -> test.getUniqueId().toString());
+
+        // Execute test
+        TestSource source = test.getSource().orElse(null);
+        if (source instanceof ClassSource classSource) {
+            var target = classSource.getJavaClass();
+
+            try {
+                var primaryConstructor = target.getDeclaredConstructor();
+                primaryConstructor.setAccessible(true);
+                instances.push(primaryConstructor.newInstance());
+            } catch (InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+                //todo better handing of these exceptions, also there may be cases where we are happy to provide arguments to a constructor
+                var wrapped = new RuntimeException("Cannot execute test class " + classSource.getClassName() + ":", e);
+                return;
+            }
+        }
+        if (source instanceof MethodSource methodSource) {
+            var target = methodSource.getJavaMethod();
+            try {
+                assert !instances.isEmpty();
+                var instance = instances.peek();
+                target.invoke(instance);
+            } catch (InvocationTargetException possibleAssertionError) {
+                // AssertionError is masked here
+                var cause = possibleAssertionError.getCause();
+                if (cause instanceof AssertionError assertionError)
+                    System.out.println("Test failed: " + assertionError.getMessage());
+                else {
+                    var wrapped = new RuntimeException("Cannot execute test method " + methodSource.getMethodName() + ":", possibleAssertionError);
+                    throw wrapped;
+                }
+                return;
+            } catch (IllegalAccessException e) {
+                var wrapped = new RuntimeException("Cannot execute test method " + methodSource.getMethodName() + ":", e);
+                throw wrapped;
+            }
+        }
+
+        // Execute children
+        for (TestDescriptor child : test.getChildren()) {
+            execute(child);
+        }
+
+
+        if (source instanceof ClassSource) {
+            instances.pop();
+        }
+
+        System.out.println("TEST SUCCESSFUL " + test.getUniqueId());
     }
 }

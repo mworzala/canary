@@ -27,7 +27,7 @@ dependencies {
 }
 
 test {
-    useJUnitPlatform()
+//    useJUnitPlatform()
 }
 
 //todo this could come from a gradle plugin which configures it for you, or maybe a useCanaryPlatform method similar to useJUnitPlatform?

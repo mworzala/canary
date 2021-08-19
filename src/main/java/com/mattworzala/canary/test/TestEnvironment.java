@@ -46,8 +46,6 @@ public interface TestEnvironment {
 
     <T> Assertion<T> expect(T actual);
 
-    void passWhenEntityPresent(Entity entity, Point position);
-
 
 
     // Instance manipulation utilities
@@ -58,5 +56,10 @@ public interface TestEnvironment {
     default <T extends Entity> T spawnEntity(Supplier<T> constructor, Pos position) {
         return spawnEntity(constructor, position, null);
     }
-    <T extends Entity> T spawnEntity(Supplier<T> constructor, Pos position, Consumer<T> config);
+    default <T extends Entity> T spawnEntity(Supplier<T> constructor, Pos position, Consumer<T> config) {
+        T entity = constructor.get();
+        config.accept(entity);
+        entity.setInstance(getInstance(), position);
+        return entity;
+    }
 }

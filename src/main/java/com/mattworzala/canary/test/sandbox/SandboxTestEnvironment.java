@@ -3,11 +3,9 @@ package com.mattworzala.canary.test.sandbox;
 import com.mattworzala.canary.test.junit.CanaryTestEngine;
 import com.mattworzala.canary.test.junit.descriptor.CanaryEngineDescriptor;
 import com.mattworzala.canary.test.junit.descriptor.CanaryTestDescriptor;
+import com.mattworzala.canary.test.junit.execution.CanaryTestExecutor;
 import org.jetbrains.annotations.NotNull;
-import org.junit.platform.engine.Filter;
-import org.junit.platform.engine.TestDescriptor;
-import org.junit.platform.engine.TestSource;
-import org.junit.platform.engine.UniqueId;
+import org.junit.platform.engine.*;
 import org.junit.platform.engine.discovery.DiscoverySelectors;
 import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
@@ -15,8 +13,11 @@ import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.stream.Stream;
+
+import static org.junit.platform.engine.TestExecutionResult.successful;
 
 public class SandboxTestEnvironment {
     public record DiscoverySummary(int packages, int files, int tests) {}
@@ -43,9 +44,6 @@ public class SandboxTestEnvironment {
 
     public DiscoverySummary discover() {
         LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
-                .selectors(DiscoverySelectors.selectPackage(""))
-                .build();
-        LauncherDiscoveryRequestBuilder.request()
                 .selectors(DiscoverySelectors.selectPackage(""))
                 .build();
         root = (CanaryEngineDescriptor) engine.discover(request, UniqueId.forEngine(engine.getId()));
@@ -102,4 +100,14 @@ public class SandboxTestEnvironment {
         for (TestDescriptor child : test.getChildren())
             indexTestRecursive(child);
     }
+
+    public void executeAll() {
+        SandboxTestExecutor executor = new SandboxTestExecutor();
+
+        executor.execute(getRoot());
+
+
+    }
+
+
 }
