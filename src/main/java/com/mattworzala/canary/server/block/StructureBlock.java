@@ -9,7 +9,7 @@ import net.minestom.server.instance.block.Block;
 //import net.minestom.server.instance.block.CustomBlock;
 import net.minestom.server.network.packet.client.play.ClientUpdateStructureBlockPacket;
 import net.minestom.server.network.packet.server.play.BlockEntityDataPacket;
-import net.minestom.server.utils.BlockPosition;
+//import net.minestom.server.utils.BlockPosition;
 import net.minestom.server.utils.PacketUtils;
 import net.minestom.server.utils.validate.Check;
 import org.jetbrains.annotations.NotNull;

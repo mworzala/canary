@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public class TestBuilder implements Viewable, Tickable {
     private final Set<Player> viewers = new HashSet<>();
-    private final Instance instance = new TestBuilderInstance(UUID.randomUUID(), TestBuilderInstance.DIMENSION_TYPE);
+//    private final Instance instance = new TestBuilderInstance(UUID.randomUUID(), TestBuilderInstance.DIMENSION_TYPE);
 
     @Override
     public void tick(long time) {

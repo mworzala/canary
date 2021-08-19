@@ -21,7 +21,7 @@ import net.minestom.server.extras.PlacementRules;
 import net.minestom.server.extras.optifine.OptifineSupport;
 import net.minestom.server.instance.*;
 import net.minestom.server.instance.block.Block;
-import net.minestom.server.utils.Position;
+//import net.minestom.server.utils.Position;
 
 public class SandboxServer extends HeadlessServer {
     public static void main(String[] args) {
