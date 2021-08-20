@@ -1,6 +1,5 @@
-package com.mattworzala.canary.test.junit.assertion.recursive;
+package com.mattworzala.canary.assertion.recursive;
 
-import com.mattworzala.canary.test.junit.assertion.Assertion;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Entity;
 import org.jetbrains.annotations.Contract;

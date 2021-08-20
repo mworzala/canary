@@ -1,5 +1,7 @@
 package com.mattworzala.canary.test.junit;
 
+import com.mattworzala.canary.internal.EnvType;
+import com.mattworzala.canary.internal.Environment;
 import com.mattworzala.canary.test.junit.descriptor.CanaryEngineDescriptor;
 import com.mattworzala.canary.test.junit.discovery.CanaryDiscoverer;
 import com.mattworzala.canary.test.junit.execution.CanaryTestExecutor;
@@ -12,6 +14,7 @@ import java.util.Optional;
 
 import static org.junit.platform.engine.TestExecutionResult.successful;
 
+@Environment(EnvType.PLATFORM)
 public class CanaryTestEngine implements TestEngine {
     private static final Logger logger = LoggerFactory.getLogger(CanaryTestEngine.class);
 
@@ -41,12 +44,6 @@ public class CanaryTestEngine implements TestEngine {
     @Override
     public TestDescriptor discover(EngineDiscoveryRequest discoveryRequest, UniqueId uniqueId) {
         return CanaryDiscoverer.discover(discoveryRequest, uniqueId);
-//        var root = new CanaryEngineDescriptor(uniqueId);
-//        var childA = new TestTestDescriptor(uniqueId, "a", TestDescriptor.Type.TEST);
-//        root.addChild(childA);
-//        var childB = new TestTestDescriptor(childA.getUniqueId(), "b", TestDescriptor.Type.TEST);
-//        childA.addChild(childB);
-//        return root;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.mattworzala.canary.test.junit.assertion.recursive;
+package com.mattworzala.canary.assertion.recursive;
 
 import net.minestom.server.entity.LivingEntity;
 

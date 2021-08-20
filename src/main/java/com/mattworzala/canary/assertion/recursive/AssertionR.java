@@ -1,4 +1,4 @@
-package com.mattworzala.canary.test.junit.assertion.recursive;
+package com.mattworzala.canary.assertion.recursive;
 
 public class AssertionR<T, A extends AssertionR<T, A>> {
 

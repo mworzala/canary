@@ -1,8 +1,8 @@
-package com.mattworzala.canary.test.junit.assertion;
+package com.mattworzala.canary.assertion;
 
-import com.mattworzala.canary.test.junit.assertion.recursive.AssertionR;
-import com.mattworzala.canary.test.junit.assertion.recursive.EntityAssertionR;
-import com.mattworzala.canary.test.junit.assertion.recursive.LivingEntityAssertionR;
+import com.mattworzala.canary.assertion.recursive.AssertionR;
+import com.mattworzala.canary.assertion.recursive.EntityAssertionR;
+import com.mattworzala.canary.assertion.recursive.LivingEntityAssertionR;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.LivingEntity;
 

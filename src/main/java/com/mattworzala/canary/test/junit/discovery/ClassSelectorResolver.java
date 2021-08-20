@@ -19,21 +19,31 @@ import java.util.Optional;
  */
 public record ClassSelectorResolver(ClassFilter filter) implements SelectorResolver {
 
+    /**
+     * Adds the class to the parent provided in `context`, with some resolution stuff to make junit happy.
+     *
+     * @see SelectorResolver#resolve(ClassSelector, Context)
+     */
     @Override
     public Resolution resolve(ClassSelector selector, Context context) {
-        return resolveTestClass(selector.getJavaClass(), context);
-    }
-
-    private Resolution resolveTestClass(Class<?> testClass, Context context) {
-        if (!filter.test(testClass))
+        if (!filter.test(selector.getJavaClass()))
             return Resolution.unresolved();
 
-        return context.addToParent(parent -> createTestDescriptor(parent, testClass))
+        return context.addToParent(parent -> createTestDescriptor(parent, selector.getJavaClass()))
                 .map(Match::exact)
                 .map(Resolution::match)
                 .orElse(Resolution.unresolved());
     }
 
+    /**
+     * Create a {@link CanaryTestDescriptor} of the given class with the given parent after loading the class into the minestom classloader.
+     * <p>
+     * If the class could not be loaded into the minestom classloader, a console message should explain why.
+     *
+     * @param parent The parent test descriptor
+     * @param testClass The class to be reloaded into the minestom class loader
+     * @return The test descriptor, or an empty optional if the class was not loadable in the minestom classloader.
+     */
     private Optional<CanaryTestDescriptor> createTestDescriptor(TestDescriptor parent, Class<?> testClass) {
         // Create unique id with parent and child.
         UniqueId uniqueId = parent.getUniqueId().append("class", testClass.getSimpleName());

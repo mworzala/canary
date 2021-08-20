@@ -50,15 +50,6 @@ public class CanaryDiscoverer {
         // Post processing
         postProcessor.execute(engineDescriptor);
 
-//        TestDescriptorPostProcessor postProcessor = new TestDescriptorPostProcessor();
-//        var iter = engineDescriptor.getChildrenMutable().iterator();
-//        while (iter.hasNext()) {
-//            var testDescriptor = (CanaryTestDescriptor) iter.next();
-//            if (!postProcessor.process(testDescriptor)) {
-//                iter.remove();
-//            }
-//        }
-
         return engineDescriptor;
     }
 }

@@ -1,6 +1,6 @@
 package com.mattworzala.canary.test;
 
-import com.mattworzala.canary.test.junit.assertion.Assertion;
+import com.mattworzala.canary.assertion.Assertion;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static com.mattworzala.canary.test.junit.assertion.Assertion.*;
+import static com.mattworzala.canary.assertion.Assertion.*;
 
 public interface TestEnvironment {
     @NotNull Instance getInstance();
