@@ -33,7 +33,7 @@ public class CanaryTestEngine implements TestEngine {
 
     @Override
     public Optional<String> getArtifactId() {
-        return Optional.of("canvas");
+        return Optional.of("canary");
     }
 
     @Override
