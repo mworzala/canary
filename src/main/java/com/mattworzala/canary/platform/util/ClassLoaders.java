@@ -2,11 +2,13 @@ package com.mattworzala.canary.platform.util;
 
 import net.minestom.server.extras.selfmodification.MinestomRootClassLoader;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 
 import java.lang.annotation.Annotation;
+import java.util.Objects;
 
 @Environment(EnvType.GLOBAL)
 @ApiStatus.Internal
@@ -14,6 +16,16 @@ public class ClassLoaders {
     private static final Logger logger = LoggerFactory.getLogger(ClassLoaders.class);
 
     public static final MinestomRootClassLoader MINESTOM = MinestomRootClassLoader.getInstance();
+
+    @NotNull
+    public static Class<?> loadClassRequired(ClassLoader classLoader, Class<?> target) {
+        return loadClassRequired(classLoader, target.getName());
+    }
+
+    @NotNull
+    public static Class<?> loadClassRequired(ClassLoader classLoader, String name) {
+        return Objects.requireNonNull(loadClass(classLoader, name), "Unable to load class " + name);
+    }
 
     @Nullable
     public static Class<?> loadClass(ClassLoader classLoader, Class<?> target) {

@@ -4,7 +4,7 @@ import com.mattworzala.canary.platform.util.EnvType;
 import com.mattworzala.canary.platform.util.Environment;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryEngineDescriptor;
 import com.mattworzala.canary.platform.junit.discovery.CanaryDiscoverer;
-import com.mattworzala.canary.platform.junit.execution.CanaryTestExecutor;
+import com.mattworzala.canary.platform.junit.execution.CanaryTestExecutorOld;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.engine.*;
@@ -56,7 +56,7 @@ public class CanaryTestEngine implements TestEngine {
     }
 
     private void executeAllChildren(CanaryEngineDescriptor engineDescriptor, EngineExecutionListener listener) {
-        CanaryTestExecutor runner = new CanaryTestExecutor(listener);
+        CanaryTestExecutorOld runner = new CanaryTestExecutorOld(listener);
         Iterator<TestDescriptor> iterator = engineDescriptor.getChildrenMutable().iterator();
         while (iterator.hasNext()) {
             runner.execute(iterator.next());
