@@ -28,4 +28,11 @@ public class TestDemo {
         System.out.println("Hello");
         assertEquals(1, 2);
     }
+
+    public static class MyOtherDemo {
+        @InWorldTest
+        public void innerTest() {
+            System.out.println("INSIDE WOW");
+        }
+    }
 }

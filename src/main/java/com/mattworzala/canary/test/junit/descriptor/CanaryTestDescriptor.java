@@ -1,11 +1,14 @@
 package com.mattworzala.canary.test.junit.descriptor;
 
+import org.jetbrains.annotations.NotNull;
+import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor;
 import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 
 public class CanaryTestDescriptor extends AbstractTestDescriptor {
 
@@ -21,8 +24,13 @@ public class CanaryTestDescriptor extends AbstractTestDescriptor {
 
     @Override
     public Type getType() {
-        return Type.TEST;
-//        return this.testMethod == null ? Type.CONTAINER : Type.TEST;
-//        return this.testMethod == null ? Type.CONTAINER_AND_TEST : Type.TEST;
+        return Type.TEST; // Any other option does not show in IntelliJ test window correctly.
     }
+
+
+    @NotNull
+    public Collection<TestDescriptor> getChildrenMutable() {
+        return children;
+    }
+
 }

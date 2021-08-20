@@ -1,7 +1,7 @@
 package com.mattworzala.canary.test.junit.discovery;
 
 import com.mattworzala.canary.test.junit.descriptor.CanaryTestDescriptor;
-import net.minestom.server.extras.selfmodification.MinestomRootClassLoader;
+import com.mattworzala.canary.test.junit.util.ClassLoaders;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.commons.util.ClassFilter;
@@ -12,14 +12,12 @@ import org.junit.platform.engine.support.discovery.SelectorResolver;
 
 import java.util.Optional;
 
-public class ClassSelectorResolver implements SelectorResolver {
-    private static final Logger logger = LoggerFactory.getLogger(ClassSelectorResolver.class);
-
-    private final ClassFilter filter;
-
-    public ClassSelectorResolver(ClassFilter filter) {
-        this.filter = filter;
-    }
+/**
+ * Creates a {@link CanaryTestDescriptor} from the given class, to be processed further in the future.
+ * <p>
+ * All test classes resolved will be loaded in {@link ClassLoaders#MINESTOM}
+ */
+public record ClassSelectorResolver(ClassFilter filter) implements SelectorResolver {
 
     @Override
     public Resolution resolve(ClassSelector selector, Context context) {
@@ -30,25 +28,19 @@ public class ClassSelectorResolver implements SelectorResolver {
         if (!filter.test(testClass))
             return Resolution.unresolved();
 
-//        logger.info(() -> "Found potential test class " + testClass.getName());
-        return context.addToParent(parent -> Optional.of(createTestDescriptor(parent, testClass)))
+        return context.addToParent(parent -> createTestDescriptor(parent, testClass))
                 .map(Match::exact)
                 .map(Resolution::match)
                 .orElse(Resolution.unresolved());
     }
 
-    private CanaryTestDescriptor createTestDescriptor(TestDescriptor parent, Class<?> testClass) {
+    private Optional<CanaryTestDescriptor> createTestDescriptor(TestDescriptor parent, Class<?> testClass) {
+        // Create unique id with parent and child.
         UniqueId uniqueId = parent.getUniqueId().append("class", testClass.getSimpleName());
 
-        var classloader = MinestomRootClassLoader.getInstance();
-        try {
-            Class<?> realTestClass = Class.forName(testClass.getName(), true, classloader);
-
-            return new CanaryTestDescriptor(uniqueId, realTestClass);
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-//        return new CanaryTestDescriptor(uniqueId, testClass);
+        // Reload the class in the Minestom classloader
+        final var testClassReloaded = ClassLoaders.loadClass(ClassLoaders.MINESTOM, testClass);
+        return Optional.ofNullable(testClassReloaded)
+                .map(tc -> new CanaryTestDescriptor(uniqueId, tc));
     }
 }
