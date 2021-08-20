@@ -1,7 +1,7 @@
 package com.mattworzala.canary.demo;
 
 import com.example.extension.entity.TestEntity;
-import com.mattworzala.canary.test.TestEnvironment;
+import com.mattworzala.canary.api.TestEnvironment;
 
 public class TestEntityTest {
 

@@ -40,6 +40,5 @@ task sandbox(type: Exec) {
     commandLine "${System.getProperty("java.home")}/bin/java",
             "-Dcanary.environment=extension",
             "-classpath", project.sourceSets.test.runtimeClasspath.getAsPath(),
-            "com.mattworzala.canary.sandbox.SandboxLauncher"
-
+            "com.mattworzala.canary.platform.launcher.SandboxLauncher"
 }

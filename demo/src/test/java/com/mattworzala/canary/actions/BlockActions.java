@@ -1,7 +1,7 @@
 package com.mattworzala.canary.actions;
 
-import com.mattworzala.canary.test.EnvironmentAction;
-import com.mattworzala.canary.test.TestEnvironment;
+import com.mattworzala.canary.api.EnvironmentAction;
+import com.mattworzala.canary.api.TestEnvironment;
 import net.minestom.server.coordinate.Point;
 
 public class BlockActions {

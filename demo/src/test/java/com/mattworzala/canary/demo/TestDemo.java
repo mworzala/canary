@@ -1,6 +1,6 @@
 package com.mattworzala.canary.demo;
 
-import com.mattworzala.canary.test.InWorldTest;
+import com.mattworzala.canary.api.InWorldTest;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.instance.block.Block;
 import org.junit.jupiter.api.Test;
@@ -29,6 +29,7 @@ public class TestDemo {
         assertEquals(1, 2);
     }
 
+    //todo(matt) there is a bug in the discovery logic - This class is being added to the engine descriptor not TestDemo's descriptor
     public static class MyOtherDemo {
         @InWorldTest
         public void innerTest() {

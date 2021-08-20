@@ -1,6 +1,6 @@
 package com.mattworzala.canary.demo2;
 
-import com.mattworzala.canary.test.InWorldTest;
+import com.mattworzala.canary.api.InWorldTest;
 
 public class AnotherTestDemo {
 

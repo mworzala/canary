@@ -1,6 +1,5 @@
 package com.mattworzala.canary.server;
 
-import com.mattworzala.canary.server.block.StructureBlock;
 import com.mattworzala.canary.server.command.CanaryCommand;
 import com.mattworzala.canary.server.command.StatusCommand;
 import com.mattworzala.canary.server.command.TestCommand;
@@ -10,20 +9,16 @@ import net.minestom.server.MinecraftServer;
 
 import net.minestom.server.command.CommandManager;
 import net.minestom.server.coordinate.Pos;
-import net.minestom.server.data.DataImpl;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.GlobalEventHandler;
-import net.minestom.server.event.player.PlayerBlockPlaceEvent;
 import net.minestom.server.event.player.PlayerLoginEvent;
 import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.extras.PlacementRules;
 import net.minestom.server.extras.optifine.OptifineSupport;
 import net.minestom.server.instance.*;
-import net.minestom.server.instance.block.Block;
-//import net.minestom.server.utils.Position;
 
-public class SandboxServer extends HeadlessServer {
+public class SandboxServer {
     public static void main(String[] args) {
         // Initialization
         MinecraftServer minecraftServer = MinecraftServer.init();

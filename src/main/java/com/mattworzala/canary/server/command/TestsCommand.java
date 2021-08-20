@@ -1,9 +1,6 @@
 package com.mattworzala.canary.server.command;
 
-import com.mattworzala.canary.test.junit.descriptor.CanaryEngineDescriptor;
-import com.mattworzala.canary.test.junit.descriptor.CanaryTestDescriptor;
-import com.mattworzala.canary.test.sandbox.SandboxTestEnvironment;
-import com.mattworzala.canary.test.sandbox.SandboxTestExecutor;
+import com.mattworzala.canary.platform.givemeahome.SandboxTestEnvironment;
 import net.minestom.server.command.CommandSender;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.CommandContext;
