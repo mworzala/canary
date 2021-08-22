@@ -1,12 +1,12 @@
 package com.mattworzala.canary.platform.junit.discovery;
 
 import com.mattworzala.canary.api.InWorldTest;
-import com.mattworzala.canary.platform.util.EnvType;
-import com.mattworzala.canary.platform.util.Environment;
 import com.mattworzala.canary.platform.junit.TestDescriptorVisitor;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryEngineDescriptor;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryTestDescriptor;
 import com.mattworzala.canary.platform.util.ClassLoaders;
+import com.mattworzala.canary.platform.util.hint.EnvType;
+import com.mattworzala.canary.platform.util.hint.Environment;
 import org.jetbrains.annotations.NotNull;
 import org.junit.platform.commons.util.ClassUtils;
 import org.junit.platform.engine.TestSource;
@@ -17,7 +17,8 @@ import org.junit.platform.engine.support.descriptor.MethodSource;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
-import static com.mattworzala.canary.platform.junit.discovery.CanaryDiscoverer.*;
+import static com.mattworzala.canary.platform.junit.discovery.CanaryDiscoverer.IsPotentialITestClass;
+import static com.mattworzala.canary.platform.junit.discovery.CanaryDiscoverer.IsPotentialTestMethod;
 
 @Environment(EnvType.PLATFORM)
 public record DiscoveryPostProcessor(TestDescriptorVisitor... processors) {
@@ -58,7 +59,10 @@ public record DiscoveryPostProcessor(TestDescriptorVisitor... processors) {
     @Environment(EnvType.PLATFORM)
     public static class ResolveMethods implements TestDescriptorVisitor {
         private static final Class<? extends Annotation> annotation = ClassLoaders.loadAnnotation(ClassLoaders.MINESTOM, InWorldTest.class);
-        static { assert annotation != null; }
+
+        static {
+            assert annotation != null;
+        }
 
         @Override
         public boolean visitTestClass(@NotNull CanaryTestDescriptor test, @NotNull ClassSource source) {

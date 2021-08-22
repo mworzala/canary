@@ -1,4 +1,4 @@
-package com.mattworzala.canary.platform.util;
+package com.mattworzala.canary.platform.util.hint;
 
 import org.jetbrains.annotations.ApiStatus;
 
@@ -10,7 +10,7 @@ import org.jetbrains.annotations.ApiStatus;
 @ApiStatus.Internal
 public enum EnvType {
     /**
-     * Specifies a type which may be accessed from either platform.
+     * Specifies a type which may be accessed from both platform and global sources.
      * <p>
      * This means that the type must be loaded only in the platform classloader, however is protected in the Minestom classloader so access is acceptable.
      */

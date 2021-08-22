@@ -1,9 +1,9 @@
 package com.mattworzala.canary.platform.junit.discovery;
 
-import com.mattworzala.canary.platform.util.EnvType;
-import com.mattworzala.canary.platform.util.Environment;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryTestDescriptor;
 import com.mattworzala.canary.platform.util.ClassLoaders;
+import com.mattworzala.canary.platform.util.hint.EnvType;
+import com.mattworzala.canary.platform.util.hint.Environment;
 import org.junit.platform.commons.util.ClassFilter;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.UniqueId;
@@ -41,7 +41,7 @@ public record ClassSelectorResolver(ClassFilter filter) implements SelectorResol
      * <p>
      * If the class could not be loaded into the minestom classloader, a console message should explain why.
      *
-     * @param parent The parent test descriptor
+     * @param parent    The parent test descriptor
      * @param testClass The class to be reloaded into the minestom class loader
      * @return The test descriptor, or an empty optional if the class was not loadable in the minestom classloader.
      */

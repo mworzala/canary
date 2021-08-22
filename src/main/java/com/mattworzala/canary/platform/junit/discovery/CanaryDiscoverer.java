@@ -1,10 +1,10 @@
 package com.mattworzala.canary.platform.junit.discovery;
 
 import com.mattworzala.canary.api.InWorldTest;
-import com.mattworzala.canary.platform.util.EnvType;
-import com.mattworzala.canary.platform.util.Environment;
 import com.mattworzala.canary.api.TestEnvironment;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryEngineDescriptor;
+import com.mattworzala.canary.platform.util.hint.EnvType;
+import com.mattworzala.canary.platform.util.hint.Environment;
 import org.junit.platform.commons.util.ClassFilter;
 import org.junit.platform.engine.EngineDiscoveryRequest;
 import org.junit.platform.engine.TestDescriptor;
@@ -15,8 +15,9 @@ import java.lang.reflect.Method;
 import java.util.function.Predicate;
 
 import static com.mattworzala.canary.platform.junit.discovery.DiscoveryPostProcessor.*;
+import static com.mattworzala.canary.platform.util.ReflectionUtils.hasNoParameters;
+import static com.mattworzala.canary.platform.util.ReflectionUtils.hasParameterTypes;
 import static org.junit.platform.commons.util.ReflectionUtils.*;
-import static com.mattworzala.canary.platform.util.ReflectionUtils.*;
 
 @Environment(EnvType.PLATFORM)
 public class CanaryDiscoverer {

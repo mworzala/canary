@@ -1,5 +1,7 @@
 package com.mattworzala.canary.platform.util;
 
+import com.mattworzala.canary.platform.util.hint.EnvType;
+import com.mattworzala.canary.platform.util.hint.Environment;
 import net.minestom.server.extras.selfmodification.MinestomRootClassLoader;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -16,6 +18,12 @@ public class ClassLoaders {
     private static final Logger logger = LoggerFactory.getLogger(ClassLoaders.class);
 
     public static final MinestomRootClassLoader MINESTOM = MinestomRootClassLoader.getInstance();
+
+    static {
+        // Protect relevant packages on first init
+        MINESTOM.protectedPackages.add("org.junit");
+        MINESTOM.protectedPackages.add("com.mattworzala.canary.platform");
+    }
 
     @NotNull
     public static Class<?> loadClassRequired(ClassLoader classLoader, Class<?> target) {

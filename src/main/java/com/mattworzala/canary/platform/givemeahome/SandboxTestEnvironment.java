@@ -3,7 +3,9 @@ package com.mattworzala.canary.platform.givemeahome;
 import com.mattworzala.canary.platform.junit.CanaryTestEngine;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryEngineDescriptor;
 import org.jetbrains.annotations.NotNull;
-import org.junit.platform.engine.*;
+import org.junit.platform.engine.TestDescriptor;
+import org.junit.platform.engine.TestSource;
+import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.discovery.DiscoverySelectors;
 import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
@@ -15,9 +17,11 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 public class SandboxTestEnvironment {
-    public record DiscoverySummary(int packages, int files, int tests) {}
+    public record DiscoverySummary(int packages, int files, int tests) {
+    }
 
     private static SandboxTestEnvironment instance;
+
     public static SandboxTestEnvironment getInstance() {
         if (instance == null)
             instance = new SandboxTestEnvironment();
@@ -33,7 +37,7 @@ public class SandboxTestEnvironment {
     private final Set<String> uniqueTests = new HashSet<>();
 
     private SandboxTestEnvironment() {
-        engine = new CanaryTestEngine();
+        engine = new CanaryTestEngine(false);
         discover();
     }
 

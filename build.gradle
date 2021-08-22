@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.Minestom:Minestom:72bda2c4ec'
+    implementation 'com.github.Minestom:Minestom:bc4eba68aa'
 
     implementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
     implementation 'org.junit.jupiter:junit-jupiter-engine:5.7.2'

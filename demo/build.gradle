@@ -17,22 +17,25 @@ repositories {
 }
 
 dependencies {
-//    implementation 'com.github.Minestom:Minestom:resource_gatherer_java-SNAPSHOT'
-    implementation 'com.github.Minestom:Minestom:72bda2c4ec'
+    implementation 'com.github.Minestom:Minestom:bc4eba68aa'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
 
     testImplementation rootProject
 }
 
 test {
-//    useJUnitPlatform()
+    useJUnitPlatform()
 }
 
 //todo this could come from a gradle plugin which configures it for you, or maybe a useCanaryPlatform method similar to useJUnitPlatform?
 task sandbox(type: Exec) {
-    dependsOn build
+    // We depend on `testClasses` and `jar` instead of `build` because
+    // `build > check > test` and executing the tests before the sandbox is incorrect.
+    dependsOn testClasses
+    dependsOn jar
+
     group = "verification"
     description = "Create a testing sandbox to create or execute Canary tests."
 

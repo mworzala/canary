@@ -1,7 +1,7 @@
 package com.mattworzala.canary.api;
 
-import com.mattworzala.canary.platform.util.EnvType;
-import com.mattworzala.canary.platform.util.Environment;
+import com.mattworzala.canary.platform.util.hint.EnvType;
+import com.mattworzala.canary.platform.util.hint.Environment;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
@@ -13,7 +13,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static com.mattworzala.canary.api.Assertion.*;
+import static com.mattworzala.canary.api.Assertion.EntityAssertion;
+import static com.mattworzala.canary.api.Assertion.LivingEntityAssertion;
 
 @Environment(EnvType.MINESTOM)
 public interface TestEnvironment {
@@ -21,6 +22,7 @@ public interface TestEnvironment {
 
 
     Point getPos(String name);
+
     Block getBlock(String name);
 
 
@@ -39,7 +41,6 @@ public interface TestEnvironment {
     <T> T run(String action, Object... args);
 
 
-
     // Assertions
 
     <T extends Entity> EntityAssertion<T> expect(T actual);
@@ -49,15 +50,16 @@ public interface TestEnvironment {
     <T> Assertion<T> expect(T actual);
 
 
-
     // Instance manipulation utilities
 
     default <T extends Entity> T spawnEntity(Supplier<T> constructor) {
         return spawnEntity(constructor, Pos.ZERO, null);
     }
+
     default <T extends Entity> T spawnEntity(Supplier<T> constructor, Pos position) {
         return spawnEntity(constructor, position, null);
     }
+
     default <T extends Entity> T spawnEntity(Supplier<T> constructor, Pos position, Consumer<T> config) {
         T entity = constructor.get();
         config.accept(entity);

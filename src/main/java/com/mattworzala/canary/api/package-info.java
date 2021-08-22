@@ -6,5 +6,5 @@
 @Environment(EnvType.MINESTOM)
 package com.mattworzala.canary.api;
 
-import com.mattworzala.canary.platform.util.EnvType;
-import com.mattworzala.canary.platform.util.Environment;
+import com.mattworzala.canary.platform.util.hint.EnvType;
+import com.mattworzala.canary.platform.util.hint.Environment;

@@ -2,6 +2,8 @@ package com.mattworzala.canary.platform.junit;
 
 import com.mattworzala.canary.platform.junit.descriptor.CanaryEngineDescriptor;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryTestDescriptor;
+import com.mattworzala.canary.platform.util.hint.EnvType;
+import com.mattworzala.canary.platform.util.hint.Environment;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.junit.platform.engine.TestDescriptor;
@@ -11,6 +13,7 @@ import org.junit.platform.engine.support.descriptor.MethodSource;
 
 import java.util.Collection;
 
+@Environment(EnvType.PLATFORM)
 public interface TestDescriptorVisitor {
 
     default boolean visitTestClass(@NotNull CanaryTestDescriptor test, @NotNull ClassSource source) {
