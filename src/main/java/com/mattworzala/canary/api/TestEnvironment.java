@@ -60,10 +60,5 @@ public interface TestEnvironment {
         return spawnEntity(constructor, position, null);
     }
 
-    default <T extends Entity> T spawnEntity(Supplier<T> constructor, Pos position, Consumer<T> config) {
-        T entity = constructor.get();
-        config.accept(entity);
-        entity.setInstance(getInstance(), position);
-        return entity;
-    }
+    <T extends Entity> T spawnEntity(Supplier<T> constructor, Pos position, Consumer<T> config);
 }

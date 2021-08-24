@@ -3,6 +3,7 @@ package com.mattworzala.canary.platform.junit.discovery;
 import com.mattworzala.canary.api.InWorldTest;
 import com.mattworzala.canary.api.TestEnvironment;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryEngineDescriptor;
+import com.mattworzala.canary.platform.util.ClassLoaders;
 import com.mattworzala.canary.platform.util.hint.EnvType;
 import com.mattworzala.canary.platform.util.hint.Environment;
 import org.junit.platform.commons.util.ClassFilter;
@@ -27,9 +28,11 @@ public class CanaryDiscoverer {
     public static final Predicate<Class<?>> IsPotentialTestClass = candidate -> isPublic(candidate) && !isAbstract(candidate) && isMethodPresent(candidate, method -> method.getAnnotation(InWorldTest.class) != null);
     public static final Predicate<Class<?>> IsPotentialTLTestClass = candidate -> IsPotentialTestClass.test(candidate) && !isInnerClass(candidate);     // Top level classes must be top level
     public static final Predicate<Class<?>> IsPotentialITestClass = candidate -> IsPotentialTestClass.test(candidate) && isStatic(candidate);           // Inner classes must be static
-    // Ensure the method is not abstract, not static, and returns void. Other checks will be made (such as getting the `InWorldTest` annotation, however this is a prelim screening.
+
+    // Ensure the method is not abstract, not static, and returns void. Other checks will be made (such as getting the `InWorldTest` annotation, however this is a prelim screening).
+    private static final Class<?> testEnvironmentClass = ClassLoaders.loadClassRequired(ClassLoaders.MINESTOM, TestEnvironment.class);
     public static final Predicate<Method> IsPotentialTestMethod = candidate -> !isAbstract(candidate) && !isStatic(candidate) && returnsVoid(candidate) &&
-            (hasNoParameters(candidate) || hasParameterTypes(candidate, TestEnvironment.class));
+            (hasNoParameters(candidate) || hasParameterTypes(candidate, testEnvironmentClass));
 
     private static final EngineDiscoveryRequestResolver<TestDescriptor> resolver = EngineDiscoveryRequestResolver.builder()
             .addClassContainerSelectorResolver(IsPotentialTLTestClass)

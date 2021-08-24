@@ -1,5 +1,6 @@
 package com.mattworzala.canary.platform.givemeahome;
 
+import com.mattworzala.canary.platform.reflect.PHeadlessServer;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.engine.TestDescriptor;
@@ -16,6 +17,11 @@ public class SandboxTestExecutor {
     // There must be a better way of handing this
     private Stack<Object> instances = new Stack<>();
 
+    private final PHeadlessServer server;
+
+    public SandboxTestExecutor(PHeadlessServer server) {
+        this.server = server;
+    }
 
     public void execute(TestDescriptor test) {
 
@@ -40,10 +46,22 @@ public class SandboxTestExecutor {
         }
         if (source instanceof MethodSource methodSource) {
             var target = methodSource.getJavaMethod();
+
+            // Create test environment
+            var environment = server.createEnvironment();
+
             try {
                 assert !instances.isEmpty();
                 var instance = instances.peek();
-                target.invoke(instance);
+
+                // Invoke test method with/without environment depending on method definition
+                if (target.getParameterCount() == 1)
+                    target.invoke(instance, environment);
+                else target.invoke(instance);
+
+                // Loop on environment to test conditions
+                //todo
+
             } catch (InvocationTargetException possibleAssertionError) {
                 // AssertionError is masked here
                 var cause = possibleAssertionError.getCause();

@@ -13,6 +13,7 @@ public class SandboxLauncher {
         SandboxTestEnvironment.getInstance().discover();
 
         server.start();
+        SandboxTestEnvironment.getInstance().setServer(server); //todo handle this somewhere better
         // Stopped by other means
     }
 }

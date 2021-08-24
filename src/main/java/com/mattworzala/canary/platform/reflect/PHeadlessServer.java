@@ -39,4 +39,12 @@ public class PHeadlessServer {
         invokeMethod(stop, headlessServer);
     }
     // @formatter:on
+
+    // @formatter:off
+    private static final Method createEnvironment = getRequiredMethod(headlessServerClass, "createEnvironment");
+    public Object createEnvironment() {
+        return invokeMethod(createEnvironment, headlessServer);
+    }
+    // @formatter:on
+
 }

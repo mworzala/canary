@@ -1,5 +1,6 @@
 package com.mattworzala.canary.platform.junit;
 
+import com.mattworzala.canary.platform.givemeahome.SandboxTestEnvironment;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryEngineDescriptor;
 import com.mattworzala.canary.platform.junit.discovery.CanaryDiscoverer;
 import com.mattworzala.canary.platform.junit.execution.CanaryTestExecutorOld;
@@ -83,6 +84,7 @@ public class CanaryTestEngine implements TestEngine {
 
         // Start headless server
         server.start();
+        SandboxTestEnvironment.getInstance().setServer(server);
 
         // Execute all given tests
         EngineExecutionListener listener = request.getEngineExecutionListener();
