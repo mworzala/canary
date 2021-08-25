@@ -20,14 +20,13 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class TestEnvironmentImpl implements TestEnvironment {
     private final Instance testInstance;
 
-    private List<AssertionImpl> assertions = new ArrayList<>();
-    private List<Object> assertionInput = new ArrayList<>();
+    private final List<AssertionImpl> assertions = new ArrayList<>();
+    private final List<Object> assertionInput = new ArrayList<>();
 
     public TestEnvironmentImpl(Instance testInstance) {
         this.testInstance = testInstance;
@@ -79,13 +78,16 @@ public class TestEnvironmentImpl implements TestEnvironment {
             final var input = assertionInput.get(i);
 
             node.addListener(EventListener.builder(InstanceTickEvent.class)
-                    .expireCount(100)
+                    .expireWhen(event -> assertion.hasDefinitiveResult())
                     .handler((event) -> {
                         System.out.println("INSTANCE TICK EVENT");
                         var result = assertion.apply(input);
                         switch (result) {
                             case PASS -> System.out.println("test " + index + " passed");
-                            case FAIL -> System.out.println("test " + index + " failed");
+                            case FAIL -> {
+                                System.out.println("test " + index + " failed");
+                                throw new AssertionError("this is the error msg");
+                            }
                             case NO_RESULT -> System.out.println("test " + index + " had no result");
                         }
                     }).build());
