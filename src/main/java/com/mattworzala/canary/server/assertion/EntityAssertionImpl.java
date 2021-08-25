@@ -9,6 +9,10 @@ import java.util.function.Supplier;
 
 public class EntityAssertionImpl<T extends Entity, A extends EntityAssertionImpl<T, A>> extends AssertionImpl<T, A> {
 
+    public EntityAssertionImpl(T input) {
+        super(input);
+    }
+
     @NotNull
     @Contract(value = "_ -> this", mutates = "this")
     public A toBeAt(@NotNull Point position) {
@@ -21,6 +25,7 @@ public class EntityAssertionImpl<T extends Entity, A extends EntityAssertionImpl
                 p1.blockY() == p2.blockY() &&
                 p1.blockZ() == p2.blockZ();
     }
+
     @NotNull
     public A toBeAt(@NotNull Supplier<@NotNull Point> pointSupplier) {
         this.assertionTest = (T entity) -> sameBlock(entity.getPosition(), pointSupplier.get());

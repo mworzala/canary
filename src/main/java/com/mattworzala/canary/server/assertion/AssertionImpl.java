@@ -1,23 +1,28 @@
 package com.mattworzala.canary.server.assertion;
 
-import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
-public class AssertionImpl<T, This extends AssertionImpl<T, This>> implements Function<T, AssertionResult>{
+public class AssertionImpl<T, This extends AssertionImpl<T, This>> implements Supplier<AssertionResult> {
 
-    protected Function<T, T> inputModifier = (T t) -> (T) t;
+
     protected Predicate<T> assertionTest = (T) -> true;
     protected boolean negate = false;
     protected final int DEFAULT_LIFESPAN = 100;
     protected int lifespan = DEFAULT_LIFESPAN;
     protected boolean reachedDefinitiveResult = false;
 
+    private final T input;
+
+    public AssertionImpl(T input) {
+        this.input = input;
+    }
+
     @Override
-    public AssertionResult apply(T input) {
+    public AssertionResult get() {
         lifespan--;
 
-        var modifiedInput = inputModifier.apply(input);
-        boolean assertion = assertionTest.test(modifiedInput);
+        boolean assertion = assertionTest.test(this.input);
 
         if (!negate) {
             if (assertion) {
@@ -26,8 +31,7 @@ public class AssertionImpl<T, This extends AssertionImpl<T, This>> implements Fu
                 reachedDefinitiveResult = true;
                 return AssertionResult.PASS;
             }
-        }
-        else {
+        } else {
             if (assertion) {
                 // if we are negating, and the test passes, we fail
                 reachedDefinitiveResult = true;
@@ -65,9 +69,6 @@ public class AssertionImpl<T, This extends AssertionImpl<T, This>> implements Fu
         return (This) this;
     }
 
-//    public A not() {
-//        return (A) this;
-//    }
 
     public This and() {
         return (This) this;

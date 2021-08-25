@@ -3,7 +3,6 @@ package com.mattworzala.canary.server.env;
 import com.mattworzala.canary.api.Assertion;
 import com.mattworzala.canary.api.TestEnvironment;
 import com.mattworzala.canary.server.assertion.AssertionImpl;
-import com.mattworzala.canary.server.assertion.AssertionResult;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
@@ -25,8 +24,7 @@ import java.util.function.Supplier;
 public class TestEnvironmentImpl implements TestEnvironment {
     private final Instance testInstance;
 
-    private final List<AssertionImpl> assertions = new ArrayList<>();
-    private final List<Object> assertionInput = new ArrayList<>();
+    private final List<AssertionImpl<?, ?>> assertions = new ArrayList<>();
 
     public TestEnvironmentImpl(Instance testInstance) {
         this.testInstance = testInstance;
@@ -43,27 +41,24 @@ public class TestEnvironmentImpl implements TestEnvironment {
 
     @Override
     public <T extends Entity> Assertion.EntityAssertion<T> expect(T actual) {
-        Assertion.EntityAssertion<T> assertion = new Assertion.EntityAssertion<>();
+        Assertion.EntityAssertion<T> assertion = new Assertion.EntityAssertion<>(actual);
         assertions.add(assertion);
-        assertionInput.add(actual);
 
         return assertion;
     }
 
     @Override
     public <T extends LivingEntity> Assertion.LivingEntityAssertion<T> expect(T actual) {
-        Assertion.LivingEntityAssertion<T> assertion = new Assertion.LivingEntityAssertion<>();
+        Assertion.LivingEntityAssertion<T> assertion = new Assertion.LivingEntityAssertion<>(actual);
         assertions.add(assertion);
-        assertionInput.add(actual);
 
         return assertion;
     }
 
     @Override
     public <T> Assertion<T> expect(T actual) {
-        Assertion<T> assertion = new Assertion<T>();
+        Assertion<T> assertion = new Assertion<T>(actual);
         assertions.add(assertion);
-        assertionInput.add(actual);
 
         return assertion;
     }
@@ -72,21 +67,20 @@ public class TestEnvironmentImpl implements TestEnvironment {
         System.out.println("STARTING TESTING, there are " + assertions.size() + " assertions");
         EventNode<Event> node = EventNode.all("assertions");
         var handler = MinecraftServer.getGlobalEventHandler();
-        for(var i = 0; i < assertions.size(); i++) {
+        for (var i = 0; i < assertions.size(); i++) {
             final int index = i;
             final var assertion = assertions.get(i);
-            final var input = assertionInput.get(i);
 
             node.addListener(EventListener.builder(InstanceTickEvent.class)
                     .expireWhen(event -> assertion.hasDefinitiveResult())
                     .handler((event) -> {
                         System.out.println("INSTANCE TICK EVENT");
-                        var result = assertion.apply(input);
+                        var result = assertion.get();
                         switch (result) {
                             case PASS -> System.out.println("test " + index + " passed");
                             case FAIL -> {
                                 System.out.println("test " + index + " failed");
-                                throw new AssertionError("this is the error msg");
+//                                throw new AssertionError("this is the error msg");
                             }
                             case NO_RESULT -> System.out.println("test " + index + " had no result");
                         }
