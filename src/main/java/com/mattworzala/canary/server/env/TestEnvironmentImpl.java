@@ -62,7 +62,7 @@ public class TestEnvironmentImpl implements TestEnvironment {
 
     @Override
     public <T> Assertion<T> expect(T actual) {
-        Assertion assertion = new Assertion();
+        Assertion<T> assertion = new Assertion<T>();
         assertions.add(assertion);
         assertionInput.add(actual);
 

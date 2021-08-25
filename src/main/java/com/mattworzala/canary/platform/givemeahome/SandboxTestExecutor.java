@@ -1,6 +1,5 @@
 package com.mattworzala.canary.platform.givemeahome;
 
-import com.mattworzala.canary.api.TestEnvironment;
 import com.mattworzala.canary.platform.reflect.PHeadlessServer;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
@@ -57,19 +56,9 @@ public class SandboxTestExecutor {
 
                 // Invoke test method with/without environment depending on method definition
                 if (target.getParameterCount() == 1) {
-                    target.invoke(instance, environment);
-                    Class env = environment.getClass();
-                    try {
-                        var startTesting = env.getDeclaredMethod("startTesting");
-                        startTesting.invoke(environment);
-                    } catch (NoSuchMethodException e) {
-                        e.printStackTrace();
-                    }
-
-
-//                    env.startTesting();
-                }
-                else target.invoke(instance);
+                    target.invoke(instance, environment.instance());
+                    environment.startTesting();
+                } else target.invoke(instance);
 
                 // Loop on environment to test conditions
                 //todo

@@ -1,5 +1,7 @@
 package com.mattworzala.canary.platform.reflect;
 
+import com.mattworzala.canary.platform.util.hint.EnvType;
+import com.mattworzala.canary.platform.util.hint.Environment;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Constructor;
@@ -10,6 +12,7 @@ import static com.mattworzala.canary.platform.util.ClassLoaders.loadClassRequire
 import static com.mattworzala.canary.platform.util.ReflectionUtils.invokeConstructor;
 import static org.junit.platform.commons.util.ReflectionUtils.*;
 
+@Environment(EnvType.PLATFORM)
 public class PHeadlessServer {
     private static final Class<?> headlessServerClass = loadClassRequired(MINESTOM, "com.mattworzala.canary.server.HeadlessServer");
 
@@ -22,7 +25,7 @@ public class PHeadlessServer {
 
     private final Object headlessServer;
 
-    public PHeadlessServer(Object headlessServer) {
+    protected PHeadlessServer(Object headlessServer) {
         this.headlessServer = headlessServer;
     }
 
@@ -42,8 +45,9 @@ public class PHeadlessServer {
 
     // @formatter:off
     private static final Method createEnvironment = getRequiredMethod(headlessServerClass, "createEnvironment");
-    public Object createEnvironment() {
-        return invokeMethod(createEnvironment, headlessServer);
+    public PTestEnvironment createEnvironment() {
+        Object testEnvironment = invokeMethod(createEnvironment, headlessServer);
+        return new PTestEnvironment(testEnvironment);
     }
     // @formatter:on
 
