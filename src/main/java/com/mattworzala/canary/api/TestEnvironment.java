@@ -49,6 +49,7 @@ public interface TestEnvironment {
 
     <T> Assertion<T> expect(T actual);
 
+    void startTesting();
 
     // Instance manipulation utilities
 

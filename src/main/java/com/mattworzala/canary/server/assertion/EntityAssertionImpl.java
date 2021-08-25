@@ -12,12 +12,18 @@ public class EntityAssertionImpl<T extends Entity, A extends EntityAssertionImpl
     @NotNull
     @Contract(value = "_ -> this", mutates = "this")
     public A toBeAt(@NotNull Point position) {
-        //todo
+        this.assertionTest = (T entity) -> sameBlock(entity.getPosition(), position);
         return (A) this;
     }
 
+    public Boolean sameBlock(Point p1, Point p2) {
+        return p1.blockX() == p2.blockX() &&
+                p1.blockY() == p2.blockY() &&
+                p1.blockZ() == p2.blockZ();
+    }
     @NotNull
     public A toBeAt(@NotNull Supplier<@NotNull Point> pointSupplier) {
+        this.assertionTest = (T entity) -> sameBlock(entity.getPosition(), pointSupplier.get());
         return (A) this;
     }
 

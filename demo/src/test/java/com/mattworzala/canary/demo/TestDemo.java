@@ -16,7 +16,7 @@ public class TestDemo {
 
     @InWorldTest
     public void aMinestomTest() {
-        assertEquals(1, 1);
+        assertEquals(1, 2);
 
         var instance = MinecraftServer.getInstanceManager().getInstances().stream().findAny().get();
         assertEquals(Block.AIR, instance.getBlock(0, 100, 0));
