@@ -14,6 +14,7 @@ import net.minestom.server.entity.Player;
 import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.event.player.PlayerLoginEvent;
 import net.minestom.server.event.player.PlayerSpawnEvent;
+import net.minestom.server.extras.MojangAuth;
 import net.minestom.server.extras.PlacementRules;
 import net.minestom.server.extras.optifine.OptifineSupport;
 
@@ -29,6 +30,7 @@ public class SandboxServer extends HeadlessServer {
         // Util options
         OptifineSupport.enable();
         PlacementRules.init();
+        MojangAuth.init();
 
         // Add an event callback to specify the spawning instance (and the spawn position)
         GlobalEventHandler globalEventHandler = MinecraftServer.getGlobalEventHandler();

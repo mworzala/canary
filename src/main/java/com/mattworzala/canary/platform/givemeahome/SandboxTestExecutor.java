@@ -1,6 +1,8 @@
 package com.mattworzala.canary.platform.givemeahome;
 
 import com.mattworzala.canary.platform.reflect.PHeadlessServer;
+import com.mattworzala.canary.platform.util.hint.EnvType;
+import com.mattworzala.canary.platform.util.hint.Environment;
 import com.mattworzala.canary.server.assertion.AssertionResult;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
@@ -12,6 +14,7 @@ import org.junit.platform.engine.support.descriptor.MethodSource;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Stack;
 
+@Environment(EnvType.PLATFORM)
 public class SandboxTestExecutor {
     private static final Logger logger = LoggerFactory.getLogger(SandboxTestExecutor.class);
 

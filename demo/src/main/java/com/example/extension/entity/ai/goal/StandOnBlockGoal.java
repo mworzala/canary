@@ -49,6 +49,8 @@ public class StandOnBlockGoal extends GoalSelector {
             }
         }
 
+
+
     }
 
     @Override
@@ -64,7 +66,7 @@ public class StandOnBlockGoal extends GoalSelector {
         final var posUnder = entityCreature.getPosition().withY(y -> y - 1);
         final var underEntity = instance.getBlock(posUnder);
 
-        return targetBlock.compare(underEntity);
+        return targetBlock.compare(underEntity) || entityCreature.getNavigator().getPath() == null;
     }
 
     @Override
