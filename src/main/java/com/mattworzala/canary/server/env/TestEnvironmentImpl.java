@@ -3,6 +3,7 @@ package com.mattworzala.canary.server.env;
 import com.mattworzala.canary.api.Assertion;
 import com.mattworzala.canary.api.TestEnvironment;
 import com.mattworzala.canary.server.assertion.AssertionImpl;
+import com.mattworzala.canary.server.assertion.AssertionResult;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
@@ -18,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -57,36 +59,81 @@ public class TestEnvironmentImpl implements TestEnvironment {
 
     @Override
     public <T> Assertion<T> expect(T actual) {
-        Assertion<T> assertion = new Assertion<T>(actual);
+        Assertion<T> assertion = new Assertion<>(actual);
         assertions.add(assertion);
 
         return assertion;
     }
 
-    public void startTesting() {
+    public AssertionResult tick() {
+        System.out.println("IN TEST ENVIRONMENT TICK");
+        boolean failed = false;
+        boolean allPassed = true;
+        for (var assertion : assertions) {
+            var result = assertion.get();
+            switch (result) {
+                case FAIL -> {
+                    failed = true;
+                    allPassed = false;
+                }
+                case NO_RESULT -> allPassed = false;
+            }
+        }
+        // if any test failed, return failed
+        if (failed) {
+            return AssertionResult.FAIL;
+        }
+        // if all tests passed, return pass
+        if (allPassed) {
+            return AssertionResult.PASS;
+        }
+        // if not all the tests have finished, and nothing has failed, return no result
+        return AssertionResult.NO_RESULT;
+    }
+
+    public AssertionResult startTesting() {
         System.out.println("STARTING TESTING, there are " + assertions.size() + " assertions");
         EventNode<Event> node = EventNode.all("assertions");
         var handler = MinecraftServer.getGlobalEventHandler();
-        for (var i = 0; i < assertions.size(); i++) {
-            final int index = i;
-            final var assertion = assertions.get(i);
-
+        CountDownLatch assertionsFinished = new CountDownLatch(assertions.size());
+        for (final AssertionImpl<?, ? extends AssertionImpl<?, ?>> assertion : assertions) {
             node.addListener(EventListener.builder(InstanceTickEvent.class)
-                    .expireWhen(event -> assertion.hasDefinitiveResult())
-                    .handler((event) -> {
-                        System.out.println("INSTANCE TICK EVENT");
-                        var result = assertion.get();
-                        switch (result) {
-                            case PASS -> System.out.println("test " + index + " passed");
-                            case FAIL -> {
-                                System.out.println("test " + index + " failed");
-//                                throw new AssertionError("this is the error msg");
-                            }
-                            case NO_RESULT -> System.out.println("test " + index + " had no result");
+                    .expireWhen(event -> {
+                        if (assertion.get() != AssertionResult.NO_RESULT) {
+//                            System.out.println("THING FINISHED");
+                            assertionsFinished.countDown();
+                            return true;
                         }
+                        return false;
+                    })
+                    .handler((event) -> {
+
                     }).build());
+            handler.addChild(node);
         }
-        handler.addChild(node);
+
+        try {
+            assertionsFinished.await();
+//            System.out.println("All assertions finished");
+            boolean failed = false;
+            for (var assertion : assertions) {
+                var result = assertion.get();
+                if (result == AssertionResult.FAIL) {
+                    failed = true;
+                }
+            }
+            // if any test failed, return failed
+            if (failed) {
+//                System.out.println("TEST FAILED");
+                return AssertionResult.FAIL;
+            } else {
+//                System.out.println("TEST PASSED");
+                return AssertionResult.PASS;
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return AssertionResult.FAIL;
     }
     /*
      * Structure Variables

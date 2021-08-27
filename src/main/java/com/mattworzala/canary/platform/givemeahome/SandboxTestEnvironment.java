@@ -104,11 +104,11 @@ public class SandboxTestEnvironment {
     }
 
     public void executeAll() {
-        SandboxTestExecutor executor = new SandboxTestExecutor(server);
+        new Thread(() -> {
+            SandboxTestExecutor executor = new SandboxTestExecutor(server);
 
-        executor.execute(getRoot());
-
-
+            executor.execute(getRoot());
+        }).start();
     }
 
 

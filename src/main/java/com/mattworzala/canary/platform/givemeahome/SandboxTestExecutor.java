@@ -1,6 +1,7 @@
 package com.mattworzala.canary.platform.givemeahome;
 
 import com.mattworzala.canary.platform.reflect.PHeadlessServer;
+import com.mattworzala.canary.server.assertion.AssertionResult;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.engine.TestDescriptor;
@@ -57,7 +58,14 @@ public class SandboxTestExecutor {
                 // Invoke test method with/without environment depending on method definition
                 if (target.getParameterCount() == 1) {
                     target.invoke(instance, environment.instance());
-                    environment.startTesting();
+                    var result = environment.startTesting().ordinal();
+                    if (result == AssertionResult.FAIL.ordinal()) {
+                        System.out.println("Test failed: " + test.getUniqueId());
+                    } else if (result == AssertionResult.PASS.ordinal()) {
+                        System.out.println("Test passed: " + test.getUniqueId());
+                    } else {
+                        System.out.println("TEST RESULT UNKNOWN: " + test.getUniqueId());
+                    }
                 } else target.invoke(instance);
 
                 // Loop on environment to test conditions

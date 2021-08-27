@@ -11,6 +11,7 @@ public class AssertionImpl<T, This extends AssertionImpl<T, This>> implements Su
     protected final int DEFAULT_LIFESPAN = 100;
     protected int lifespan = DEFAULT_LIFESPAN;
     protected boolean reachedDefinitiveResult = false;
+    protected AssertionResult finalResult = null;
 
     private final T input;
 
@@ -20,6 +21,10 @@ public class AssertionImpl<T, This extends AssertionImpl<T, This>> implements Su
 
     @Override
     public AssertionResult get() {
+        if (finalResult != null) {
+            return finalResult;
+        }
+
         lifespan--;
 
         boolean assertion = assertionTest.test(this.input);
@@ -29,12 +34,14 @@ public class AssertionImpl<T, This extends AssertionImpl<T, This>> implements Su
                 // if we aren't negating, and the assertion is true
                 // then the test passes
                 reachedDefinitiveResult = true;
+                finalResult = AssertionResult.PASS;
                 return AssertionResult.PASS;
             }
         } else {
             if (assertion) {
                 // if we are negating, and the test passes, we fail
                 reachedDefinitiveResult = true;
+                finalResult = AssertionResult.FAIL;
                 return AssertionResult.FAIL;
             }
         }
@@ -43,7 +50,8 @@ public class AssertionImpl<T, This extends AssertionImpl<T, This>> implements Su
             return AssertionResult.NO_RESULT;
         }
         reachedDefinitiveResult = true;
-        return getEndResult();
+        finalResult = getEndResult();
+        return finalResult;
     }
 
     public AssertionResult getEndResult() {
