@@ -28,6 +28,14 @@ public class HeadlessServer {
         InstanceManager instanceManager = MinecraftServer.getInstanceManager();
         InstanceContainer instance = instanceManager.createInstanceContainer();
         instance.setChunkGenerator(new BasicGenerator());
+
+        //todo this isnt great, TestInstance should handle this
+        System.out.println("Force loading spawn chunks");
+        for (int x = -10; x <= 10; x++) {
+            for (int z = -10; z <= 10; z++) {
+                instance.loadChunk(x, z);
+            }
+        }
     }
 
     public void stop() {

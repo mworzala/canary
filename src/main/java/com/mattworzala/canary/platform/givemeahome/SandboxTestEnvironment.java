@@ -4,6 +4,7 @@ import com.mattworzala.canary.platform.junit.CanaryTestEngine;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryEngineDescriptor;
 import com.mattworzala.canary.platform.reflect.PHeadlessServer;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.UniqueId;
@@ -105,7 +106,22 @@ public class SandboxTestEnvironment {
 
     public void executeAll() {
         new Thread(() -> {
-            SandboxTestExecutor executor = new SandboxTestExecutor(server);
+            SandboxTestExecutor executor = new SandboxTestExecutor(server, new TestExecutionListener() {
+                @Override
+                public void start(@NotNull TestDescriptor descriptor) {
+                    System.out.println("!! Test started: " + descriptor.getUniqueId());
+                }
+
+                @Override
+                public void end(@NotNull TestDescriptor descriptor, @Nullable Throwable failure) {
+                    if (failure == null) {
+                        System.out.println("!! Test passed: " + descriptor.getUniqueId());
+                    } else {
+                        System.out.println("!! Test failed: " + descriptor.getUniqueId());
+                        System.out.println("\t" + failure.getMessage());
+                    }
+                }
+            });
 
             executor.execute(getRoot());
         }).start();

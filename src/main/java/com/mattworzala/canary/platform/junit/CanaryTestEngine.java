@@ -1,9 +1,10 @@
 package com.mattworzala.canary.platform.junit;
 
 import com.mattworzala.canary.platform.givemeahome.SandboxTestEnvironment;
+import com.mattworzala.canary.platform.givemeahome.SandboxTestExecutor;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryEngineDescriptor;
 import com.mattworzala.canary.platform.junit.discovery.CanaryDiscoverer;
-import com.mattworzala.canary.platform.junit.execution.CanaryTestExecutorOld;
+import com.mattworzala.canary.platform.junit.execution.JUnitTestExecutionListenerAdapter;
 import com.mattworzala.canary.platform.reflect.PHeadlessServer;
 import com.mattworzala.canary.platform.util.MinestomMixin;
 import com.mattworzala.canary.platform.util.hint.EnvType;
@@ -98,10 +99,11 @@ public class CanaryTestEngine implements TestEngine {
     }
 
     private void executeAllChildren(CanaryEngineDescriptor engineDescriptor, EngineExecutionListener listener) {
-        CanaryTestExecutorOld runner = new CanaryTestExecutorOld(listener);
+        var listenerAdapter = new JUnitTestExecutionListenerAdapter(listener);
+        var executor = new SandboxTestExecutor(server, listenerAdapter);
         Iterator<TestDescriptor> iterator = engineDescriptor.getChildrenMutable().iterator();
         while (iterator.hasNext()) {
-            runner.execute(iterator.next());
+            executor.execute(iterator.next());
             iterator.remove();
         }
     }

@@ -22,9 +22,11 @@ public class SandboxTestExecutor {
     private Stack<Object> instances = new Stack<>();
 
     private final PHeadlessServer server;
+    private final TestExecutionListener listener;
 
-    public SandboxTestExecutor(PHeadlessServer server) {
+    public SandboxTestExecutor(PHeadlessServer server, TestExecutionListener listener) {
         this.server = server;
+        this.listener = listener;
     }
 
     public void execute(TestDescriptor test) {
@@ -32,6 +34,7 @@ public class SandboxTestExecutor {
 
         //todo this should handle any CanaryTestDescriptor or CanaryEngineDescriptor
 //        logger.info(() -> test.getUniqueId().toString());
+        listener.start(test);
 
         // Execute test
         TestSource source = test.getSource().orElse(null);
@@ -45,6 +48,7 @@ public class SandboxTestExecutor {
             } catch (InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
                 //todo better handing of these exceptions, also there may be cases where we are happy to provide arguments to a constructor
                 var wrapped = new RuntimeException("Cannot execute test class " + classSource.getClassName() + ":", e);
+                listener.end(test, wrapped);
                 return;
             }
         }
@@ -61,14 +65,18 @@ public class SandboxTestExecutor {
                 // Invoke test method with/without environment depending on method definition
                 if (target.getParameterCount() == 1) {
                     target.invoke(instance, environment.instance());
-                    var result = environment.startTesting().ordinal();
+                    var result = environment.startTesting().ordinal(); // BLOCKING
                     if (result == AssertionResult.FAIL.ordinal()) {
+                        listener.end(test, new AssertionError("Condition failed."));
                         System.out.println("Test failed: " + test.getUniqueId());
                     } else if (result == AssertionResult.PASS.ordinal()) {
+                        listener.end(test);
                         System.out.println("Test passed: " + test.getUniqueId());
                     } else {
+                        listener.end(test, new AssertionError("Condition unknown."));
                         System.out.println("TEST RESULT UNKNOWN: " + test.getUniqueId());
                     }
+                    return;
                 } else target.invoke(instance);
 
                 // Loop on environment to test conditions
@@ -77,16 +85,18 @@ public class SandboxTestExecutor {
             } catch (InvocationTargetException possibleAssertionError) {
                 // AssertionError is masked here
                 var cause = possibleAssertionError.getCause();
-                if (cause instanceof AssertionError assertionError)
+                if (cause instanceof AssertionError assertionError) {
+                    listener.end(test, assertionError);
                     System.out.println("Test failed: " + assertionError.getMessage());
-                else {
+                } else {
                     var wrapped = new RuntimeException("Cannot execute test method " + methodSource.getMethodName() + ":", possibleAssertionError);
-                    throw wrapped;
+                    listener.end(test, wrapped);
+//                    throw wrapped;
                 }
                 return;
             } catch (IllegalAccessException e) {
                 var wrapped = new RuntimeException("Cannot execute test method " + methodSource.getMethodName() + ":", e);
-                throw wrapped;
+                listener.end(test, wrapped);
             }
         }
 
@@ -100,6 +110,6 @@ public class SandboxTestExecutor {
             instances.pop();
         }
 
-        System.out.println("TEST SUCCESSFUL " + test.getUniqueId());
+        listener.end(test);
     }
 }
