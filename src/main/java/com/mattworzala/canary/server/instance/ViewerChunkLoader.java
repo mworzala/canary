@@ -22,7 +22,7 @@ public class ViewerChunkLoader implements IChunkLoader {
         if (instance != null) {
             //todo we do not want to return null if the test instance doesnt have this chunk loaded
             var chunk = instance.loadChunk(chunkX, chunkZ).join();
-            cf.complete(chunk);
+            cf.complete(new ChunkMirror(viewerInstance, chunk));
             System.out.println("Loaded (" + chunkX + ", " + chunkZ + ") from " + instance);
         } else {
             cf.complete(null);
