@@ -4,14 +4,17 @@ import com.mattworzala.canary.api.TestEnvironment;
 import com.mattworzala.canary.platform.util.hint.EnvType;
 import com.mattworzala.canary.platform.util.hint.Environment;
 import com.mattworzala.canary.server.env.TestEnvironmentImpl;
-import com.mattworzala.canary.server.instance.BasicGenerator;
+import com.mattworzala.canary.server.instance.ViewerInstance;
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.instance.InstanceContainer;
+import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceManager;
 
 @Environment(EnvType.MINESTOM)
 public class HeadlessServer {
+    protected Instance instance;
+
     public void start() {
+
 //        MinecraftServer.getExtensionManager().loadDynamicExtension()
         //todo find a better way to do this (see issue #3)
 //        System.setProperty("minestom.extension.indevfolder.classes", "classes/java/main/");
@@ -26,16 +29,19 @@ public class HeadlessServer {
     public void initServer() {
         // Create spawning instance
         InstanceManager instanceManager = MinecraftServer.getInstanceManager();
-        InstanceContainer instance = instanceManager.createInstanceContainer();
-        instance.setChunkGenerator(new BasicGenerator());
+//        InstanceContainer instance = instanceManager.createInstanceContainer();
+//        instance.setChunkGenerator(new BasicGenerator());
+
+        instance = new ViewerInstance();
+        instanceManager.registerInstance(instance);
 
         //todo this isnt great, TestInstance should handle this
-        System.out.println("Force loading spawn chunks");
-        for (int x = -10; x <= 10; x++) {
-            for (int z = -10; z <= 10; z++) {
-                instance.loadChunk(x, z);
-            }
-        }
+//        System.out.println("Force loading spawn chunks");
+//        for (int x = -10; x <= 10; x++) {
+//            for (int z = -10; z <= 10; z++) {
+//                instance.loadChunk(x, z);
+//            }
+//        }
     }
 
     public void stop() {
