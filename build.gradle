@@ -7,16 +7,12 @@ version '0.1'
 
 repositories {
     mavenCentral()
-
-    maven { url 'https://repo.spongepowered.org/maven' }
-    maven { url 'https://repo.velocitypowered.com/snapshots/' }
-    maven { url 'https://libraries.minecraft.net' }
     maven { url 'https://jitpack.io' }
-    maven { url 'https://repo.minestom.net/repository/maven-public/' }
+    maven { url 'https://repo.spongepowered.org/maven' }
 }
 
 dependencies {
-    implementation 'com.github.Minestom:Minestom:bc4eba68aa'
+    implementation "com.github.${rootProject.minestomVariant}:Minestom:${rootProject.minestomVersion}"
 
     implementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
     implementation 'org.junit.jupiter:junit-jupiter-engine:5.7.2'

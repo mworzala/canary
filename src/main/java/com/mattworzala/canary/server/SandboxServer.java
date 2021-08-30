@@ -2,10 +2,7 @@ package com.mattworzala.canary.server;
 
 import com.mattworzala.canary.platform.util.hint.EnvType;
 import com.mattworzala.canary.platform.util.hint.Environment;
-import com.mattworzala.canary.server.command.CanaryCommand;
-import com.mattworzala.canary.server.command.StatusCommand;
-import com.mattworzala.canary.server.command.TestCommand;
-import com.mattworzala.canary.server.command.TestsCommand;
+import com.mattworzala.canary.server.command.*;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.CommandManager;
 import net.minestom.server.coordinate.Pos;
@@ -25,7 +22,6 @@ public class SandboxServer extends HeadlessServer {
     public void initServer() {
         super.initServer();
 
-        var instance = MinecraftServer.getInstanceManager().getInstances().stream().findFirst().orElse(null);
 
         // Util options
         OptifineSupport.enable();
@@ -56,5 +52,6 @@ public class SandboxServer extends HeadlessServer {
 
         commands.register(new CanaryCommand());
         commands.register(new TestCommand());
+        commands.register(new InstanceCommand());
     }
 }
