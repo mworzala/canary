@@ -57,7 +57,7 @@ public class SandboxServer extends HeadlessServer {
             final Player player = event.getPlayer();
             var instance = MinecraftServer.getInstanceManager().createInstanceContainer();
             instance.setChunkGenerator(new BasicGenerator());
-            event.setSpawningInstance(instance);
+            event.setSpawningInstance(coordinator.getSandboxViewer());
             player.setRespawnPoint(new Pos(0, 41, 0));
 
         });
