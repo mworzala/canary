@@ -64,6 +64,8 @@ public class SandboxTestExecutor {
 
                 // Invoke test method with/without environment depending on method definition
                 if (target.getParameterCount() == 1) {
+//                    ClassLoader.getRe
+//                    environment.loadWorldData(Paths.get("/home/awkinley/gitrepos/canary/demo/src/res/testWorld.json"), 0, 41, 0);
                     target.invoke(instance, environment.instance());
                     var result = environment.startTesting().ordinal(); // BLOCKING
                     if (result == AssertionResult.FAIL.ordinal()) {

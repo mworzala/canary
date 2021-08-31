@@ -11,6 +11,8 @@ import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -55,6 +57,8 @@ public interface TestEnvironment {
     AssertionResult startTesting();
 
     // Instance manipulation utilities
+
+    void loadWorldData(Path filePath, int originX, int originY, int originZ) throws IOException;
 
     default <T extends Entity> T spawnEntity(Supplier<T> constructor) {
         return spawnEntity(constructor, Pos.ZERO, null);

@@ -50,7 +50,6 @@ public class StandOnBlockGoal extends GoalSelector {
         }
 
 
-
     }
 
     @Override

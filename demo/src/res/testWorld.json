@@ -1,0 +1,13 @@
+{
+  "id": "my-test-world",
+  "size": [
+    16,
+    16,
+    16
+  ],
+  "blockmap": [
+    "minecraft:stone",
+    "minecraft:cobblestone_stairs"
+  ],
+  "blocks": "0,256;1,16;0,240;-1,3584"
+}

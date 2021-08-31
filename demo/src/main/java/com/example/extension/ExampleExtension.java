@@ -5,6 +5,7 @@ import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.event.player.PlayerBlockInteractEvent;
 import net.minestom.server.event.player.PlayerSpawnEvent;
+import net.minestom.server.event.player.PlayerSwapItemEvent;
 import net.minestom.server.extensions.Extension;
 import net.minestom.server.utils.binary.BinaryWriter;
 
@@ -32,12 +33,10 @@ public class ExampleExtension extends Extension {
             player.setPermissionLevel(4);
 
             var frequency = .3;
-            for (var i = 0; i < 12; ++i)
-            {
-                int red   = (int) (Math.sin(frequency*i + 0) * 127 + 128);
-                int green = (int) (Math.sin(frequency*i + 2) * 127 + 128);
-                int blue  = (int) (Math.sin(frequency*i + 4) * 127 + 128);
-
+            for (var i = 0; i < 12; ++i) {
+                int red = (int) (Math.sin(frequency * i + 0) * 127 + 128);
+                int green = (int) (Math.sin(frequency * i + 2) * 127 + 128);
+                int blue = (int) (Math.sin(frequency * i + 4) * 127 + 128);
 
 
                 BinaryWriter writer = new BinaryWriter();
@@ -50,6 +49,11 @@ public class ExampleExtension extends Extension {
                 player.sendPluginMessage("minecraft:debug/game_test_add_marker", writer.toByteArray());
             }
 
+        });
+
+        MinecraftServer.getGlobalEventHandler().addListener(PlayerSwapItemEvent.class, event -> {
+            System.out.println("Player swap item event");
+            System.out.println(event);
         });
     }
 

@@ -1,5 +1,9 @@
 package com.mattworzala.canary.server.env;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.mattworzala.canary.api.Assertion;
 import com.mattworzala.canary.api.TestEnvironment;
 import com.mattworzala.canary.server.assertion.AssertionImpl;
@@ -17,14 +21,21 @@ import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class TestEnvironmentImpl implements TestEnvironment {
     private final Instance testInstance;
+
+    record BlockDef(int blockId, int blockCount) {
+    }
+
 
     private final List<AssertionImpl<?, ?>> assertions = new ArrayList<>();
 
@@ -156,6 +167,87 @@ public class TestEnvironmentImpl implements TestEnvironment {
     @Override
     public <T> T run(String action, Object... args) {
         throw new RuntimeException("Custom environment actions are not currently supported.");
+    }
+
+    @Override
+    public void loadWorldData(Path filePath, int originX, int originY, int originZ) throws IOException {
+        Reader reader = Files.newBufferedReader(filePath);
+        JsonObject object = JsonParser.parseReader(reader).getAsJsonObject();
+        String id = object.get("id").getAsString();
+        var sizeList = new ArrayList<Integer>();
+        JsonArray sizeArr = object.get("size").getAsJsonArray();
+        for (JsonElement elem : sizeArr) {
+            sizeList.add(elem.getAsInt());
+        }
+        var blockmapArr = object.get("blockmap").getAsJsonArray();
+        // TODO : make Map<Int, Block>
+        var blockmaps = new ArrayList<Map<String, String>>();
+
+        // blocks are immutable, this should just generate block objects
+        for (JsonElement block : blockmapArr) {
+            if (block.isJsonObject()) {
+                var blockMap = new HashMap<String, String>();
+                JsonObject blockObj = block.getAsJsonObject();
+
+                blockMap.put("block", blockObj.get("block").getAsString());
+                blockMap.put("handler", blockObj.get("handler").getAsString());
+                blockMap.put("data", blockObj.get("data").getAsString());
+                blockmaps.add(blockMap);
+            } else {
+                var blockMap = new HashMap<String, String>();
+                blockMap.put("block", block.getAsString());
+                blockmaps.add(blockMap);
+            }
+        }
+        var blocks = object.get("blocks").getAsString();
+        int sizeX = sizeList.get(0);
+        int sizeY = sizeList.get(1);
+        int sizeZ = sizeList.get(2);
+        int totalBlocks = sizeX * sizeY * sizeZ;
+        var blockDefs = blocks.split(";");
+        var parsedBlockDefinitions = new ArrayList<BlockDef>(blockDefs.length);
+        for (String def : blockDefs) {
+            var nums = def.split(",");
+//            int[] defNums = {Integer.parseInt(nums[0]), Integer.parseInt(nums[1])};
+            var blockDef = new BlockDef(Integer.parseInt(nums[0]), Integer.parseInt(nums[1]));
+            parsedBlockDefinitions.add(blockDef);
+        }
+
+        var blockIdUnwrapped = new ArrayList<Integer>(totalBlocks);
+        int numBlocksDef = 0;
+        for (BlockDef def : parsedBlockDefinitions) {
+            numBlocksDef += def.blockCount;
+        }
+        System.out.println("total number of blocks defined is " + numBlocksDef);
+        if (numBlocksDef != totalBlocks) {
+            System.out.println(numBlocksDef + " blocks were defined, but the size is " + totalBlocks + " blocks");
+            return;
+        }
+
+        for (BlockDef def : parsedBlockDefinitions) {
+            for (int i = 0; i < def.blockCount; i++) {
+                blockIdUnwrapped.add(def.blockId);
+            }
+        }
+        System.out.println("unwrapped block ids:");
+        System.out.println(blockIdUnwrapped);
+        for (int y = 0; y < sizeY; y++) {
+            for (int z = 0; z < sizeZ; z++) {
+                for (int x = 0; x < sizeX; x++) {
+                    int blockId = blockIdUnwrapped.get(x + z * sizeX + y * sizeX * sizeZ);
+                    String blockName;
+                    if (blockId == -1) {
+                        blockName = "minecraft:air";
+                    } else {
+                        blockName = blockmaps.get(blockId).get("block");
+                    }
+                    getInstance().setBlock(originX + x, originY + y, originZ + z, Objects.requireNonNull(Block.fromNamespaceId(blockName)));
+                }
+            }
+        }
+//        var stone = Block.fromNamespaceId("minecraft:stone");
+//        getInstance().setBlock(0, 40, 0, stone);
+
     }
 
     @Override
