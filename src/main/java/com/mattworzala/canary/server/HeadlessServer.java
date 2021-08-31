@@ -35,6 +35,8 @@ public class HeadlessServer {
 //        instance = new ViewerInstance();
 //        instanceManager.registerInstance(instance);
 
+//        instance.setBlock(5, 41, 5, CanaryBlocks.BoundingBox(new Vec(48, 48, 48)));
+
         //todo this isnt great, TestInstance should handle this
         System.out.println("Force loading spawn chunks");
         for (int x = -12; x <= 12; x++) {
