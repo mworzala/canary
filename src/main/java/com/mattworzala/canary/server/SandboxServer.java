@@ -3,6 +3,7 @@ package com.mattworzala.canary.server;
 import com.mattworzala.canary.platform.util.hint.EnvType;
 import com.mattworzala.canary.platform.util.hint.Environment;
 import com.mattworzala.canary.server.command.*;
+import com.mattworzala.canary.server.givemeahome.SandboxTestCoordinator;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.CommandManager;
 import net.minestom.server.coordinate.Pos;
@@ -17,6 +18,7 @@ import net.minestom.server.extras.optifine.OptifineSupport;
 
 @Environment(EnvType.MINESTOM)
 public class SandboxServer extends HeadlessServer {
+    private final SandboxTestCoordinator coordinator = new SandboxTestCoordinator();
 
     @Override
     public void initServer() {
@@ -32,7 +34,7 @@ public class SandboxServer extends HeadlessServer {
         GlobalEventHandler globalEventHandler = MinecraftServer.getGlobalEventHandler();
         globalEventHandler.addEventCallback(PlayerLoginEvent.class, event -> {
             final Player player = event.getPlayer();
-            event.setSpawningInstance(instance);
+            event.setSpawningInstance(coordinator.getSandboxViewer());
             player.setRespawnPoint(new Pos(0, 41, 0));
         });
         globalEventHandler.addEventCallback(PlayerSpawnEvent.class, event -> {
