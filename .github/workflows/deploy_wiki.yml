@@ -16,6 +16,6 @@ jobs:
         uses: Andrew-Chen-Wang/github-wiki-action@v2
         env:
           WIKI_DIR: docs/
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT }}
           GH_MAIL: ${{ secrets.COMMIT_EMAIL }}
           GH_NAME: ${{ github.repository_owner }}
