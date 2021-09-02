@@ -10,7 +10,7 @@ Since the main goal of Minestom is to provide high levels of customizabiilty to 
 are expected to create write code for their desired behavior. We believe that this development process could be improved
 by having the ability to create tests that can be run against their custom server.
 
-For more information about how these tests work, checkout [here](???).
+For more information about how these tests work, checkout [here](Tests).
 
 ## What is Minestom?
 
