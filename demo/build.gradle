@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'com.mattworzala.canary' version '0.1'
 }
 
 group 'com.mattworzala.canary'
