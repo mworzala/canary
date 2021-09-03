@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mattworzala.canary.api.Assertion;
 import com.mattworzala.canary.api.TestEnvironment;
+import com.mattworzala.canary.platform.util.ClassLoaders;
 import com.mattworzala.canary.server.assertion.AssertionImpl;
 import com.mattworzala.canary.server.assertion.AssertionResult;
 import net.minestom.server.MinecraftServer;
@@ -21,10 +22,8 @@ import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
@@ -170,8 +169,8 @@ public class TestEnvironmentImpl implements TestEnvironment {
     }
 
     @Override
-    public void loadWorldData(Path filePath, int originX, int originY, int originZ) throws IOException {
-        Reader reader = Files.newBufferedReader(filePath);
+    public void loadWorldData(String fileName, int originX, int originY, int originZ) {
+        Reader reader = new InputStreamReader(Objects.requireNonNull(ClassLoaders.MINESTOM.getResourceAsStream(fileName)));
         JsonObject object = JsonParser.parseReader(reader).getAsJsonObject();
         String id = object.get("id").getAsString();
         var sizeList = new ArrayList<Integer>();

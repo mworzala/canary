@@ -5,7 +5,6 @@ import com.mattworzala.canary.platform.util.hint.Environment;
 import com.mattworzala.canary.server.assertion.AssertionResult;
 
 import java.lang.reflect.Method;
-import java.nio.file.Path;
 
 import static com.mattworzala.canary.platform.util.ClassLoaders.MINESTOM;
 import static com.mattworzala.canary.platform.util.ClassLoaders.loadClassRequired;
@@ -24,9 +23,9 @@ public record PTestEnvironment(Object instance) {
     // @formatter:on
 
     // @formatter:off
-    private static final Method loadWorldData = getRequiredMethod(testEnvironmentClass, "loadWorldData", Path.class, int.class, int.class, int.class);
-    public void loadWorldData(Path filePath, int originX, int originY, int originZ) {
-        invokeMethod(loadWorldData, instance, filePath, originX, originY, originZ);
+    private static final Method loadWorldData = getRequiredMethod(testEnvironmentClass, "loadWorldData", String.class, int.class, int.class, int.class);
+    public void loadWorldData(String fileName, int originX, int originY, int originZ) {
+        invokeMethod(loadWorldData, instance, fileName, originX, originY, originZ);
     }
     // @formatter:on
 
