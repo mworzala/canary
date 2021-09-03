@@ -18,8 +18,8 @@ public class TestEntityTest {
     @InWorldTest
     public void testWalkToEntity(TestEnvironment env) {
         System.out.println("TEST WALK TO ENTITY");
-        final var entity = env.spawnEntity(TestEntity::new, new Pos(0, 41, 0));
-        final var target = env.spawnEntity(TestEntity::new, new Pos(2, 41, 0));
+        final var entity = env.spawnEntity(TestEntity::new, new Pos(0, 43, 0));
+        final var target = env.spawnEntity(TestEntity::new, new Pos(2, 43, 0));
 
         // Create a diamond block for them to walk to
         env.getInstance().setBlock(0, 40, 3, Block.DIAMOND_BLOCK);
