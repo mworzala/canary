@@ -4,7 +4,7 @@ import com.mattworzala.canary.api.TestEnvironment;
 import com.mattworzala.canary.platform.util.hint.EnvType;
 import com.mattworzala.canary.platform.util.hint.Environment;
 import com.mattworzala.canary.server.env.TestEnvironmentImpl;
-import com.mattworzala.canary.server.instance.ViewerInstance;
+import com.mattworzala.canary.server.instance.BasicGenerator;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceManager;
@@ -29,19 +29,19 @@ public class HeadlessServer {
     public void initServer() {
         // Create spawning instance
         InstanceManager instanceManager = MinecraftServer.getInstanceManager();
-//        InstanceContainer instance = instanceManager.createInstanceContainer();
-//        instance.setChunkGenerator(new BasicGenerator());
+        instance = instanceManager.createInstanceContainer();
+        instance.setChunkGenerator(new BasicGenerator());
 
-        instance = new ViewerInstance();
-        instanceManager.registerInstance(instance);
+//        instance = new ViewerInstance();
+//        instanceManager.registerInstance(instance);
 
         //todo this isnt great, TestInstance should handle this
-//        System.out.println("Force loading spawn chunks");
-//        for (int x = -10; x <= 10; x++) {
-//            for (int z = -10; z <= 10; z++) {
-//                instance.loadChunk(x, z);
-//            }
-//        }
+        System.out.println("Force loading spawn chunks");
+        for (int x = -12; x <= 12; x++) {
+            for (int z = -12; z <= 12; z++) {
+                instance.loadChunk(x, z);
+            }
+        }
     }
 
     public void stop() {

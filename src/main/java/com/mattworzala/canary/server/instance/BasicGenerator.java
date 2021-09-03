@@ -24,7 +24,6 @@ public class BasicGenerator implements ChunkGenerator {
 
     @Override
     public void generateChunkData(@NotNull ChunkBatch batch, int chunkX, int chunkZ) {
-        System.out.println("Generating " + topBlock + " at " + chunkX + " " + chunkZ);
         // Set chunk blocks
         for (byte x = 0; x < Chunk.CHUNK_SIZE_X; x++) {
             for (byte z = 0; z < Chunk.CHUNK_SIZE_Z; z++) {

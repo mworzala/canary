@@ -4,7 +4,6 @@ import com.example.extension.entity.TestEntity;
 import com.mattworzala.canary.api.InWorldTest;
 import com.mattworzala.canary.api.TestEnvironment;
 import net.minestom.server.coordinate.Pos;
-import net.minestom.server.instance.block.Block;
 
 public class TestEntityTest {
 
@@ -22,7 +21,7 @@ public class TestEntityTest {
         final var target = env.spawnEntity(TestEntity::new, new Pos(2, 43, 0));
 
         // Create a diamond block for them to walk to
-        env.getInstance().setBlock(0, 40, 3, Block.DIAMOND_BLOCK);
+//        env.getInstance().setBlock(0, 40, 3, Block.DIAMOND_BLOCK);
 
         env.expect(entity).toBeAt(target::getPosition);
     }
