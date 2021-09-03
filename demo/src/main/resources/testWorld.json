@@ -7,7 +7,8 @@
   ],
   "blockmap": [
     "minecraft:stone",
-    "minecraft:cobblestone_stairs"
+    "minecraft:cobblestone_stairs",
+    "minecraft:diamond_block"
   ],
-  "blocks": "0,256;1,16;0,240;-1,3584"
+  "blocks": "0,256;1,5;2,1;1,10;0,240;-1,3584"
 }
