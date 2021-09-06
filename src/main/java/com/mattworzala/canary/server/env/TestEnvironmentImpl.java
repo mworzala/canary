@@ -6,6 +6,8 @@ import com.mattworzala.canary.platform.util.ClassLoaders;
 import com.mattworzala.canary.server.assertion.AssertionImpl;
 import com.mattworzala.canary.server.assertion.AssertionResult;
 import com.mattworzala.canary.server.givemeahome.Structure;
+import com.mattworzala.canary.server.givemeahome.StructureReader;
+import com.mattworzala.canary.server.givemeahome.TestExecutor;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.builder.arguments.minecraft.ArgumentBlockState;
 import com.mattworzala.canary.server.structure.JsonStructureIO;
@@ -40,22 +42,11 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class TestEnvironmentImpl implements TestEnvironment {
-    private final Instance testInstance;
-
-    record BlockDef(int blockId, int blockCount) {
-    }
-
-
-    private final List<AssertionImpl<?, ?>> assertions = new ArrayList<>();
-
-    public TestEnvironmentImpl(Instance testInstance) {
-        this.testInstance = testInstance;
-    }
+public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironment {
 
     @Override
     public @NotNull Instance getInstance() {
-        return testInstance;
+        return executor.getInstance();
     }
 
     /*
@@ -65,24 +56,21 @@ public class TestEnvironmentImpl implements TestEnvironment {
     @Override
     public <T extends Entity> Assertion.EntityAssertion<T> expect(T actual) {
         Assertion.EntityAssertion<T> assertion = new Assertion.EntityAssertion<>(actual);
-        assertions.add(assertion);
-
+        executor.register(assertion);
         return assertion;
     }
 
     @Override
     public <T extends LivingEntity> Assertion.LivingEntityAssertion<T> expect(T actual) {
         Assertion.LivingEntityAssertion<T> assertion = new Assertion.LivingEntityAssertion<>(actual);
-        assertions.add(assertion);
-
+        executor.register(assertion);
         return assertion;
     }
 
     @Override
     public <T> Assertion<T> expect(T actual) {
         Assertion<T> assertion = new Assertion<>(actual);
-        assertions.add(assertion);
-
+        executor.register(assertion);
         return assertion;
     }
 
@@ -112,7 +100,7 @@ public class TestEnvironmentImpl implements TestEnvironment {
 //        return AssertionResult.NO_RESULT;
 //    }
 
-//    public AssertionResult startTesting() {
+    public AssertionResult startTesting() {
 //        System.out.println("STARTING TESTING, there are " + assertions.size() + " assertions");
 //        EventNode<Event> node = EventNode.all("assertions");
 //        var handler = MinecraftServer.getGlobalEventHandler();
@@ -136,23 +124,16 @@ public class TestEnvironmentImpl implements TestEnvironment {
 //        try {
 //            assertionsFinished.await();
 ////            System.out.println("All assertions finished");
-//            List<String> log = null;
 //            boolean failed = false;
 //            for (var assertion : assertions) {
 //                var result = assertion.get();
 //                if (result == AssertionResult.FAIL) {
-//                    log = assertion.getLogs();
 //                    failed = true;
 //                }
 //            }
 //            // if any test failed, return failed
 //            if (failed) {
 ////                System.out.println("TEST FAILED");
-//                if (log != null) {
-//                    for (final String logEntry : log) {
-//                        System.out.println(logEntry);
-//                    }
-//                }
 //                return AssertionResult.FAIL;
 //            } else {
 ////                System.out.println("TEST PASSED");
@@ -161,20 +142,19 @@ public class TestEnvironmentImpl implements TestEnvironment {
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();
 //        }
-//        return AssertionResult.FAIL;
-//    }
-
+        return AssertionResult.FAIL;
+    }
     /*
      * Structure Variables
      */
 
     @Override
-    public Point getPos(String name) {
+    public @NotNull Point getPos(String name) {
         throw new RuntimeException("Saved positions are not currently supported.");
     }
 
     @Override
-    public Block getBlock(String name) {
+    public @NotNull Block getBlock(String name) {
         throw new RuntimeException("Saved blocks are not currently supported.");
     }
 
