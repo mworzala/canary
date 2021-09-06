@@ -4,6 +4,10 @@ import com.mattworzala.canary.api.Assertion;
 import com.mattworzala.canary.api.TestEnvironment;
 import com.mattworzala.canary.platform.util.ClassLoaders;
 import com.mattworzala.canary.server.assertion.AssertionImpl;
+import com.mattworzala.canary.server.assertion.AssertionResult;
+import com.mattworzala.canary.server.givemeahome.Structure;
+import net.minestom.server.MinecraftServer;
+import net.minestom.server.command.builder.arguments.minecraft.ArgumentBlockState;
 import com.mattworzala.canary.server.structure.JsonStructureIO;
 import com.mattworzala.canary.server.structure.Structure;
 import com.mattworzala.canary.server.structure.StructureReader;
@@ -16,6 +20,13 @@ import net.minestom.server.instance.batch.RelativeBlockBatch;
 import net.minestom.server.instance.block.Block;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -175,7 +186,8 @@ public class TestEnvironmentImpl implements TestEnvironment {
     public Structure loadWorldData(String fileName, int originX, int originY, int originZ) {
         var resource = ClassLoaders.MINESTOM.getResource(fileName);
         if (resource == null) {
-            return null;
+
+        return null;
         }
         try {
             var uri = resource.toURI();
