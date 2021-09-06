@@ -10,17 +10,19 @@ public class SandboxTestCoordinator extends TestCoordinator {
     public SandboxTestCoordinator() {
         sandboxViewer = new ViewerInstance();
 
-        var testExecutor1 = new TestExecutor(new Structure(new Vec(10, 10, 10)));
-        sandboxViewer.addMirror(testExecutor1.getInstance(), 1, 1, 0, 0);
+        new TestExecutor(null);
 
-        var testExecutor3 = new TestExecutor(new Structure(new Vec(13, 5, 13)));
-        sandboxViewer.addMirror(testExecutor3.getInstance(), 2, 1, 0, 0);
+//        var testExecutor1 = new TestExecutor(new Structure(new Vec(10, 10, 10)));
+//        sandboxViewer.addMirror(testExecutor1.getInstance(), 1, 1, 0, 0);
 
-        var testExecutor2 = new TestExecutor(new Structure(new Vec(30, 25, 30)));
-        sandboxViewer.addMirror(testExecutor2.getInstance(), 1, 3, 0, 0);
-        sandboxViewer.addMirror(testExecutor2.getInstance(), 1, 4, 0, 1);
-        sandboxViewer.addMirror(testExecutor2.getInstance(), 2, 3, 1, 0);
-        sandboxViewer.addMirror(testExecutor2.getInstance(), 2, 4, 1, 1);
+//        var testExecutor3 = new TestExecutor(new Structure(new Vec(13, 5, 13)));
+//        sandboxViewer.addMirror(testExecutor3.getInstance(), 2, 1, 0, 0);
+
+//        var testExecutor2 = new TestExecutor(new Structure(new Vec(30, 25, 30)));
+//        sandboxViewer.addMirror(testExecutor2.getInstance(), 1, 3, 0, 0);
+//        sandboxViewer.addMirror(testExecutor2.getInstance(), 1, 4, 0, 1);
+//        sandboxViewer.addMirror(testExecutor2.getInstance(), 2, 3, 1, 0);
+//        sandboxViewer.addMirror(testExecutor2.getInstance(), 2, 4, 1, 1);
     }
 
     @Override

@@ -21,13 +21,12 @@ import static com.mattworzala.canary.api.Assertion.LivingEntityAssertion;
 
 @Environment(EnvType.MINESTOM)
 public interface TestEnvironment {
+
     @NotNull Instance getInstance();
 
+    @NotNull Point getPos(String name);
 
-    Point getPos(String name);
-
-    Block getBlock(String name);
-
+    @NotNull Block getBlock(String name);
 
     /*
         todo could be a way to handle user defined actions, eg
@@ -51,10 +50,6 @@ public interface TestEnvironment {
     <T extends LivingEntity> LivingEntityAssertion<T> expect(T actual);
 
     <T> Assertion<T> expect(T actual);
-
-//    AssertionResult tick();
-
-//    AssertionResult startTesting();
 
     // Instance manipulation utilities
 
