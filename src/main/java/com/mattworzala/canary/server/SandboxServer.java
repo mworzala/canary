@@ -23,6 +23,7 @@ public class SandboxServer extends HeadlessServer {
     @Override
     public void initServer() {
         super.initServer();
+        headless = true;
 
 
         // Util options
