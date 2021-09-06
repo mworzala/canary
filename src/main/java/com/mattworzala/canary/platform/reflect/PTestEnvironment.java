@@ -3,6 +3,7 @@ package com.mattworzala.canary.platform.reflect;
 import com.mattworzala.canary.platform.util.hint.EnvType;
 import com.mattworzala.canary.platform.util.hint.Environment;
 import com.mattworzala.canary.server.assertion.AssertionResult;
+import com.mattworzala.canary.server.givemeahome.Structure;
 
 import java.lang.reflect.Method;
 
