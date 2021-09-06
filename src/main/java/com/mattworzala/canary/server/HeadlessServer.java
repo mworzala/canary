@@ -11,6 +11,11 @@ import net.minestom.server.instance.InstanceManager;
 
 @Environment(EnvType.MINESTOM)
 public class HeadlessServer {
+    protected static boolean headless = true;
+    public static boolean isHeadless() {
+        return headless;
+    }
+
     protected Instance instance;
 
     public void start() {
@@ -54,6 +59,6 @@ public class HeadlessServer {
         //todo eventually this will need to find an appropriate instance (or create), add the test structure, and then give an accurate environment.
         //todo we probably want to use a mechanism like `SharedInstance` where entities will be instance-localized and
         var instance = MinecraftServer.getInstanceManager().getInstances().stream().findFirst().get();
-        return new TestEnvironmentImpl(instance);
+        return new TestEnvironmentImpl(null);
     }
 }

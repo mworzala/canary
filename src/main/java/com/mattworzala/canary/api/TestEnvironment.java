@@ -20,13 +20,12 @@ import static com.mattworzala.canary.api.Assertion.LivingEntityAssertion;
 
 @Environment(EnvType.MINESTOM)
 public interface TestEnvironment {
+
     @NotNull Instance getInstance();
 
+    @NotNull Point getPos(String name);
 
-    Point getPos(String name);
-
-    Block getBlock(String name);
-
+    @NotNull Block getBlock(String name);
 
     /*
         todo could be a way to handle user defined actions, eg
@@ -51,13 +50,7 @@ public interface TestEnvironment {
 
     <T> Assertion<T> expect(T actual);
 
-    AssertionResult tick();
-
-    AssertionResult startTesting();
-
     // Instance manipulation utilities
-
-    void loadWorldData(String fileName, int originX, int originY, int originZ) throws IOException;
 
     default <T extends Entity> T spawnEntity(Supplier<T> constructor) {
         return spawnEntity(constructor, Pos.ZERO, null);
