@@ -66,7 +66,7 @@ public class SandboxTestExecutor {
                 if (target.getParameterCount() == 1) {
 //                    ClassLoader.getRe
                     System.out.println(getClass().getClassLoader().getResource("testWorld.json"));
-                    environment.loadWorldData("testWorld.json", 0, 41, 0);
+                    var structure = environment.loadWorldData("testWorld.json", 0, 41, 0);
                     target.invoke(instance, environment.instance());
                     var result = environment.startTesting().ordinal(); // BLOCKING
                     if (result == AssertionResult.FAIL.ordinal()) {
