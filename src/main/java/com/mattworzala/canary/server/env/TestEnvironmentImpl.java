@@ -22,10 +22,15 @@ import net.minestom.server.event.EventNode;
 import net.minestom.server.event.instance.InstanceTickEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
+import net.minestom.server.instance.block.BlockHandler;
 import org.jetbrains.annotations.NotNull;
+import org.jglrxavpok.hephaistos.nbt.NBTCompound;
+import org.jglrxavpok.hephaistos.nbt.NBTException;
+import org.jglrxavpok.hephaistos.nbt.SNBTParser;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -174,7 +179,7 @@ public class TestEnvironmentImpl implements TestEnvironment {
     }
 
     @Override
-    public void loadWorldData(String fileName, int originX, int originY, int originZ) {
+    public Structure loadWorldData(String fileName, int originX, int originY, int originZ) {
         Reader reader = new InputStreamReader(Objects.requireNonNull(ClassLoaders.MINESTOM.getResourceAsStream(fileName)));
         JsonObject object = JsonParser.parseReader(reader).getAsJsonObject();
 
@@ -188,12 +193,10 @@ public class TestEnvironmentImpl implements TestEnvironment {
 
 
         var blockmapArr = object.get("blockmap").getAsJsonArray();
-        // TODO : make Map<Int, Block>
-//        var blockmaps = new ArrayList<Map<String, String>>();
         var blockMap = new HashMap<Integer, Block>();
 
         blockMap.put(-1, Block.fromNamespaceId("minecraft:air"));
-        // blocks are immutable, this should just generate block objects
+
         int index = 0;
         for (JsonElement block : blockmapArr) {
             String blockField;
@@ -204,33 +207,52 @@ public class TestEnvironmentImpl implements TestEnvironment {
                 JsonObject blockObj = block.getAsJsonObject();
 
                 blockField = blockObj.get("block").getAsString();
-                handlerField = blockObj.get("handler").getAsString();
-                dataField = blockObj.get("data").getAsString();
+
+                if (blockObj.get("handler") != null) {
+                    handlerField = blockObj.get("handler").getAsString();
+                }
+                if (blockObj.get("data") != null) {
+                    dataField = blockObj.get("data").getAsString();
+                }
             } else {
                 blockField = block.getAsString();
             }
             var argBlockState = new ArgumentBlockState("blockStateId");
             Block b = argBlockState.parse(blockField);
 
+            if (handlerField.length() > 0) {
+                final BlockHandler handler = MinecraftServer.getBlockManager().getHandler(handlerField);
+                b = b.withHandler(handler);
+            }
+            if (dataField.length() > 0) {
+                SNBTParser parser = new SNBTParser(new StringReader(dataField));
+                try {
+                    b = b.withNbt((NBTCompound) parser.parse());
+                } catch (NBTException e) {
+                    e.printStackTrace();
+                }
+            }
+
             blockMap.put(index, b);
 
             index++;
         }
+
         var blocks = object.get("blocks").getAsString();
         int sizeX = sizeList.get(0);
         int sizeY = sizeList.get(1);
         int sizeZ = sizeList.get(2);
+
         int totalBlocks = sizeX * sizeY * sizeZ;
+
         var blockDefs = blocks.split(";");
         var parsedBlockDefinitions = new ArrayList<BlockDef>(blockDefs.length);
         for (String def : blockDefs) {
             var nums = def.split(",");
-//            int[] defNums = {Integer.parseInt(nums[0]), Integer.parseInt(nums[1])};
             var blockDef = new BlockDef(Integer.parseInt(nums[0]), Integer.parseInt(nums[1]));
             parsedBlockDefinitions.add(blockDef);
         }
 
-//        var blockIdUnwrapped = new ArrayList<Integer>(totalBlocks);
         int numBlocksDef = 0;
         for (BlockDef def : parsedBlockDefinitions) {
             numBlocksDef += def.blockCount;
@@ -238,44 +260,21 @@ public class TestEnvironmentImpl implements TestEnvironment {
         System.out.println("total number of blocks defined is " + numBlocksDef);
         if (numBlocksDef != totalBlocks) {
             System.out.println(numBlocksDef + " blocks were defined, but the size is " + totalBlocks + " blocks");
-            return;
+            return null;
         }
 
         Structure resultStructure = new Structure(id, sizeX, sizeY, sizeZ);
+
         int blockIndex = 0;
         for (BlockDef def : parsedBlockDefinitions) {
             Block block = blockMap.get(def.blockId);
             for (int i = 0; i < def.blockCount; i++) {
-//                blockIdUnwrapped.add(def.blockId);
                 resultStructure.setBlock(blockIndex, block);
                 blockIndex++;
             }
         }
         resultStructure.apply(getInstance(), originX, originY, originZ);
-//        System.out.println("unwrapped block ids:");
-//        System.out.println(blockIdUnwrapped);
-//        for (int i = 0; i < totalBlocks; i++) {
-//            int x = i % sizeX;
-//            int z = i % (sizeX * sizeZ) / sizeZ;
-//            int y = i / (sizeX * sizeZ);
-//        }
-//        for (int y = 0; y < sizeY; y++) {
-//            for (int z = 0; z < sizeZ; z++) {
-//                for (int x = 0; x < sizeX; x++) {
-//                    int blockId = blockIdUnwrapped.get(x + z * sizeX + y * sizeX * sizeZ);
-//                    String blockName;
-//                    if (blockId == -1) {
-//                        blockName = "minecraft:air";
-//                    } else {
-//                        blockName = blockmaps.get(blockId).get("block");
-//                    }
-//                    getInstance().setBlock(originX + x, originY + y, originZ + z, Objects.requireNonNull(Block.fromNamespaceId(blockName)));
-//                }
-//            }
-//        }
-//        var stone = Block.fromNamespaceId("minecraft:stone");
-//        getInstance().setBlock(0, 40, 0, stone);
-
+        return resultStructure;
     }
 
     @Override

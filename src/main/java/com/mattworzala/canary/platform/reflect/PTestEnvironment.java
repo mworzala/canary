@@ -3,6 +3,7 @@ package com.mattworzala.canary.platform.reflect;
 import com.mattworzala.canary.platform.util.hint.EnvType;
 import com.mattworzala.canary.platform.util.hint.Environment;
 import com.mattworzala.canary.server.assertion.AssertionResult;
+import com.mattworzala.canary.server.givemeahome.Structure;
 
 import java.lang.reflect.Method;
 
@@ -24,8 +25,8 @@ public record PTestEnvironment(Object instance) {
 
     // @formatter:off
     private static final Method loadWorldData = getRequiredMethod(testEnvironmentClass, "loadWorldData", String.class, int.class, int.class, int.class);
-    public void loadWorldData(String fileName, int originX, int originY, int originZ) {
-        invokeMethod(loadWorldData, instance, fileName, originX, originY, originZ);
+    public Structure loadWorldData(String fileName, int originX, int originY, int originZ) {
+        return (Structure) invokeMethod(loadWorldData, instance, fileName, originX, originY, originZ);
     }
     // @formatter:on
 
