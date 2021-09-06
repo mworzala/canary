@@ -7,8 +7,9 @@
   ],
   "blockmap": [
     "minecraft:stone",
-    "minecraft:cobblestone_stairs",
-    "minecraft:diamond_block"
+    "minecraft:cobblestone_stairs[facing=north]",
+    "minecraft:diamond_block",
+    "minecraft:cobblestone_stairs[facing=east]"
   ],
-  "blocks": "0,256;1,5;1,10;0,240;-1,3584"
+  "blocks": "0,256;1,5;3,10;0,240;-1,3585"
 }
