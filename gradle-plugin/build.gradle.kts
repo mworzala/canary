@@ -57,4 +57,10 @@ pluginBundle {
             version = canaryVersion
         }
     }
+
+    mavenCoordinates {
+        groupId = "com.mattworzala"
+        artifactId = "canary"
+        version = canaryVersion
+    }
 }
