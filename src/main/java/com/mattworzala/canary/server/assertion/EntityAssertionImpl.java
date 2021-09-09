@@ -5,6 +5,7 @@ import net.minestom.server.entity.Entity;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class EntityAssertionImpl<T extends Entity, A extends EntityAssertionImpl<T, A>> extends AssertionImpl<T, A> {
@@ -29,6 +30,13 @@ public class EntityAssertionImpl<T extends Entity, A extends EntityAssertionImpl
     @NotNull
     public A toBeAt(@NotNull Supplier<@NotNull Point> pointSupplier) {
         this.assertionTest = (T entity) -> sameBlock(entity.getPosition(), pointSupplier.get());
+        String assertionFormat = "Entity pos: %s\nOther pos: %s";
+        Function<Point, String> pointFormatter = (Point p) -> String.format("(%d, %d, %d)", p.blockX(), p.blockY(), p.blockY());
+        this.assertionFormatter = (T entity) -> {
+            String pointOne = pointFormatter.apply(entity.getPosition());
+            String pointTwo = pointFormatter.apply(pointSupplier.get());
+            return String.format(assertionFormat, pointOne, pointTwo);
+        };
         return (A) this;
     }
 
