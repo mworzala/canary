@@ -135,16 +135,23 @@ public class TestEnvironmentImpl implements TestEnvironment {
         try {
             assertionsFinished.await();
 //            System.out.println("All assertions finished");
+            List<String> log = null;
             boolean failed = false;
             for (var assertion : assertions) {
                 var result = assertion.get();
                 if (result == AssertionResult.FAIL) {
+                    log = assertion.getLogs();
                     failed = true;
                 }
             }
             // if any test failed, return failed
             if (failed) {
 //                System.out.println("TEST FAILED");
+                if (log != null) {
+                    for (final String logEntry : log) {
+                        System.out.println(logEntry);
+                    }
+                }
                 return AssertionResult.FAIL;
             } else {
 //                System.out.println("TEST PASSED");
