@@ -1,5 +1,6 @@
 package com.mattworzala.canary.server.givemeahome;
 
+import com.google.gson.annotations.Expose;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockSetter;
@@ -17,34 +18,43 @@ import java.util.Map;
  */
 public class Structure {
 
+    @Expose
     private String id;
+    @Expose
     private Vec size;
 
-    Map<Integer, Block> blockMap;
+    @Expose
+    Map<Integer, Block> blockmap;
+
+    @Expose
+    List<BlockDef> blocks;
 
     public record BlockDef(int blockId, int blockCount) {
     }
 
-    List<BlockDef> blockDefList;
 
     public Structure(String id, int sizeX, int sizeY, int sizeZ) {
         this.id = id;
         size = new Vec(sizeX, sizeY, sizeZ);
 
-        this.blockMap = new HashMap<>();
-        this.blockDefList = new ArrayList<>();
+        this.blockmap = new HashMap<>();
+        this.blocks = new ArrayList<>();
     }
 
     public void putInBlockMap(int index, Block block) {
-        blockMap.put(index, block);
+        blockmap.put(index, block);
     }
 
     public void addToBlockDefList(BlockDef blockDef) {
-        blockDefList.add(blockDef);
+        blocks.add(blockDef);
     }
 
-    public void setBlockDefList(List<BlockDef> blockDefs) {
-        this.blockDefList = blockDefs;
+    public void setBlocks(List<BlockDef> blockDefs) {
+        this.blocks = blockDefs;
+    }
+
+    public List<BlockDef> getBlocks() {
+        return this.blocks;
     }
 
     public Vec getSize() {
@@ -83,12 +93,20 @@ public class Structure {
 
     public void loadIntoBlockSetter(BlockSetter blockSetter) {
         int blockIndex = 0;
-        for (BlockDef def : blockDefList) {
-            Block block = blockMap.get(def.blockId);
+        for (BlockDef def : blocks) {
+            Block block = blockmap.get(def.blockId);
             for (int i = 0; i < def.blockCount; i++) {
                 setBlockInBlockSetter(blockIndex, block, blockSetter);
                 blockIndex++;
             }
         }
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public Map<Integer, Block> getBlockMap() {
+        return blockmap;
     }
 }

@@ -113,7 +113,7 @@ public class StructureLoader {
         List<Structure.BlockDef> blockDefs;
         try {
             blockDefs = parseBlocks(blocks);
-            resultStructure.setBlockDefList(blockDefs);
+            resultStructure.setBlocks(blockDefs);
         } catch (Exception e) {
             e.printStackTrace();
             return null;

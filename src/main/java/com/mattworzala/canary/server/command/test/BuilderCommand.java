@@ -1,5 +1,7 @@
 package com.mattworzala.canary.server.command.test;
 
+import com.mattworzala.canary.server.givemeahome.Structure;
+import com.mattworzala.canary.server.givemeahome.StructureWriter;
 import net.minestom.server.command.CommandSender;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.CommandContext;
@@ -10,17 +12,19 @@ import net.minestom.server.instance.block.BlockHandler;
 import net.minestom.server.utils.NamespaceID;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import static com.mattworzala.canary.server.command.TestCommand.version;
 
 public class BuilderCommand extends Command {
     private static final String NAME = "builder";
     private static final String VERSION = "0.0.1";
-
-    record BlockDef(int blockId, int blockCount) {
-    }
 
     public BuilderCommand() {
         super("builder", "b");
@@ -37,6 +41,8 @@ public class BuilderCommand extends Command {
         final int sizeY = 4;
         final int sizeZ = 4;
 
+        Structure resultStructure = new Structure("testStruct", sizeX, sizeY, sizeZ);
+
         Set<Block> blockSet = new HashSet<>();
         blockSet.add(Block.AIR);
         Map<Integer, Block> blockMap = new HashMap<>();
@@ -46,12 +52,11 @@ public class BuilderCommand extends Command {
         Block lastBlock = null;
         int lastBlockIndex = -1;
         int currentBlockCount = 0;
-        List<BlockDef> blockDefList = new ArrayList<>();
+//        List<BlockDef> blockDefList = new ArrayList<>();
         for (int y = 0; y < sizeY; y++) {
             for (int z = 0; z < sizeZ; z++) {
                 for (int x = 0; x < sizeX; x++) {
                     Block b = playerInstance.getBlock(playerPos.blockX() + x, playerPos.blockY() + y, playerPos.blockZ() + z, BlockGetter.Condition.NONE);
-                    System.out.println(b);
                     // if this is the very first block
                     if (lastBlock == null) {
                         if (blockSet.add(b)) {
@@ -71,8 +76,8 @@ public class BuilderCommand extends Command {
                         if (b.equals(lastBlock)) {
                             currentBlockCount++;
                         } else {
-                            blockDefList.add(new BlockDef(lastBlockIndex, currentBlockCount));
-
+                            resultStructure.addToBlockDefList(new Structure.BlockDef(lastBlockIndex, currentBlockCount));
+                            currentBlockCount = 1;
                             if (blockSet.add(b)) {
                                 // if this is a new block we haven't seen before
                                 // put it in the block map
@@ -95,12 +100,15 @@ public class BuilderCommand extends Command {
                 }
             }
         }
-        blockDefList.add(new BlockDef(lastBlockIndex, currentBlockCount));
+        resultStructure.addToBlockDefList(new Structure.BlockDef(lastBlockIndex, currentBlockCount));
 
         for (int key : blockMap.keySet()) {
-            System.out.println(key + ": " + blockMap.get(key));
+            resultStructure.putInBlockMap(key, blockMap.get(key));
         }
-        System.out.println(blockDefList.stream().map((blockDef) -> blockDef.blockId + "," + blockDef.blockCount).collect(Collectors.joining(";")));
+
+        Path root = FileSystems.getDefault().getPath("..").toAbsolutePath();
+        Path filePath = Paths.get(root.toString(), "src", "main", "resources", "test.json");
+        StructureWriter.writeStructure(resultStructure, filePath);
     }
 
     private void onHelp(CommandSender sender, CommandContext context) {
