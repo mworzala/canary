@@ -1,6 +1,5 @@
 package com.mattworzala.canary.server.givemeahome;
 
-import com.google.gson.annotations.Expose;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockSetter;
@@ -18,15 +17,11 @@ import java.util.Map;
  */
 public class Structure {
 
-    @Expose
     private String id;
-    @Expose
     private Vec size;
 
-    @Expose
     Map<Integer, Block> blockmap;
 
-    @Expose
     List<BlockDef> blocks;
 
     public record BlockDef(int blockId, int blockCount) {
@@ -62,15 +57,15 @@ public class Structure {
     }
 
     public int getSizeX() {
-        return (int) this.size.x();
+        return this.size.blockX();
     }
 
     public int getSizeY() {
-        return (int) this.size.y();
+        return this.size.blockY();
     }
 
     public int getSizeZ() {
-        return (int) this.size.z();
+        return this.size.blockZ();
     }
 
     /**

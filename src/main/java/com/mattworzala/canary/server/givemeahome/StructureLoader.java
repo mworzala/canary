@@ -43,6 +43,10 @@ public class StructureLoader {
 
         if (handlerField.length() > 0) {
             final BlockHandler handler = MinecraftServer.getBlockManager().getHandler(handlerField);
+            if (handler == null) {
+                System.out.println(handlerField + " is not a valid handler");
+                return null;
+            }
             b = b.withHandler(handler);
         }
         if (dataField.length() > 0) {
