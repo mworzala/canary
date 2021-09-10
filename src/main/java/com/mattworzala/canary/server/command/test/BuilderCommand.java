@@ -7,7 +7,6 @@ import net.minestom.server.entity.Player;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockGetter;
 import net.minestom.server.instance.block.BlockHandler;
-import net.minestom.server.tag.Tag;
 import net.minestom.server.utils.NamespaceID;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,26 +37,6 @@ public class BuilderCommand extends Command {
         final int sizeY = 4;
         final int sizeZ = 4;
 
-        Tag<String> tag = Tag.String("my-key");
-        Block blockOne = Block.STONE_STAIRS.withTag(tag, "my-value");
-        Block blockTwo = Block.STONE_STAIRS.withTag(tag, "my-value2");
-        System.out.println("Comparisons of identity, id, and state");
-        // IDENTITY
-        // false when properties are different
-        // false when handlers are different
-        // false when nbt is different
-        // ID
-        // true when properties are different
-        // true when handlers are different
-        // true when nbt is different
-        // STATE
-        // false when properties are different
-        // true when handlers are different
-        // true when nbt is different
-        System.out.println(blockOne.equals(blockTwo));
-        System.out.println(blockOne.compare(blockTwo, Block.Comparator.IDENTITY));
-        System.out.println(blockOne.compare(blockTwo, Block.Comparator.ID));
-        System.out.println(blockOne.compare(blockTwo, Block.Comparator.STATE));
         Set<Block> blockSet = new HashSet<>();
         blockSet.add(Block.AIR);
         Map<Integer, Block> blockMap = new HashMap<>();

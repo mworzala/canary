@@ -180,104 +180,12 @@ public class TestEnvironmentImpl implements TestEnvironment {
     public Structure loadWorldData(String fileName, int originX, int originY, int originZ) {
         Reader reader = new InputStreamReader(Objects.requireNonNull(ClassLoaders.MINESTOM.getResourceAsStream(fileName)));
         Structure structure = StructureLoader.parseStructure(reader);
+
+        assert structure != null;
         RelativeBlockBatch blockBatch = new RelativeBlockBatch();
         structure.loadIntoBlockSetter(blockBatch);
         blockBatch.apply(getInstance(), originX, originY, originZ, () -> System.out.println("Applied the structure to the world!"));
         return structure;
-//        JsonObject object = JsonParser.parseReader(reader).getAsJsonObject();
-//
-//        String id = object.get("id").getAsString();
-//
-//        var sizeList = new ArrayList<Integer>();
-//        JsonArray sizeArr = object.get("size").getAsJsonArray();
-//        for (JsonElement elem : sizeArr) {
-//            sizeList.add(elem.getAsInt());
-//        }
-//
-//
-//        var blockmapArr = object.get("blockmap").getAsJsonArray();
-//        var blockMap = new HashMap<Integer, Block>();
-//
-//        blockMap.put(-1, Block.fromNamespaceId("minecraft:air"));
-//
-//        int index = 0;
-//        for (JsonElement block : blockmapArr) {
-//            String blockField;
-//            String handlerField = "";
-//            String dataField = "";
-//
-//            if (block.isJsonObject()) {
-//                JsonObject blockObj = block.getAsJsonObject();
-//
-//                blockField = blockObj.get("block").getAsString();
-//
-//                if (blockObj.get("handler") != null) {
-//                    handlerField = blockObj.get("handler").getAsString();
-//                }
-//                if (blockObj.get("data") != null) {
-//                    dataField = blockObj.get("data").getAsString();
-//                }
-//            } else {
-//                blockField = block.getAsString();
-//            }
-//            var argBlockState = new ArgumentBlockState("blockStateId");
-//            Block b = argBlockState.parse(blockField);
-//
-//            if (handlerField.length() > 0) {
-//                final BlockHandler handler = MinecraftServer.getBlockManager().getHandler(handlerField);
-//                b = b.withHandler(handler);
-//            }
-//            if (dataField.length() > 0) {
-//                SNBTParser parser = new SNBTParser(new StringReader(dataField));
-//                try {
-//                    b = b.withNbt((NBTCompound) parser.parse());
-//                } catch (NBTException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//
-//            blockMap.put(index, b);
-//
-//            index++;
-//        }
-//
-//        var blocks = object.get("blocks").getAsString();
-//        int sizeX = sizeList.get(0);
-//        int sizeY = sizeList.get(1);
-//        int sizeZ = sizeList.get(2);
-//
-//        int totalBlocks = sizeX * sizeY * sizeZ;
-//
-//        var blockDefs = blocks.split(";");
-//        var parsedBlockDefinitions = new ArrayList<BlockDef>(blockDefs.length);
-//        for (String def : blockDefs) {
-//            var nums = def.split(",");
-//            var blockDef = new BlockDef(Integer.parseInt(nums[0]), Integer.parseInt(nums[1]));
-//            parsedBlockDefinitions.add(blockDef);
-//        }
-//
-//        int numBlocksDef = 0;
-//        for (BlockDef def : parsedBlockDefinitions) {
-//            numBlocksDef += def.blockCount;
-//        }
-//        System.out.println("total number of blocks defined is " + numBlocksDef);
-//        if (numBlocksDef != totalBlocks) {
-//            System.out.println(numBlocksDef + " blocks were defined, but the size is " + totalBlocks + " blocks");
-//            return null;
-//        }
-//
-//        Structure resultStructure = new Structure(id, sizeX, sizeY, sizeZ);
-//
-//        int blockIndex = 0;
-//        for (BlockDef def : parsedBlockDefinitions) {
-//            Block block = blockMap.get(def.blockId);
-//            for (int i = 0; i < def.blockCount; i++) {
-//                resultStructure.setBlock(blockIndex, block);
-//                blockIndex++;
-//            }
-//        }
-//        resultStructure.apply(getInstance(), originX, originY, originZ);
-//        return resultStructure;
     }
 
     @Override
