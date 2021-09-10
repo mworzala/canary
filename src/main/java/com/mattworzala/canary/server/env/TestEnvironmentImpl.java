@@ -1,17 +1,13 @@
 package com.mattworzala.canary.server.env;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.mattworzala.canary.api.Assertion;
 import com.mattworzala.canary.api.TestEnvironment;
 import com.mattworzala.canary.platform.util.ClassLoaders;
 import com.mattworzala.canary.server.assertion.AssertionImpl;
 import com.mattworzala.canary.server.assertion.AssertionResult;
 import com.mattworzala.canary.server.givemeahome.Structure;
+import com.mattworzala.canary.server.givemeahome.StructureLoader;
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.command.builder.arguments.minecraft.ArgumentBlockState;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
@@ -21,18 +17,13 @@ import net.minestom.server.event.EventListener;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.instance.InstanceTickEvent;
 import net.minestom.server.instance.Instance;
+import net.minestom.server.instance.batch.RelativeBlockBatch;
 import net.minestom.server.instance.block.Block;
-import net.minestom.server.instance.block.BlockHandler;
 import org.jetbrains.annotations.NotNull;
-import org.jglrxavpok.hephaistos.nbt.NBTCompound;
-import org.jglrxavpok.hephaistos.nbt.NBTException;
-import org.jglrxavpok.hephaistos.nbt.SNBTParser;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
@@ -188,100 +179,105 @@ public class TestEnvironmentImpl implements TestEnvironment {
     @Override
     public Structure loadWorldData(String fileName, int originX, int originY, int originZ) {
         Reader reader = new InputStreamReader(Objects.requireNonNull(ClassLoaders.MINESTOM.getResourceAsStream(fileName)));
-        JsonObject object = JsonParser.parseReader(reader).getAsJsonObject();
-
-        String id = object.get("id").getAsString();
-
-        var sizeList = new ArrayList<Integer>();
-        JsonArray sizeArr = object.get("size").getAsJsonArray();
-        for (JsonElement elem : sizeArr) {
-            sizeList.add(elem.getAsInt());
-        }
-
-
-        var blockmapArr = object.get("blockmap").getAsJsonArray();
-        var blockMap = new HashMap<Integer, Block>();
-
-        blockMap.put(-1, Block.fromNamespaceId("minecraft:air"));
-
-        int index = 0;
-        for (JsonElement block : blockmapArr) {
-            String blockField;
-            String handlerField = "";
-            String dataField = "";
-
-            if (block.isJsonObject()) {
-                JsonObject blockObj = block.getAsJsonObject();
-
-                blockField = blockObj.get("block").getAsString();
-
-                if (blockObj.get("handler") != null) {
-                    handlerField = blockObj.get("handler").getAsString();
-                }
-                if (blockObj.get("data") != null) {
-                    dataField = blockObj.get("data").getAsString();
-                }
-            } else {
-                blockField = block.getAsString();
-            }
-            var argBlockState = new ArgumentBlockState("blockStateId");
-            Block b = argBlockState.parse(blockField);
-
-            if (handlerField.length() > 0) {
-                final BlockHandler handler = MinecraftServer.getBlockManager().getHandler(handlerField);
-                b = b.withHandler(handler);
-            }
-            if (dataField.length() > 0) {
-                SNBTParser parser = new SNBTParser(new StringReader(dataField));
-                try {
-                    b = b.withNbt((NBTCompound) parser.parse());
-                } catch (NBTException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            blockMap.put(index, b);
-
-            index++;
-        }
-
-        var blocks = object.get("blocks").getAsString();
-        int sizeX = sizeList.get(0);
-        int sizeY = sizeList.get(1);
-        int sizeZ = sizeList.get(2);
-
-        int totalBlocks = sizeX * sizeY * sizeZ;
-
-        var blockDefs = blocks.split(";");
-        var parsedBlockDefinitions = new ArrayList<BlockDef>(blockDefs.length);
-        for (String def : blockDefs) {
-            var nums = def.split(",");
-            var blockDef = new BlockDef(Integer.parseInt(nums[0]), Integer.parseInt(nums[1]));
-            parsedBlockDefinitions.add(blockDef);
-        }
-
-        int numBlocksDef = 0;
-        for (BlockDef def : parsedBlockDefinitions) {
-            numBlocksDef += def.blockCount;
-        }
-        System.out.println("total number of blocks defined is " + numBlocksDef);
-        if (numBlocksDef != totalBlocks) {
-            System.out.println(numBlocksDef + " blocks were defined, but the size is " + totalBlocks + " blocks");
-            return null;
-        }
-
-        Structure resultStructure = new Structure(id, sizeX, sizeY, sizeZ);
-
-        int blockIndex = 0;
-        for (BlockDef def : parsedBlockDefinitions) {
-            Block block = blockMap.get(def.blockId);
-            for (int i = 0; i < def.blockCount; i++) {
-                resultStructure.setBlock(blockIndex, block);
-                blockIndex++;
-            }
-        }
-        resultStructure.apply(getInstance(), originX, originY, originZ);
-        return resultStructure;
+        Structure structure = StructureLoader.parseStructure(reader);
+        RelativeBlockBatch blockBatch = new RelativeBlockBatch();
+        structure.loadIntoBlockSetter(blockBatch);
+        blockBatch.apply(getInstance(), originX, originY, originZ, () -> System.out.println("Applied the structure to the world!"));
+        return structure;
+//        JsonObject object = JsonParser.parseReader(reader).getAsJsonObject();
+//
+//        String id = object.get("id").getAsString();
+//
+//        var sizeList = new ArrayList<Integer>();
+//        JsonArray sizeArr = object.get("size").getAsJsonArray();
+//        for (JsonElement elem : sizeArr) {
+//            sizeList.add(elem.getAsInt());
+//        }
+//
+//
+//        var blockmapArr = object.get("blockmap").getAsJsonArray();
+//        var blockMap = new HashMap<Integer, Block>();
+//
+//        blockMap.put(-1, Block.fromNamespaceId("minecraft:air"));
+//
+//        int index = 0;
+//        for (JsonElement block : blockmapArr) {
+//            String blockField;
+//            String handlerField = "";
+//            String dataField = "";
+//
+//            if (block.isJsonObject()) {
+//                JsonObject blockObj = block.getAsJsonObject();
+//
+//                blockField = blockObj.get("block").getAsString();
+//
+//                if (blockObj.get("handler") != null) {
+//                    handlerField = blockObj.get("handler").getAsString();
+//                }
+//                if (blockObj.get("data") != null) {
+//                    dataField = blockObj.get("data").getAsString();
+//                }
+//            } else {
+//                blockField = block.getAsString();
+//            }
+//            var argBlockState = new ArgumentBlockState("blockStateId");
+//            Block b = argBlockState.parse(blockField);
+//
+//            if (handlerField.length() > 0) {
+//                final BlockHandler handler = MinecraftServer.getBlockManager().getHandler(handlerField);
+//                b = b.withHandler(handler);
+//            }
+//            if (dataField.length() > 0) {
+//                SNBTParser parser = new SNBTParser(new StringReader(dataField));
+//                try {
+//                    b = b.withNbt((NBTCompound) parser.parse());
+//                } catch (NBTException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//
+//            blockMap.put(index, b);
+//
+//            index++;
+//        }
+//
+//        var blocks = object.get("blocks").getAsString();
+//        int sizeX = sizeList.get(0);
+//        int sizeY = sizeList.get(1);
+//        int sizeZ = sizeList.get(2);
+//
+//        int totalBlocks = sizeX * sizeY * sizeZ;
+//
+//        var blockDefs = blocks.split(";");
+//        var parsedBlockDefinitions = new ArrayList<BlockDef>(blockDefs.length);
+//        for (String def : blockDefs) {
+//            var nums = def.split(",");
+//            var blockDef = new BlockDef(Integer.parseInt(nums[0]), Integer.parseInt(nums[1]));
+//            parsedBlockDefinitions.add(blockDef);
+//        }
+//
+//        int numBlocksDef = 0;
+//        for (BlockDef def : parsedBlockDefinitions) {
+//            numBlocksDef += def.blockCount;
+//        }
+//        System.out.println("total number of blocks defined is " + numBlocksDef);
+//        if (numBlocksDef != totalBlocks) {
+//            System.out.println(numBlocksDef + " blocks were defined, but the size is " + totalBlocks + " blocks");
+//            return null;
+//        }
+//
+//        Structure resultStructure = new Structure(id, sizeX, sizeY, sizeZ);
+//
+//        int blockIndex = 0;
+//        for (BlockDef def : parsedBlockDefinitions) {
+//            Block block = blockMap.get(def.blockId);
+//            for (int i = 0; i < def.blockCount; i++) {
+//                resultStructure.setBlock(blockIndex, block);
+//                blockIndex++;
+//            }
+//        }
+//        resultStructure.apply(getInstance(), originX, originY, originZ);
+//        return resultStructure;
     }
 
     @Override
