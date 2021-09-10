@@ -6,7 +6,6 @@ import com.mattworzala.canary.server.assertion.AssertionImpl;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.Tickable;
 import net.minestom.server.coordinate.Vec;
-import net.minestom.server.event.EventBinding;
 import net.minestom.server.event.EventFilter;
 import net.minestom.server.event.EventListener;
 import net.minestom.server.event.EventNode;
@@ -22,7 +21,10 @@ import java.util.List;
 public class TestExecutor implements Tickable {
     private static final EventFilter<InstanceTickEvent, Instance> FILTER_INSTANCE_TICK = EventFilter.from(InstanceTickEvent.class, Instance.class, InstanceTickEvent::getInstance);
     private static final EventNode<InstanceTickEvent> TICK_NODE = EventNode.type("EventExecutor_InstanceTick", FILTER_INSTANCE_TICK);
-    static { MinecraftServer.getGlobalEventHandler().addChild(TICK_NODE); }
+
+    static {
+        MinecraftServer.getGlobalEventHandler().addChild(TICK_NODE);
+    }
 
     private final CanaryTestDescriptor testDescriptor;
 
@@ -42,7 +44,8 @@ public class TestExecutor implements Tickable {
         this.instance = new TestInstance();
         this.structure = new Structure(new Vec(15, 15, 15));
 
-        var tickListener = EventListener.builder(InstanceTickEvent.class).filter(this::isValidTick).build();
+        var tickListener = EventListener.builder(InstanceTickEvent.class)
+                .filter(this::isValidTick).build();
         TICK_NODE.addListener(tickListener);
 
         createStructure();
@@ -76,7 +79,28 @@ public class TestExecutor implements Tickable {
 
     @Override
     public void tick(long time) {
-
+//        System.out.println("IN TEST ENVIRONMENT TICK");
+//        boolean failed = false;
+//        boolean allPassed = true;
+//        for (var assertion : assertions) {
+//            var result = assertion.get();
+//            switch (result) {
+//                case FAIL -> {
+//                    failed = true;
+//                    allPassed = false;
+//                }
+//                case NO_RESULT -> allPassed = false;
+//            }
+//        }
+//        // if any test failed, return failed
+//        if (failed) {
+//            return AssertionResult.FAIL;
+//        }
+//        // if all tests passed, return pass
+//        if (allPassed) {
+//            return AssertionResult.PASS;
+//        }
+//        // if not all the tests have finished, and nothing has failed, return no result
     }
 
     public void reset() {

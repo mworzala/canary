@@ -1,9 +1,11 @@
 package com.mattworzala.canary.server;
 
 import com.mattworzala.canary.api.TestEnvironment;
+import com.mattworzala.canary.platform.givemeahome.SandboxTestEnvironment;
 import com.mattworzala.canary.platform.util.hint.EnvType;
 import com.mattworzala.canary.platform.util.hint.Environment;
 import com.mattworzala.canary.server.env.TestEnvironmentImpl;
+import com.mattworzala.canary.server.givemeahome.TestCoordinator;
 import com.mattworzala.canary.server.instance.BasicGenerator;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.instance.Instance;
@@ -12,9 +14,13 @@ import net.minestom.server.instance.InstanceManager;
 @Environment(EnvType.MINESTOM)
 public class HeadlessServer {
     protected static boolean headless = true;
+
     public static boolean isHeadless() {
         return headless;
     }
+
+    private TestCoordinator coordinator;
+
 
     protected Instance instance;
 
@@ -32,6 +38,8 @@ public class HeadlessServer {
     }
 
     public void initServer() {
+        coordinator = new TestCoordinator(SandboxTestEnvironment.getInstance().getRoot());
+
         // Create spawning instance
         InstanceManager instanceManager = MinecraftServer.getInstanceManager();
         instance = instanceManager.createInstanceContainer();
@@ -53,6 +61,10 @@ public class HeadlessServer {
 
     public void stop() {
         MinecraftServer.stopCleanly();
+    }
+
+    public TestCoordinator getCoordinator() {
+        return coordinator;
     }
 
     public TestEnvironment createEnvironment() {
