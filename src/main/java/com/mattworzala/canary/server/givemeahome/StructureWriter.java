@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class StructureWriter {
 
     public static void writeStructure(Structure structure, Path filePath) {
-        GsonBuilder gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation();
+        GsonBuilder gson = new GsonBuilder().setPrettyPrinting();
 
         // when registering type adapters for specific generic values
         // make sure that you register in the order of general -> specific

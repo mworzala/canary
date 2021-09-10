@@ -8,8 +8,6 @@ import net.minestom.server.command.builder.CommandContext;
 import net.minestom.server.entity.Player;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockGetter;
-import net.minestom.server.instance.block.BlockHandler;
-import net.minestom.server.utils.NamespaceID;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.FileSystems;
@@ -115,22 +113,5 @@ public class BuilderCommand extends Command {
         version(sender, NAME, VERSION);
 
         sender.sendMessage("Test builder help...");
-    }
-}
-
-class DemoHandler implements BlockHandler {
-    @Override
-    public void onPlace(@NotNull Placement placement) {
-        if (placement instanceof PlayerPlacement) {
-            // A player placed the block
-        }
-        Block block = placement.getBlock();
-        System.out.println("The block " + block.name() + " has been placed");
-    }
-
-    @Override
-    public @NotNull NamespaceID getNamespaceId() {
-        // Namespace required for serialization purpose
-        return NamespaceID.from("minestom:demo");
     }
 }
