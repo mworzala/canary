@@ -1,10 +1,14 @@
 package com.mattworzala.canary.server.givemeahome;
 
-import com.extollit.linalg.mutable.Vec3i;
-import net.minestom.server.instance.Instance;
-import net.minestom.server.instance.batch.RelativeBlockBatch;
+import net.minestom.server.coordinate.Vec;
 import net.minestom.server.instance.block.Block;
+import net.minestom.server.instance.block.BlockSetter;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This will be replaced eventually
@@ -14,29 +18,49 @@ import org.jetbrains.annotations.NotNull;
 public class Structure {
 
     private String id;
-    private Vec3i size;
-    private RelativeBlockBatch blockBatch;
+    private Vec size;
+
+    Map<Integer, Block> blockMap;
+
+    public record BlockDef(int blockId, int blockCount) {
+    }
+
+    List<BlockDef> blockDefList;
 
     public Structure(String id, int sizeX, int sizeY, int sizeZ) {
         this.id = id;
-        size = new Vec3i(sizeX, sizeY, sizeZ);
-        blockBatch = new RelativeBlockBatch();
+        size = new Vec(sizeX, sizeY, sizeZ);
+
+        this.blockMap = new HashMap<>();
+        this.blockDefList = new ArrayList<>();
     }
 
-    public Vec3i getSize() {
+    public void putInBlockMap(int index, Block block) {
+        blockMap.put(index, block);
+    }
+
+    public void addToBlockDefList(BlockDef blockDef) {
+        blockDefList.add(blockDef);
+    }
+
+    public void setBlockDefList(List<BlockDef> blockDefs) {
+        this.blockDefList = blockDefs;
+    }
+
+    public Vec getSize() {
         return this.size;
     }
 
     public int getSizeX() {
-        return this.size.x;
+        return (int) this.size.x();
     }
 
     public int getSizeY() {
-        return this.size.y;
+        return (int) this.size.y();
     }
 
     public int getSizeZ() {
-        return this.size.z;
+        return (int) this.size.z();
     }
 
     /**
@@ -44,22 +68,29 @@ public class Structure {
      *
      * @param index
      * @param block
+     * @param blockSetter
      */
-    public void setBlock(int index, @NotNull Block block) {
-        int x = index % this.size.x;
-        int z = index % (this.size.x * this.size.z) / this.size.z;
-        int y = index / (this.size.x * this.size.z);
-        assert x <= this.size.x;
-        assert y <= this.size.y;
-        assert z <= this.size.z;
-        this.setBlock(x, y, z, block);
+    private void setBlockInBlockSetter(int index, @NotNull Block block, BlockSetter blockSetter) {
+        int x = index % this.getSizeX();
+        int z = index % (this.getSizeX() * this.getSizeZ()) / this.getSizeZ();
+        int y = index / (this.getSizeX() * this.getSizeZ());
+        assert x <= this.getSizeX();
+        assert y <= this.getSizeY();
+        assert z <= this.getSizeZ();
+
+        blockSetter.setBlock(x, y, z, block);
     }
 
-    public void setBlock(int x, int y, int z, @NotNull Block block) {
-        blockBatch.setBlock(x, y, z, block);
-    }
-
-    public void apply(Instance instance, int originX, int originY, int originZ) {
-        blockBatch.apply(instance, originX, originY, originZ, () -> System.out.println("STRUCTURE WITH ID: " + this.id + " APPLIED!"));
+    public void loadIntoBlockSetter(BlockSetter blockSetter) {
+        int blockIndex = 0;
+        for (BlockDef def : blockDefList) {
+            Block block = blockMap.get(def.blockId);
+            for (int i = 0; i < def.blockCount; i++) {
+                System.out.println("block index: " + blockIndex);
+                System.out.println("block: " + block);
+                setBlockInBlockSetter(blockIndex, block, blockSetter);
+                blockIndex++;
+            }
+        }
     }
 }
