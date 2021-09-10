@@ -86,8 +86,6 @@ public class Structure {
         for (BlockDef def : blockDefList) {
             Block block = blockMap.get(def.blockId);
             for (int i = 0; i < def.blockCount; i++) {
-                System.out.println("block index: " + blockIndex);
-                System.out.println("block: " + block);
                 setBlockInBlockSetter(blockIndex, block, blockSetter);
                 blockIndex++;
             }
