@@ -1,5 +1,6 @@
 package com.mattworzala.canary.server.command.test;
 
+import com.mattworzala.canary.server.givemeahome.JsonStructureIO;
 import com.mattworzala.canary.server.givemeahome.Structure;
 import com.mattworzala.canary.server.givemeahome.StructureWriter;
 import net.minestom.server.command.CommandSender;
@@ -104,9 +105,11 @@ public class BuilderCommand extends Command {
             resultStructure.putInBlockMap(key, blockMap.get(key));
         }
 
+        // TODO - don't do this, actually go somewhere reasonable
         Path root = FileSystems.getDefault().getPath("..").toAbsolutePath();
         Path filePath = Paths.get(root.toString(), "src", "main", "resources", "test.json");
-        StructureWriter.writeStructure(resultStructure, filePath);
+        StructureWriter structureWriter = new JsonStructureIO();
+        structureWriter.writeStructure(resultStructure, filePath);
     }
 
     private void onHelp(CommandSender sender, CommandContext context) {
