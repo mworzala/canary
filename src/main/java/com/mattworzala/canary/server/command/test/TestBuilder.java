@@ -1,8 +1,10 @@
 package com.mattworzala.canary.server.command.test;
 
+import com.mattworzala.canary.server.givemeahome.BoundingBoxHandler;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Player;
+import net.minestom.server.network.packet.server.play.BlockEntityDataPacket;
 
 import java.util.function.Consumer;
 
@@ -29,7 +31,7 @@ public class TestBuilder {
 
     public void handleTestBuilderSelect(Point pointClicked) {
 
-        messageCallback.accept("points clicked: " + this.pointsSelected);
+//        messageCallback.accept("points clicked: " + this.pointsSelected);
         if (pointsSelected == 0) {
             minPoint = pointClicked;
             maxPoint = pointClicked;
@@ -40,6 +42,7 @@ public class TestBuilder {
 
 
         this.pointsSelected++;
+        this.drawBoundingBox();
 
         // if we have a non-zero x, y and z size, then we are done
         Point size = maxPoint.sub(minPoint);
@@ -48,6 +51,22 @@ public class TestBuilder {
                 size.blockZ() != 0) {
             this.doneBuilding = true;
         }
+    }
+
+    private void drawBoundingBox() {
+        var boundingBox = BoundingBoxHandler.BLOCK
+                .withTag(BoundingBoxHandler.Tags.SizeX, this.getSize().blockX())
+                .withTag(BoundingBoxHandler.Tags.SizeY, this.getSize().blockY())
+                .withTag(BoundingBoxHandler.Tags.SizeZ, this.getSize().blockZ());
+        BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket();
+
+        Point blockPos = this.getOrigin().add(new Vec(0, -1, 0));
+        blockEntityDataPacket.blockPosition = blockPos;
+        blockEntityDataPacket.action = 7;
+        blockEntityDataPacket.nbtCompound = boundingBox.nbt();
+
+        player.getInstance().setBlock(blockPos, boundingBox);
+        player.sendPacketToViewersAndSelf(blockEntityDataPacket);
     }
 
     private Point minOfPoints(Point p1, Point p2) {
