@@ -3,12 +3,23 @@ package com.mattworzala.canary.server.command.test;
 import com.mattworzala.canary.server.givemeahome.JsonStructureIO;
 import com.mattworzala.canary.server.givemeahome.Structure;
 import com.mattworzala.canary.server.givemeahome.StructureWriter;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.CommandSender;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.CommandContext;
+import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Player;
+import net.minestom.server.event.Event;
+import net.minestom.server.event.EventListener;
+import net.minestom.server.event.EventNode;
+import net.minestom.server.event.player.PlayerUseItemOnBlockEvent;
+import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockGetter;
+import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.Material;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.FileSystems;
@@ -18,6 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 import static com.mattworzala.canary.server.command.TestCommand.version;
 
@@ -25,21 +37,79 @@ public class BuilderCommand extends Command {
     private static final String NAME = "builder";
     private static final String VERSION = "0.0.1";
 
+    private ItemStack testBuilderItem;
+
     public BuilderCommand() {
         super("builder", "b");
 
         setDefaultExecutor(this::onBuild);
+        this.testBuilderItem = getTestBuilderItem();
 
     }
 
-    private void onBuild(@NotNull CommandSender commandSender, @NotNull CommandContext commandContext) {
-        Player player = commandSender.asPlayer();
-        final var playerPos = player.getPosition();
-        final var playerInstance = player.getInstance();
-        final int sizeX = 4;
-        final int sizeY = 4;
-        final int sizeZ = 4;
+    private ItemStack getTestBuilderItem() {
+        return ItemStack.builder(Material.BOOK)
+                .displayName(Component.text("Test Builder", NamedTextColor.GREEN))
+                .build();
+    }
 
+    private void onBuild(@NotNull CommandSender commandSender, @NotNull CommandContext commandContext) {
+        new Thread(() -> {
+            Player player = commandSender.asPlayer();
+
+            player.getInventory().setItemInMainHand(this.testBuilderItem);
+
+            EventNode<Event> node = EventNode.all("test-builder");
+            var handler = MinecraftServer.getGlobalEventHandler();
+
+            TestBuilder testBuilder = new TestBuilder(player, commandSender::sendMessage);
+            CountDownLatch builderFinished = new CountDownLatch(1);
+            node.addListener(EventListener.builder(PlayerUseItemOnBlockEvent.class)
+                    .expireWhen(event -> {
+                        if (testBuilder.isDoneBuilding()) {
+                            builderFinished.countDown();
+                            return true;
+                        }
+                        return false;
+                    })
+                    .handler((event) -> {
+                        if (event.getPlayer().equals(player) && event.getItemStack().equals(this.testBuilderItem)) {
+                            Point pos = event.getPosition();
+                            commandSender.sendMessage("you clicked on a block at position: " + pos);
+                            testBuilder.handleTestBuilderSelect(pos);
+                        }
+                    }).build());
+
+            handler.addChild(node);
+
+            try {
+                builderFinished.await();
+                System.out.println("Builder finished!");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            final var playerInstance = player.getInstance();
+//        final int sizeX = 4;
+//        final int sizeY = 4;
+//        final int sizeZ = 4;
+
+            commandSender.sendMessage("making a structure with origin: " + testBuilder.getOrigin() + " and size: " + testBuilder.getSize());
+            Structure structure = readStructureFromWorld(playerInstance, testBuilder.getOrigin(), testBuilder.getSize());
+
+            // TODO - don't do this, actually go somewhere reasonable
+            Path root = FileSystems.getDefault().getPath("..").toAbsolutePath();
+            Path filePath = Paths.get(root.toString(), "src", "main", "resources", "test.json");
+            StructureWriter structureWriter = new JsonStructureIO();
+            structureWriter.writeStructure(structure, filePath);
+        }).start();
+    }
+
+    private Structure readStructureFromWorld(Instance instance, Point origin, Point size) {
+        return readStructureFromWorld(instance, origin, size.blockX(), size.blockY(), size.blockZ());
+    }
+
+    private Structure readStructureFromWorld(Instance instance, Point origin, int sizeX, int sizeY, int sizeZ) {
         Structure resultStructure = new Structure("testStruct", sizeX, sizeY, sizeZ);
 
         Set<Block> blockSet = new HashSet<>();
@@ -52,10 +122,12 @@ public class BuilderCommand extends Command {
         int lastBlockIndex = -1;
         int currentBlockCount = 0;
 //        List<BlockDef> blockDefList = new ArrayList<>();
+
         for (int y = 0; y < sizeY; y++) {
             for (int z = 0; z < sizeZ; z++) {
                 for (int x = 0; x < sizeX; x++) {
-                    Block b = playerInstance.getBlock(playerPos.blockX() + x, playerPos.blockY() + y, playerPos.blockZ() + z, BlockGetter.Condition.NONE);
+                    System.out.println("(" + (origin.blockX() + x) + ", " + (origin.blockY() + y) + ", " + (origin.blockZ() + z));
+                    Block b = instance.getBlock(origin.blockX() + x, origin.blockY() + y, origin.blockZ() + z, BlockGetter.Condition.NONE);
                     // if this is the very first block
                     if (lastBlock == null) {
                         if (blockSet.add(b)) {
@@ -105,11 +177,7 @@ public class BuilderCommand extends Command {
             resultStructure.putInBlockMap(key, blockMap.get(key));
         }
 
-        // TODO - don't do this, actually go somewhere reasonable
-        Path root = FileSystems.getDefault().getPath("..").toAbsolutePath();
-        Path filePath = Paths.get(root.toString(), "src", "main", "resources", "test.json");
-        StructureWriter structureWriter = new JsonStructureIO();
-        structureWriter.writeStructure(resultStructure, filePath);
+        return resultStructure;
     }
 
     private void onHelp(CommandSender sender, CommandContext context) {
