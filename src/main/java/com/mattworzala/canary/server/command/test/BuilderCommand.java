@@ -75,7 +75,7 @@ public class BuilderCommand extends Command {
                     .handler((event) -> {
                         if (event.getPlayer().equals(player) && event.getItemStack().equals(this.testBuilderItem)) {
                             Point pos = event.getPosition();
-                            commandSender.sendMessage("you clicked on a block at position: " + pos);
+//                            commandSender.sendMessage("you clicked on a block at position: " + pos);
                             testBuilder.handleTestBuilderSelect(pos);
                         }
                     }).build());
@@ -90,11 +90,9 @@ public class BuilderCommand extends Command {
             }
 
             final var playerInstance = player.getInstance();
-//        final int sizeX = 4;
-//        final int sizeY = 4;
-//        final int sizeZ = 4;
 
             commandSender.sendMessage("making a structure with origin: " + testBuilder.getOrigin() + " and size: " + testBuilder.getSize());
+
             Structure structure = readStructureFromWorld(playerInstance, testBuilder.getOrigin(), testBuilder.getSize());
 
             // TODO - don't do this, actually go somewhere reasonable
@@ -121,12 +119,11 @@ public class BuilderCommand extends Command {
         Block lastBlock = null;
         int lastBlockIndex = -1;
         int currentBlockCount = 0;
-//        List<BlockDef> blockDefList = new ArrayList<>();
 
         for (int y = 0; y < sizeY; y++) {
             for (int z = 0; z < sizeZ; z++) {
                 for (int x = 0; x < sizeX; x++) {
-                    System.out.println("(" + (origin.blockX() + x) + ", " + (origin.blockY() + y) + ", " + (origin.blockZ() + z));
+//                    System.out.println("(" + (origin.blockX() + x) + ", " + (origin.blockY() + y) + ", " + (origin.blockZ() + z));
                     Block b = instance.getBlock(origin.blockX() + x, origin.blockY() + y, origin.blockZ() + z, BlockGetter.Condition.NONE);
                     // if this is the very first block
                     if (lastBlock == null) {

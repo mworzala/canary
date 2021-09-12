@@ -22,14 +22,15 @@ public class BoundingBoxHandler implements BlockHandler {
             .withTag(Tags.Name, "test123")
             .withTag(Tags.PosX, 0)
             .withTag(Tags.PosY, 1)
-            .withTag(Tags.PosZ, 1)
+            .withTag(Tags.PosZ, 0)
             .withTag(Tags.Powered, (byte) 0)
             .withTag(Tags.Rotation, "NONE")
             .withTag(Tags.Seed, 0L)
             .withTag(Tags.ShowBoundingBox, (byte) 1)
             .withHandler(new BoundingBoxHandler());
 
-    private BoundingBoxHandler() {}
+    private BoundingBoxHandler() {
+    }
 
     @Override
     public @NotNull Collection<Tag<?>> getBlockEntityTags() {
