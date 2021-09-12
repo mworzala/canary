@@ -5,8 +5,9 @@ import com.mattworzala.canary.api.TestEnvironment;
 import com.mattworzala.canary.platform.util.ClassLoaders;
 import com.mattworzala.canary.server.assertion.AssertionImpl;
 import com.mattworzala.canary.server.assertion.AssertionResult;
+import com.mattworzala.canary.server.givemeahome.JsonStructureIO;
 import com.mattworzala.canary.server.givemeahome.Structure;
-import com.mattworzala.canary.server.givemeahome.StructureLoader;
+import com.mattworzala.canary.server.givemeahome.StructureReader;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
@@ -21,11 +22,11 @@ import net.minestom.server.instance.batch.RelativeBlockBatch;
 import net.minestom.server.instance.block.Block;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -178,14 +179,24 @@ public class TestEnvironmentImpl implements TestEnvironment {
 
     @Override
     public Structure loadWorldData(String fileName, int originX, int originY, int originZ) {
-        Reader reader = new InputStreamReader(Objects.requireNonNull(ClassLoaders.MINESTOM.getResourceAsStream(fileName)));
-        Structure structure = StructureLoader.parseStructure(reader);
+        var resource = ClassLoaders.MINESTOM.getResource(fileName);
+        if (resource == null) {
+            return null;
+        }
+        try {
+            var uri = resource.toURI();
+            Path p = Paths.get(uri);
+            StructureReader structureReader = new JsonStructureIO();
+            var structure = structureReader.readStructure(p);
 
-        assert structure != null;
-        RelativeBlockBatch blockBatch = new RelativeBlockBatch();
-        structure.loadIntoBlockSetter(blockBatch);
-        blockBatch.apply(getInstance(), originX, originY, originZ, () -> System.out.println("Applied the structure to the world!"));
-        return structure;
+            RelativeBlockBatch blockBatch = new RelativeBlockBatch();
+            structure.loadIntoBlockSetter(blockBatch);
+            blockBatch.apply(getInstance(), originX, originY, originZ, () -> System.out.println("Applied the structure to the world!"));
+            return structure;
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override

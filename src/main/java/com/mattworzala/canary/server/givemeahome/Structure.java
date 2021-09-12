@@ -104,4 +104,31 @@ public class Structure {
     public Map<Integer, Block> getBlockMap() {
         return blockmap;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("id: ");
+        stringBuilder.append(this.getId());
+        stringBuilder.append("\n");
+
+        stringBuilder.append("size: ");
+        stringBuilder.append(String.format("%d, %d, %d", this.getSizeX(), this.getSizeY(), this.getSizeZ()));
+        stringBuilder.append("\n");
+
+        stringBuilder.append("block map:\n");
+        var index = -1;
+        while (this.blockmap.containsKey(index)) {
+            stringBuilder.append(index + ": " + this.blockmap.get(index));
+            stringBuilder.append("\n");
+            index++;
+        }
+
+        stringBuilder.append("block defs:\n");
+        for (var blockDef : this.blocks) {
+            stringBuilder.append(blockDef);
+            stringBuilder.append("\n");
+        }
+        return stringBuilder.toString();
+    }
 }
