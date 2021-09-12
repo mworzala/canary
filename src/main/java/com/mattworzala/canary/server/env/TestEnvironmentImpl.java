@@ -192,6 +192,7 @@ public class TestEnvironmentImpl implements TestEnvironment {
             RelativeBlockBatch blockBatch = new RelativeBlockBatch();
             structure.loadIntoBlockSetter(blockBatch);
             blockBatch.apply(getInstance(), originX, originY, originZ, () -> System.out.println("Applied the structure to the world!"));
+
             return structure;
         } catch (URISyntaxException e) {
             e.printStackTrace();

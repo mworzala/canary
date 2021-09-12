@@ -55,8 +55,8 @@ public class JsonStructureIO implements StructureWriter, StructureReader {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("JSON OUTPUT");
-        System.out.println(output);
+//        System.out.println("JSON OUTPUT");
+//        System.out.println(output);
     }
 
     public Structure readStructure(Path p) {
