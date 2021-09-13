@@ -25,7 +25,6 @@ public class ChunkMirror extends Chunk {
     private final DynamicChunk mirror;
 
     // start:DynamicChunk
-    private volatile long lastChangeTime;
     private final CachedPacket chunkCache = new CachedPacket(this::createChunkPacket);
     private final CachedPacket lightCache = new CachedPacket(this::createLightPacket);
     // end:DynamicChunk
