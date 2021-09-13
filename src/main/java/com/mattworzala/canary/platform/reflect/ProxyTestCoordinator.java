@@ -10,7 +10,7 @@ import static com.mattworzala.canary.platform.util.ClassLoaders.loadClassRequire
 import static org.junit.platform.commons.util.ReflectionUtils.*;
 
 public record ProxyTestCoordinator(Object testCoordinator) {
-    private static final Class<?> testCoordinatorClass = loadClassRequired(MINESTOM, "com.mattworzala.canary.server.givemeahome.v2.TestCoordinatorV2");
+    private static final Class<?> testCoordinatorClass = loadClassRequired(MINESTOM, "com.mattworzala.canary.server.givemeahome.TestCoordinator");
 
     // @formatter:off
     private static final Method indexTests = getRequiredMethod(testCoordinatorClass, "indexTests", CanaryEngineDescriptor.class);
