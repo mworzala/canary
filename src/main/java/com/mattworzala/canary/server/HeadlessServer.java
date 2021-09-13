@@ -4,10 +4,11 @@ import com.mattworzala.canary.api.TestEnvironment;
 import com.mattworzala.canary.platform.givemeahome.SandboxTestEnvironment;
 import com.mattworzala.canary.platform.util.hint.EnvType;
 import com.mattworzala.canary.platform.util.hint.Environment;
-import com.mattworzala.canary.server.env.TestEnvironmentImpl;
+import com.mattworzala.canary.server.givemeahome.v2.TestCoordinatorV2;
 import com.mattworzala.canary.server.givemeahome.TestCoordinator;
 import com.mattworzala.canary.server.instance.BasicGenerator;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.event.instance.InstanceTickEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceManager;
 
@@ -22,9 +23,11 @@ public class HeadlessServer {
     private TestCoordinator coordinator;
 
 
-    protected Instance instance;
+    protected Instance instance; //todo remove
 
-    public void start() {
+    private final TestCoordinatorV2 coordinator = new TestCoordinatorV2();
+
+    public final void start(int port) {
 
 //        MinecraftServer.getExtensionManager().loadDynamicExtension()
         //todo find a better way to do this (see issue #3)
@@ -34,12 +37,20 @@ public class HeadlessServer {
         // Initialization
         MinecraftServer minecraftServer = MinecraftServer.init();
         initServer();
-        minecraftServer.start("0.0.0.0", 25565); //todo should set to known random port + localhost instead for headless
+        System.out.println("Starting on port " + port);
+        minecraftServer.start("0.0.0.0", port); //todo set localhost in headless environment?
     }
 
-    public void initServer() {
-        coordinator = new TestCoordinator(SandboxTestEnvironment.getInstance().getRoot());
+    public final void stop() {
+        MinecraftServer.stopCleanly();
+    }
 
+    public TestCoordinatorV2 getTestCoordinator() {
+        return coordinator;
+    }
+
+    protected void initServer() {
+        coordinator = new TestCoordinator(SandboxTestEnvironment.getInstance().getRoot());
         // Create spawning instance
         InstanceManager instanceManager = MinecraftServer.getInstanceManager();
         instance = instanceManager.createInstanceContainer();
@@ -48,7 +59,6 @@ public class HeadlessServer {
 //        instance = new ViewerInstance();
 //        instanceManager.registerInstance(instance);
 
-//        instance.setBlock(5, 41, 5, CanaryBlocks.BoundingBox(new Vec(48, 48, 48)));
 
         //todo this isnt great, TestInstance should handle this
         System.out.println("Force loading spawn chunks");

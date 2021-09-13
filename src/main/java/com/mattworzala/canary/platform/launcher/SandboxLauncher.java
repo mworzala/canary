@@ -1,19 +1,37 @@
 package com.mattworzala.canary.platform.launcher;
 
-import com.mattworzala.canary.platform.givemeahome.SandboxTestEnvironment;
-import com.mattworzala.canary.platform.reflect.PSandboxServer;
-import com.mattworzala.canary.platform.util.MinestomMixin;
+import com.mattworzala.canary.platform.junit.CanaryTestEngine;
+import org.junit.platform.engine.UniqueId;
+import org.junit.platform.engine.discovery.DiscoverySelectors;
+import org.junit.platform.launcher.LauncherDiscoveryRequest;
+import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 
 public class SandboxLauncher {
+    /**
+     * A JUnit engine discovery request which allows any class in any package.
+     */
+    private static final LauncherDiscoveryRequest DEFAULT_REQUEST = LauncherDiscoveryRequestBuilder.request()
+            .selectors(DiscoverySelectors.selectPackage(""))
+            .build();
+
     public static void main(String[] args) {
-        MinestomMixin.inject(args); //"--mixin", "mixin.canary.base.json"
+        var engine = new CanaryTestEngine(false);
 
-        var server = PSandboxServer.create();
+        // Handle discovery (preps server)
+        engine.discover(DEFAULT_REQUEST, UniqueId.forEngine(engine.getId()));
 
-        SandboxTestEnvironment.getInstance().discover();
+        // Start the server manually since we are not calling `engine#execute(..)`
+        engine.startServer();
 
-        server.start();
-        SandboxTestEnvironment.getInstance().setServer(server); //todo handle this somewhere better
+
+//        MinestomMixin.inject(args); //"--mixin", "mixin.canary.base.json"
+
+//        var server = ProxySandboxServer.create();
+
+//        SandboxTestEnvironment.getInstance().discover();
+
+//        server.start();
+//        SandboxTestEnvironment.getInstance().setServer(server); //todo handle this somewhere better
         // Stopped by other means
     }
 }

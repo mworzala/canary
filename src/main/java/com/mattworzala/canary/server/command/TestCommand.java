@@ -17,8 +17,6 @@ import static net.minestom.server.command.builder.arguments.ArgumentType.*;
 public class TestCommand extends Command {
     private static final String VERSION = "1.2.3";
 
-    private final SandboxTestEnvironment env = SandboxTestEnvironment.getInstance();
-
     public TestCommand() {
         super("test", "t");
 
@@ -42,7 +40,7 @@ public class TestCommand extends Command {
     private void onList(CommandSender sender, CommandContext context) {
         version(sender, null, VERSION);
 
-        printTestRecursive(sender, env.getRoot(), -1);
+//        printTestRecursive(sender, env.getRoot(), -1);
     }
 
     /**
@@ -74,16 +72,16 @@ public class TestCommand extends Command {
                         .color(NamedTextColor.DARK_GRAY)))
         );
 
-        var result = env.discover();
-        sender.sendMessage(
-                text("Discovered ")
-                .append(text(result.tests()))
-                .append(text(" tests in "))
-                .append(text(result.files()))
-                .append(text(" files in "))
-                .append(text(result.packages()))
-                .append(text(" packages."))
-        );
+//        var result = env.discover();
+//        sender.sendMessage(
+//                text("Discovered ")
+//                .append(text(result.tests()))
+//                .append(text(" tests in "))
+//                .append(text(result.files()))
+//                .append(text(" files in "))
+//                .append(text(result.packages()))
+//                .append(text(" packages."))
+//        );
     }
 
     public static void version(CommandSender sender, String name, String version) {
