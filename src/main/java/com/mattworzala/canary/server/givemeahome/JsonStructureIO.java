@@ -40,6 +40,7 @@ public class JsonStructureIO implements StructureWriter, StructureReader {
         gsonBuilder.registerTypeAdapter(blockDefList, new BlockDefListSerializer());
 
         gsonBuilder.registerTypeAdapter(Vec.class, new VecSerializer());
+        gsonBuilder.registerTypeAdapter(Block.class, new BlockSerializer());
 
         this.gson = gsonBuilder.create();
     }
@@ -55,8 +56,8 @@ public class JsonStructureIO implements StructureWriter, StructureReader {
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        System.out.println("JSON OUTPUT");
-//        System.out.println(output);
+        System.out.println("JSON OUTPUT");
+        System.out.println(output);
     }
 
     public Structure readStructure(Path p) {
@@ -92,7 +93,7 @@ public class JsonStructureIO implements StructureWriter, StructureReader {
     private static class BlockDefListSerializer implements JsonSerializer<List<Structure.BlockDef>>, JsonDeserializer<List<Structure.BlockDef>> {
         public JsonElement serialize(List<Structure.BlockDef> blockDefList, Type typeOfSRc, JsonSerializationContext context) {
 
-            return new JsonPrimitive(blockDefList.stream()
+            return context.serialize(blockDefList.stream()
                     .map((blockDef) -> blockDef.blockId() + "," + blockDef.blockCount())
                     .collect(Collectors.joining(";")));
         }
@@ -121,7 +122,7 @@ public class JsonStructureIO implements StructureWriter, StructureReader {
             int index = 0;
             while (blockMap.containsKey(index)) {
                 Block b = blockMap.get(index);
-                arr.add(new BlockSerializer().serialize(b, Block.class, context));
+                arr.add(context.serialize(b, Block.class));
                 index++;
             }
             return arr;
@@ -135,7 +136,7 @@ public class JsonStructureIO implements StructureWriter, StructureReader {
 
             int index = 0;
             for (JsonElement block : blockMapArr) {
-                Block b = new BlockSerializer().deserialize(block, Block.class, context);
+                Block b = context.deserialize(block, Block.class);
                 resultBlockMap.put(index, b);
 
                 index++;
@@ -148,12 +149,12 @@ public class JsonStructureIO implements StructureWriter, StructureReader {
     private static class BlockSerializer implements JsonSerializer<Block>, JsonDeserializer<Block> {
         public JsonElement serialize(Block block, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject object = new JsonObject();
-            object.add("block", new JsonPrimitive(block.name()));
+            object.add("block", context.serialize(block.name()));
             if (block.handler() != null) {
-                object.add("handler", new JsonPrimitive(block.handler().toString()));
+                object.add("handler", context.serialize(block.handler().toString()));
             }
             if (block.nbt() != null) {
-                object.add("data", new JsonPrimitive(block.nbt().toString()));
+                object.add("data", context.serialize(block.nbt().toString()));
             }
             return object;
         }
