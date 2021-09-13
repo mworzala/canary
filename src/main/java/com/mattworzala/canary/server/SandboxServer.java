@@ -3,6 +3,9 @@ package com.mattworzala.canary.server;
 import com.mattworzala.canary.platform.util.hint.EnvType;
 import com.mattworzala.canary.platform.util.hint.Environment;
 import com.mattworzala.canary.server.command.*;
+import com.mattworzala.canary.server.instance.TestInstance;
+import com.mattworzala.canary.server.instance.ViewableInstance;
+import com.mattworzala.canary.server.instance.ViewerInstance;
 import com.mattworzala.canary.server.instance.BasicGenerator;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.CommandManager;
@@ -23,6 +26,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import net.minestom.server.instance.Instance;
+import net.minestom.server.instance.block.Block;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Environment(EnvType.MINESTOM)
 public class SandboxServer extends HeadlessServer {
@@ -41,6 +49,8 @@ public class SandboxServer extends HeadlessServer {
         RESOURCE_PACK_HASH = hash;
     }
 
+    public static List<Instance> instances = new ArrayList<>();
+
     @Override
     public void initServer() {
         super.initServer();
@@ -51,13 +61,20 @@ public class SandboxServer extends HeadlessServer {
         PlacementRules.init();
         MojangAuth.init();
 
+        ViewerInstance viewerInstance = new ViewerInstance();
+        ViewableInstance a = new ViewableInstance(Block.DIAMOND_BLOCK);
+        viewerInstance.addMirror(a, 1, 1, 1, 1);
+
+        instances.add(viewerInstance);
+        instances.add(a);
+
         // Add an event callback to specify the spawning instance (and the spawn position)
         GlobalEventHandler globalEventHandler = MinecraftServer.getGlobalEventHandler();
         globalEventHandler.addListener(PlayerLoginEvent.class, event -> {
             final Player player = event.getPlayer();
             var instance = MinecraftServer.getInstanceManager().createInstanceContainer();
             instance.setChunkGenerator(new BasicGenerator());
-            event.setSpawningInstance(coordinator.getSandboxViewer());
+            event.setSpawningInstance(viewerInstance);
             player.setRespawnPoint(new Pos(0, 41, 0));
 
         });
@@ -84,5 +101,6 @@ public class SandboxServer extends HeadlessServer {
         commands.register(new CanaryCommand());
         commands.register(new TestCommand());
         commands.register(new InstanceCommand());
+        commands.register(new EntityCommand());
     }
 }

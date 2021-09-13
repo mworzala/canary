@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Vec;
+import net.minestom.server.entity.Entity;
 import net.minestom.server.instance.*;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.world.DimensionType;
@@ -16,11 +17,13 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class ViewerInstance extends InstanceContainer {
+    public static final UUID ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
+
     private static record MirrorConfig(Instance target, int realX, int realZ) { }
     private final Long2ObjectMap<MirrorConfig> testInstances = new Long2ObjectOpenHashMap<>();
 
     public ViewerInstance() {
-        super(UUID.randomUUID(), DimensionType.OVERWORLD);
+        super(ID, DimensionType.OVERWORLD);
         MinecraftServer.getInstanceManager().registerInstance(this);
 
         setChunkGenerator(new BasicGenerator());
