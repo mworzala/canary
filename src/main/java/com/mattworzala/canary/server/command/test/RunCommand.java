@@ -1,9 +1,8 @@
 package com.mattworzala.canary.server.command.test;
 
-import com.mattworzala.canary.platform.givemeahome.SandboxTestEnvironment;
 import com.mattworzala.canary.platform.givemeahome.TestExecutionListener;
 import com.mattworzala.canary.server.SandboxServer;
-import com.mattworzala.canary.server.givemeahome.v2.TestCoordinatorV2;
+import com.mattworzala.canary.server.givemeahome.TestCoordinator;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minestom.server.MinecraftServer;
@@ -49,7 +48,7 @@ public class RunCommand extends Command {
         version(sender, NAME, VERSION);
 
         MinecraftServer.getSchedulerManager().buildTask(() -> {
-            TestCoordinatorV2 coordinator = SandboxServer.getInstance().getTestCoordinator();
+            TestCoordinator coordinator = SandboxServer.getInstance().getTestCoordinator();
             System.out.println("STARTING EXECUTION");
             coordinator.execute(new TestExecutionListener() {
                 @Override

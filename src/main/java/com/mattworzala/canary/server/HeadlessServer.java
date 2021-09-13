@@ -4,11 +4,10 @@ import com.mattworzala.canary.api.TestEnvironment;
 import com.mattworzala.canary.platform.givemeahome.SandboxTestEnvironment;
 import com.mattworzala.canary.platform.util.hint.EnvType;
 import com.mattworzala.canary.platform.util.hint.Environment;
-import com.mattworzala.canary.server.givemeahome.v2.TestCoordinatorV2;
+import com.mattworzala.canary.server.givemeahome.TestCoordinator;
 import com.mattworzala.canary.server.givemeahome.TestCoordinator;
 import com.mattworzala.canary.server.instance.BasicGenerator;
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.event.instance.InstanceTickEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceManager;
 
@@ -25,7 +24,7 @@ public class HeadlessServer {
 
     protected Instance instance; //todo remove
 
-    private final TestCoordinatorV2 coordinator = new TestCoordinatorV2();
+    private final TestCoordinator coordinator = new TestCoordinator();
 
     public final void start(int port) {
 
@@ -45,7 +44,7 @@ public class HeadlessServer {
         MinecraftServer.stopCleanly();
     }
 
-    public TestCoordinatorV2 getTestCoordinator() {
+    public TestCoordinator getTestCoordinator() {
         return coordinator;
     }
 
