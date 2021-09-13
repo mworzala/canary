@@ -1,6 +1,6 @@
 package com.mattworzala.canary.platform.givemeahome;
 
-import com.mattworzala.canary.platform.reflect.PHeadlessServer;
+import com.mattworzala.canary.platform.reflect.ProxyHeadlessServer;
 import com.mattworzala.canary.platform.util.hint.EnvType;
 import com.mattworzala.canary.platform.util.hint.Environment;
 import com.mattworzala.canary.server.assertion.AssertionResult;
@@ -21,10 +21,10 @@ public class SandboxTestExecutor {
     // There must be a better way of handing this
     private Stack<Object> instances = new Stack<>();
 
-    private final PHeadlessServer server;
+    private final ProxyHeadlessServer server;
     private final TestExecutionListener listener;
 
-    public SandboxTestExecutor(PHeadlessServer server, TestExecutionListener listener) {
+    public SandboxTestExecutor(ProxyHeadlessServer server, TestExecutionListener listener) {
         this.server = server;
         this.listener = listener;
     }
@@ -56,51 +56,51 @@ public class SandboxTestExecutor {
             var target = methodSource.getJavaMethod();
 
             // Create test environment
-            var environment = server.createEnvironment();
-
-            try {
-                assert !instances.isEmpty();
-                var instance = instances.peek();
-
-                // Invoke test method with/without environment depending on method definition
-                if (target.getParameterCount() == 1) {
-//                    ClassLoader.getRe
-                    System.out.println(getClass().getClassLoader().getResource("testWorld.json"));
-                    var structure = environment.loadWorldData("testWorld.json", 0, 41, 0);
-                    target.invoke(instance, environment.instance());
-                    var result = environment.startTesting().ordinal(); // BLOCKING
-                    if (result == AssertionResult.FAIL.ordinal()) {
-                        listener.end(test, new AssertionError("Condition failed."));
-                        System.out.println("Test failed: " + test.getUniqueId());
-                    } else if (result == AssertionResult.PASS.ordinal()) {
-                        listener.end(test);
-                        System.out.println("Test passed: " + test.getUniqueId());
-                    } else {
-                        listener.end(test, new AssertionError("Condition unknown."));
-                        System.out.println("TEST RESULT UNKNOWN: " + test.getUniqueId());
-                    }
-                    return;
-                } else target.invoke(instance);
-
-                // Loop on environment to test conditions
-                //todo
-
-            } catch (InvocationTargetException possibleAssertionError) {
-                // AssertionError is masked here
-                var cause = possibleAssertionError.getCause();
-                if (cause instanceof AssertionError assertionError) {
-                    listener.end(test, assertionError);
-                    System.out.println("Test failed: " + assertionError.getMessage());
-                } else {
-                    var wrapped = new RuntimeException("Cannot execute test method " + methodSource.getMethodName() + ":", possibleAssertionError);
-                    listener.end(test, wrapped);
-//                    throw wrapped;
-                }
-                return;
-            } catch (IllegalAccessException e) {
-                var wrapped = new RuntimeException("Cannot execute test method " + methodSource.getMethodName() + ":", e);
-                listener.end(test, wrapped);
-            }
+//            var environment = server.createEnvironment();
+//
+//            try {
+//                assert !instances.isEmpty();
+//                var instance = instances.peek();
+//
+//                // Invoke test method with/without environment depending on method definition
+//                if (target.getParameterCount() == 1) {
+////                    ClassLoader.getRe
+//                    System.out.println(getClass().getClassLoader().getResource("testWorld.json"));
+//                    environment.loadWorldData("testWorld.json", 0, 41, 0);
+//                    target.invoke(instance, environment.instance());
+//                    var result = environment.startTesting().ordinal(); // BLOCKING
+//                    if (result == AssertionResult.FAIL.ordinal()) {
+//                        listener.end(test, new AssertionError("Condition failed."));
+//                        System.out.println("Test failed: " + test.getUniqueId());
+//                    } else if (result == AssertionResult.PASS.ordinal()) {
+//                        listener.end(test);
+//                        System.out.println("Test passed: " + test.getUniqueId());
+//                    } else {
+//                        listener.end(test, new AssertionError("Condition unknown."));
+//                        System.out.println("TEST RESULT UNKNOWN: " + test.getUniqueId());
+//                    }
+//                    return;
+//                } else target.invoke(instance);
+//
+//                // Loop on environment to test conditions
+//                //todo
+//
+//            } catch (InvocationTargetException possibleAssertionError) {
+//                // AssertionError is masked here
+//                var cause = possibleAssertionError.getCause();
+//                if (cause instanceof AssertionError assertionError) {
+//                    listener.end(test, assertionError);
+//                    System.out.println("Test failed: " + assertionError.getMessage());
+//                } else {
+//                    var wrapped = new RuntimeException("Cannot execute test method " + methodSource.getMethodName() + ":", possibleAssertionError);
+//                    listener.end(test, wrapped);
+////                    throw wrapped;
+//                }
+//                return;
+//            } catch (IllegalAccessException e) {
+//                var wrapped = new RuntimeException("Cannot execute test method " + methodSource.getMethodName() + ":", e);
+//                listener.end(test, wrapped);
+//            }
         }
 
         // Execute children

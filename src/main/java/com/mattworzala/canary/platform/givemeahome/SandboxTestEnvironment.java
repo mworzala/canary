@@ -2,7 +2,7 @@ package com.mattworzala.canary.platform.givemeahome;
 
 import com.mattworzala.canary.platform.junit.CanaryTestEngine;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryEngineDescriptor;
-import com.mattworzala.canary.platform.reflect.PHeadlessServer;
+import com.mattworzala.canary.platform.reflect.ProxyHeadlessServer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.platform.engine.TestDescriptor;
@@ -30,7 +30,7 @@ public class SandboxTestEnvironment {
         return instance;
     }
 
-    private PHeadlessServer server; //todo this should be passed better
+    private ProxyHeadlessServer server; //todo this should be passed better
 
     private final CanaryTestEngine engine;
     private CanaryEngineDescriptor root;
@@ -128,7 +128,7 @@ public class SandboxTestEnvironment {
     }
 
 
-    public void setServer(PHeadlessServer server) {
+    public void setServer(ProxyHeadlessServer server) {
         this.server = server;
     }
 }

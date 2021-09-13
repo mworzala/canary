@@ -25,6 +25,12 @@ public class TestInstance extends InstanceContainer {
         super(UUID.randomUUID(), DimensionType.OVERWORLD);
         MinecraftServer.getInstanceManager().registerInstance(this);
 
+        for (int x = -12; x <= 12; x++) {
+            for (int z = -12; z <= 12; z++) {
+                loadChunk(x, z);
+            }
+        }
+
         setChunkGenerator(new Generator());
     }
 
