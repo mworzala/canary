@@ -12,15 +12,15 @@ import static com.mattworzala.canary.platform.util.ReflectionUtils.invokeConstru
 import static org.junit.platform.commons.util.ReflectionUtils.getDeclaredConstructor;
 
 @Environment(EnvType.PLATFORM)
-public class PSandboxServer extends PHeadlessServer {
+public class ProxySandboxServer extends ProxyHeadlessServer {
     private static final Class<?> sandboxServerClass = loadClassRequired(MINESTOM, "com.mattworzala.canary.server.SandboxServer");
 
     // @formatter:off
     private static final Constructor<?> constructor = getDeclaredConstructor(sandboxServerClass);
-    public static @NotNull PSandboxServer create() {return new PSandboxServer(invokeConstructor(constructor));}
+    public static @NotNull ProxySandboxServer create() {return new ProxySandboxServer(invokeConstructor(constructor));}
     // @formatter:on
 
-    public PSandboxServer(Object headlessServer) {
+    public ProxySandboxServer(Object headlessServer) {
         super(headlessServer);
     }
 

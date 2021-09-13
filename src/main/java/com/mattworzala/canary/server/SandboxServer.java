@@ -53,7 +53,7 @@ public class SandboxServer extends HeadlessServer {
 
         // Add an event callback to specify the spawning instance (and the spawn position)
         GlobalEventHandler globalEventHandler = MinecraftServer.getGlobalEventHandler();
-        globalEventHandler.addEventCallback(PlayerLoginEvent.class, event -> {
+        globalEventHandler.addListener(PlayerLoginEvent.class, event -> {
             final Player player = event.getPlayer();
             var instance = MinecraftServer.getInstanceManager().createInstanceContainer();
             instance.setChunkGenerator(new BasicGenerator());
@@ -61,7 +61,7 @@ public class SandboxServer extends HeadlessServer {
             player.setRespawnPoint(new Pos(0, 41, 0));
 
         });
-        globalEventHandler.addEventCallback(PlayerSpawnEvent.class, event -> {
+        globalEventHandler.addListener(PlayerSpawnEvent.class, event -> {
             if (event.isFirstSpawn()) {
                 event.getPlayer().setGameMode(GameMode.CREATIVE);
                 event.getPlayer().setPermissionLevel(4);
