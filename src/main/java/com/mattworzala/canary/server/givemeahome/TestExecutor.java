@@ -7,7 +7,6 @@ import com.mattworzala.canary.server.assertion.AssertionImpl;
 import com.mattworzala.canary.server.env.TestEnvironmentImpl;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.Tickable;
-import net.minestom.server.coordinate.Vec;
 import net.minestom.server.event.EventFilter;
 import net.minestom.server.event.EventListener;
 import net.minestom.server.event.EventNode;
@@ -26,7 +25,10 @@ import java.util.List;
 public class TestExecutor implements Tickable {
     private static final EventFilter<InstanceTickEvent, Instance> FILTER_INSTANCE_TICK = EventFilter.from(InstanceTickEvent.class, Instance.class, InstanceTickEvent::getInstance);
     private static final EventNode<InstanceTickEvent> TICK_NODE = EventNode.type("EventExecutor_InstanceTick", FILTER_INSTANCE_TICK);
-    static { MinecraftServer.getGlobalEventHandler().addChild(TICK_NODE); }
+
+    static {
+        MinecraftServer.getGlobalEventHandler().addChild(TICK_NODE);
+    }
 
     private final CanaryTestDescriptor testDescriptor;
 
@@ -44,7 +46,8 @@ public class TestExecutor implements Tickable {
     public TestExecutor(CanaryTestDescriptor testDescriptor) {
         this.testDescriptor = testDescriptor;
         this.instance = new TestInstance();
-        this.structure = new Structure(new Vec(15, 15, 15));
+        this.structure = null; //todo
+//        this.structure = new Structure(new Vec(15, 15, 15));
 
         var tickListener = EventListener.builder(InstanceTickEvent.class)
                 .handler(event -> this.tick(event.getDuration()))
@@ -121,7 +124,7 @@ public class TestExecutor implements Tickable {
 
     private void createStructure() {
         // Visual Blocks
-        instance.setBlock(0, 41, 0, CanaryBlocks.BoundingBox(structure.size()));
+//        instance.setBlock(0, 41, 0, CanaryBlocks.BoundingBox(structure.size()));
 
 //        instance.setBlock(0, 42, 0, Block.LECTERN);
 
