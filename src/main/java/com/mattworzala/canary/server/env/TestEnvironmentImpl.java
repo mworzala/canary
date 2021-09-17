@@ -15,6 +15,7 @@ import com.mattworzala.canary.server.structure.Structure;
 import com.mattworzala.canary.server.structure.StructureReader;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
+import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.LivingEntity;
 import net.minestom.server.instance.Instance;
@@ -181,7 +182,7 @@ public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironm
             var structure = structureReader.readStructure(p);
 
             RelativeBlockBatch blockBatch = new RelativeBlockBatch();
-            structure.loadIntoBlockSetter(blockBatch);
+            structure.loadIntoBlockSetter(blockBatch, Vec.ZERO);
             blockBatch.apply(getInstance(), originX, originY, originZ, () -> System.out.println("Applied the structure to the world!"));
 
             return structure;

@@ -61,20 +61,13 @@ public class SandboxServer extends HeadlessServer {
         PlacementRules.init();
         MojangAuth.init();
 
-        ViewerInstance viewerInstance = new ViewerInstance();
-        ViewableInstance a = new ViewableInstance(Block.DIAMOND_BLOCK);
-        viewerInstance.addMirror(a, 1, 1, 1, 1);
-
-        instances.add(viewerInstance);
-        instances.add(a);
-
         // Add an event callback to specify the spawning instance (and the spawn position)
         GlobalEventHandler globalEventHandler = MinecraftServer.getGlobalEventHandler();
         globalEventHandler.addListener(PlayerLoginEvent.class, event -> {
             final Player player = event.getPlayer();
             var instance = MinecraftServer.getInstanceManager().createInstanceContainer();
             instance.setChunkGenerator(new BasicGenerator());
-            event.setSpawningInstance(viewerInstance);
+            event.setSpawningInstance(getTestCoordinator().getInstance());
             player.setRespawnPoint(new Pos(0, 41, 0));
 
         });
