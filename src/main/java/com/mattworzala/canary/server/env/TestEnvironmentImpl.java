@@ -198,7 +198,7 @@ public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironm
         T entity = constructor.get();
         if (config != null)
             config.accept(entity);
-        entity.setInstance(getInstance(), position);
+        entity.setInstance(getInstance(), position.add(executor().getOrigin()));
         return entity;
     }
 }
