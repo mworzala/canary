@@ -36,7 +36,11 @@ public class TestCoordinator {
         instance = MinecraftServer.getInstanceManager().createInstanceContainer();
         instance.setChunkGenerator(new BasicGenerator());
 
-
+        for (int x = -10; x <= 10; x++) {
+            for (int z = -10; z <= 10; z++) {
+                instance.loadChunk(x, z).join();
+            }
+        }
     }
 
     public InstanceContainer getInstance() {
