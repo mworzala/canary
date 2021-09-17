@@ -83,6 +83,10 @@ public class TestExecutor implements Tickable {
         return structure;
     }
 
+    public Point getOrigin() {
+        return origin;
+    }
+
     public void register(AssertionImpl<?, ?> assertion) {
         assertions.add(assertion);
     }
@@ -123,7 +127,7 @@ public class TestExecutor implements Tickable {
     public void tick(long time) {
         System.out.println("TICKING...");
 
-        if (++ticks == 5) {
+        if (++ticks == 50) {
             executionListener.end(testDescriptor, new RuntimeException("AN ERROR"));
             reset();
         }
@@ -149,12 +153,12 @@ public class TestExecutor implements Tickable {
                 .withTag(BoundingBoxHandler.Tags.SizeX, structure.getSize().blockX())
                 .withTag(BoundingBoxHandler.Tags.SizeY, structure.getSize().blockY())
                 .withTag(BoundingBoxHandler.Tags.SizeZ, structure.getSize().blockZ());
-        BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket();
-
+//        BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket();
         Point blockPos = origin.add(new Vec(0, -1, 0));
-        blockEntityDataPacket.blockPosition = blockPos;
-        blockEntityDataPacket.action = 7;
-        blockEntityDataPacket.nbtCompound = boundingBox.nbt();
+//        blockEntityDataPacket.blockPosition = blockPos;
+//        blockEntityDataPacket.action = 7;
+//        blockEntityDataPacket.nbtCompound = boundingBox.nbt();
+
 
         getInstance().setBlock(blockPos, boundingBox);
 
