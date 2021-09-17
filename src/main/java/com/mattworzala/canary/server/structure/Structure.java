@@ -1,5 +1,6 @@
 package com.mattworzala.canary.server.structure;
 
+import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockSetter;
@@ -75,7 +76,7 @@ public class Structure {
      * @param block
      * @param blockSetter
      */
-    private void setBlockInBlockSetter(int index, @NotNull Block block, BlockSetter blockSetter) {
+    private void setBlockInBlockSetter(int index, @NotNull Block block, BlockSetter blockSetter, Point offset) {
         int x = index % this.getSizeX();
         int z = index % (this.getSizeX() * this.getSizeZ()) / this.getSizeZ();
         int y = index / (this.getSizeX() * this.getSizeZ());
@@ -83,15 +84,15 @@ public class Structure {
         assert y <= this.getSizeY();
         assert z <= this.getSizeZ();
 
-        blockSetter.setBlock(x, y, z, block);
+        blockSetter.setBlock(offset.add(x, y, z), block);
     }
 
-    public void loadIntoBlockSetter(BlockSetter blockSetter) {
+    public void loadIntoBlockSetter(BlockSetter blockSetter, Point offset) {
         int blockIndex = 0;
         for (BlockDef def : blocks) {
             Block block = blockmap.get(def.blockId);
             for (int i = 0; i < def.blockCount; i++) {
-                setBlockInBlockSetter(blockIndex, block, blockSetter);
+                setBlockInBlockSetter(blockIndex, block, blockSetter, offset);
                 blockIndex++;
             }
         }

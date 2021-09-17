@@ -1,0 +1,18 @@
+{
+  "id": "my-test-world",
+  "size": [
+    16,
+    16,
+    16
+  ],
+  "blockmap": [
+    "minecraft:stone",
+    "minecraft:cobblestone_stairs[facing=north]",
+    "minecraft:diamond_block",
+    {
+      "block": "minecraft:stone_stairs[facing=south,waterlogged=true]",
+      "data": "{name1:123,name2:\"sometext1\",name3:{subname1:456,subname2:\"sometext2\"}}"
+    }
+  ],
+  "blocks": "0,256;1,5;3,11;1,1;0,238;-1,3585"
+}

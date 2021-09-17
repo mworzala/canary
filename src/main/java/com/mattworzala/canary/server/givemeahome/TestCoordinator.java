@@ -3,6 +3,11 @@ package com.mattworzala.canary.server.givemeahome;
 import com.mattworzala.canary.platform.givemeahome.TestExecutionListener;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryEngineDescriptor;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryTestDescriptor;
+import com.mattworzala.canary.server.instance.BasicGenerator;
+import net.minestom.server.MinecraftServer;
+import net.minestom.server.coordinate.Point;
+import net.minestom.server.coordinate.Vec;
+import net.minestom.server.instance.InstanceContainer;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.UniqueId;
@@ -25,6 +30,19 @@ public class TestCoordinator {
     private CanaryEngineDescriptor engineDescriptor;
     private final Map<UniqueId, TestExecutor> executors = new HashMap<>();
 
+    private final InstanceContainer instance;
+
+    public TestCoordinator() {
+        instance = MinecraftServer.getInstanceManager().createInstanceContainer();
+        instance.setChunkGenerator(new BasicGenerator());
+
+
+    }
+
+    public InstanceContainer getInstance() {
+        return instance;
+    }
+
     public void indexTests(CanaryEngineDescriptor descriptor) {
         this.engineDescriptor = descriptor;
 
@@ -32,10 +50,14 @@ public class TestCoordinator {
         //todo index
     }
 
+    private Point lastTestOrigin = new Vec(2, 41, 0);
+
     private void indexTestsRecursive(TestDescriptor descriptor) {
         TestSource source = descriptor.getSource().orElse(null);
         if (source instanceof MethodSource) {
-            executors.put(descriptor.getUniqueId(), new TestExecutor((CanaryTestDescriptor) descriptor));
+            var executor = new TestExecutor((CanaryTestDescriptor) descriptor, instance, lastTestOrigin);
+            executors.put(descriptor.getUniqueId(), executor);
+            lastTestOrigin = lastTestOrigin.withZ(z -> z + executor.getStructure().getSizeZ() + 5);
         }
 
         descriptor.getChildren().forEach(this::indexTestsRecursive);

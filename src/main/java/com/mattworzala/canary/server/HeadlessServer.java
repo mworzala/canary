@@ -19,11 +19,6 @@ public class HeadlessServer {
         return headless;
     }
 
-    private TestCoordinator coordinator;
-
-
-    protected Instance instance; //todo remove
-
     private final TestCoordinator coordinator = new TestCoordinator();
 
     public final void start(int port) {
@@ -58,14 +53,6 @@ public class HeadlessServer {
 //        instance = new ViewerInstance();
 //        instanceManager.registerInstance(instance);
 
-
-        //todo this isnt great, TestInstance should handle this
-        System.out.println("Force loading spawn chunks");
-        for (int x = -12; x <= 12; x++) {
-            for (int z = -12; z <= 12; z++) {
-                instance.loadChunk(x, z);
-            }
-        }
     }
 
     public void stop() {

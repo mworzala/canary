@@ -5,18 +5,27 @@ import com.mattworzala.canary.platform.givemeahome.TestExecutionListener;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryTestDescriptor;
 import com.mattworzala.canary.server.assertion.AssertionImpl;
 import com.mattworzala.canary.server.env.TestEnvironmentImpl;
+import com.mattworzala.canary.server.instance.OffsetInstanceDelegate;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.Tickable;
+import net.minestom.server.coordinate.Point;
+import net.minestom.server.coordinate.Vec;
 import net.minestom.server.event.EventFilter;
 import net.minestom.server.event.EventListener;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.instance.InstanceTickEvent;
 import net.minestom.server.instance.Instance;
+import net.minestom.server.instance.InstanceContainer;
+import net.minestom.server.network.packet.server.play.BlockEntityDataPacket;
+import net.minestom.server.utils.validate.Check;
 import org.jetbrains.annotations.NotNull;
 import org.junit.platform.commons.util.ReflectionUtils;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 
+import java.awt.*;
 import java.lang.reflect.Method;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +35,8 @@ public class TestExecutor implements Tickable {
     private static final EventFilter<InstanceTickEvent, Instance> FILTER_INSTANCE_TICK = EventFilter.from(InstanceTickEvent.class, Instance.class, InstanceTickEvent::getInstance);
     private static final EventNode<InstanceTickEvent> TICK_NODE = EventNode.type("EventExecutor_InstanceTick", FILTER_INSTANCE_TICK);
 
+    private static final JsonStructureIO structureIo = new JsonStructureIO();
+
     static {
         MinecraftServer.getGlobalEventHandler().addChild(TICK_NODE);
     }
@@ -33,28 +44,29 @@ public class TestExecutor implements Tickable {
     private final CanaryTestDescriptor testDescriptor;
 
     private int executionCount = 0;
-    private final TestInstance instance;
+    private final Instance instance;
     private final Structure structure;
-    // The position in the viewer instance. Only used if we are running in sandbox mode.
-//    private final Point origin; //todo
+    private final Point origin;
 
     // Mid-test state (anything which is accumulated while running a test)
     private volatile boolean running;
     private TestExecutionListener executionListener;
     private final List<AssertionImpl<?, ?>> assertions = new ArrayList<>();
 
-    public TestExecutor(CanaryTestDescriptor testDescriptor) {
+    public TestExecutor(CanaryTestDescriptor testDescriptor, InstanceContainer rootInstance, Point offset) {
         this.testDescriptor = testDescriptor;
-        this.instance = new TestInstance();
-        this.structure = null; //todo
-//        this.structure = new Structure(new Vec(15, 15, 15));
+        this.instance = rootInstance;
+        this.origin = offset;
+        Path structurePath = testDescriptor.getStructureLocation();
+        Check.notNull(structurePath, "Missing structure for " + testDescriptor.getUniqueId());
+        this.structure = structureIo.readStructure(structurePath);
 
         var tickListener = EventListener.builder(InstanceTickEvent.class)
                 .handler(event -> this.tick(event.getDuration()))
                 .filter(this::isValidTick).build();
         TICK_NODE.addListener(tickListener);
 
-//        createStructure();
+        createStructure();
     }
 
     @NotNull
@@ -63,8 +75,12 @@ public class TestExecutor implements Tickable {
     }
 
     @NotNull
-    public TestInstance getInstance() {
+    public Instance getInstance() {
         return instance;
+    }
+
+    public Structure getStructure() {
+        return structure;
     }
 
     public void register(AssertionImpl<?, ?> assertion) {
@@ -98,14 +114,19 @@ public class TestExecutor implements Tickable {
         }
 
         running = true;
+        ticks = 0;
     }
+
+    int ticks = 0;
 
     @Override
     public void tick(long time) {
         System.out.println("TICKING...");
 
-        executionListener.end(testDescriptor, new RuntimeException("AN ERROR"));
-        reset();
+        if (++ticks == 5) {
+            executionListener.end(testDescriptor, new RuntimeException("AN ERROR"));
+            reset();
+        }
     }
 
     public void reset() {
@@ -124,9 +145,21 @@ public class TestExecutor implements Tickable {
 
     private void createStructure() {
         // Visual Blocks
-//        instance.setBlock(0, 41, 0, CanaryBlocks.BoundingBox(structure.size()));
+        var boundingBox = BoundingBoxHandler.BLOCK
+                .withTag(BoundingBoxHandler.Tags.SizeX, structure.getSize().blockX())
+                .withTag(BoundingBoxHandler.Tags.SizeY, structure.getSize().blockY())
+                .withTag(BoundingBoxHandler.Tags.SizeZ, structure.getSize().blockZ());
+        BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket();
 
-//        instance.setBlock(0, 42, 0, Block.LECTERN);
+        Point blockPos = origin.add(new Vec(0, -1, 0));
+        blockEntityDataPacket.blockPosition = blockPos;
+        blockEntityDataPacket.action = 7;
+        blockEntityDataPacket.nbtCompound = boundingBox.nbt();
+
+        getInstance().setBlock(blockPos, boundingBox);
+
+        structure.loadIntoBlockSetter(getInstance(), origin);
+        System.out.println("Loaded structure for " + getTestDescriptor().getUniqueId());
 
         //todo place structure
     }
