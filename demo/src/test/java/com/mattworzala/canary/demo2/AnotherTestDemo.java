@@ -4,7 +4,7 @@ import com.mattworzala.canary.api.InWorldTest;
 
 public class AnotherTestDemo {
 
-    @InWorldTest
+//    @InWorldTest
     public void coolTestWow() {
 
     }
