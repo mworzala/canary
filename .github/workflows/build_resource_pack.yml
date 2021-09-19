@@ -1,0 +1,26 @@
+name: Build & Publish Resource Pack
+
+on:
+  push:
+    paths:
+      - resourcepack/**
+    branches:
+      - master
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install zip package
+        run: sudo apt-get install zip
+      - name: Compile plugin
+        run: ./resourcepack/bin/compile.sh
+      - name: Publish to assigned branch
+        uses: s0/git-publish-subdir-action@develop
+        env:
+          REPO: self
+          BRANCH: resourcepack
+          FOLDER: resourcepack/out
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
