@@ -19,7 +19,8 @@ zip out/canary_helper.zip canary_helper
 # Create hash
 echo "Creating sha1 hash..."
 shasum -a 1 out/canary_helper.zip | \
-  cut -d' ' -f1 > out/canary_helper.sha1
+  cut -d' ' -f1 | \
+  xargs > out/canary_helper.sha1
 
 # Cleanup
 rm -rf canary_helper
