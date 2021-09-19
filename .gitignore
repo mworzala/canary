@@ -7,3 +7,5 @@ build
 extensions
 .mixin.out
 minecraft_data
+
+.DS_Store
