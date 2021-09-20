@@ -2,7 +2,7 @@ package com.mattworzala.canary.server.command.test;
 
 import com.mattworzala.canary.platform.givemeahome.TestExecutionListener;
 import com.mattworzala.canary.server.SandboxServer;
-import com.mattworzala.canary.server.givemeahome.TestCoordinator;
+import com.mattworzala.canary.server.execution.TestCoordinator;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minestom.server.MinecraftServer;

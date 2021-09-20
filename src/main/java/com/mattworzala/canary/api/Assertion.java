@@ -1,12 +1,14 @@
 package com.mattworzala.canary.api;
 
+import com.mattworzala.canary.platform.util.hint.EnvType;
+import com.mattworzala.canary.platform.util.hint.Environment;
 import com.mattworzala.canary.server.assertion.AssertionImpl;
 import com.mattworzala.canary.server.assertion.EntityAssertionImpl;
 import com.mattworzala.canary.server.assertion.LivingEntityAssertionImpl;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.LivingEntity;
 
-// Recursive generics are pretty awful, but I don't see another way around it
+@Environment(EnvType.MINESTOM)
 public final class Assertion<T> extends AssertionImpl<T, Assertion<T>> {
 
 

@@ -2,11 +2,12 @@ package com.mattworzala.canary.server.assertion;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-public class AssertionImpl<T, This extends AssertionImpl<T, This>> implements Supplier<AssertionResult> {
+public class AssertionImpl<T, This extends AssertionImpl<T, This>> {
 
 
     protected Predicate<T> assertionTest = (T) -> true;
@@ -28,13 +29,10 @@ public class AssertionImpl<T, This extends AssertionImpl<T, This>> implements Su
         logs = new ArrayList<>();
     }
 
-    @Override
-    public AssertionResult get() {
-        if (finalResult != null) {
-            return finalResult;
+    public void tick() {
+        if (reachedDefinitiveResult) {
+            throw new RuntimeException("Should not tick an assertion which has reached a definitive result"); //todo this should be a silent return, but i want to see during development if I wrote good code :)
         }
-
-        lifespan--;
 
         boolean assertion = assertionTest.test(this.input);
         String log = assertionFormatter.apply(this.input);
@@ -46,23 +44,27 @@ public class AssertionImpl<T, This extends AssertionImpl<T, This>> implements Su
                 // then the test passes
                 reachedDefinitiveResult = true;
                 finalResult = AssertionResult.PASS;
-                return AssertionResult.PASS;
+                return;
             }
         } else {
             if (assertion) {
                 // if we are negating, and the test passes, we fail
                 reachedDefinitiveResult = true;
                 finalResult = AssertionResult.FAIL;
-                return AssertionResult.FAIL;
+                throw new AssertionError(log);
             }
         }
+
         // otherwise
-        if (lifespan > 0) {
-            return AssertionResult.NO_RESULT;
+        if (--lifespan > 0) {
+            return;
         }
+
         reachedDefinitiveResult = true;
         finalResult = getEndResult();
-        return finalResult;
+        if (finalResult == AssertionResult.FAIL) {
+            throw new AssertionError("Ran out of time!");
+        }
     }
 
     public AssertionResult getEndResult() {
@@ -83,12 +85,13 @@ public class AssertionImpl<T, This extends AssertionImpl<T, This>> implements Su
         return (This) this;
     }
 
-    public This isEqualToo(T v) {
-        assertionTest = (T input) -> input == v;
+    public This isEqual(T v) {
+        assertionTest = (T input) -> input.equals(v);
         return (This) this;
     }
 
-    public This and() {
+    public This isStrictEqual(T v) {
+        assertionTest = (T input) -> input == v;
         return (This) this;
     }
 
