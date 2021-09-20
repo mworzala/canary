@@ -31,4 +31,12 @@ public class ReflectionUtils {
             throw new IllegalStateException(e);
         }
     }
+
+    public static void invokeMethodOptionalParameter(Method method, Object instance, Object optionalParam) {
+        if (method.getParameterCount() == 1) {
+            org.junit.platform.commons.util.ReflectionUtils.invokeMethod(method, instance, optionalParam);
+        } else {
+            org.junit.platform.commons.util.ReflectionUtils.invokeMethod(method, instance);
+        }
+    }
 }

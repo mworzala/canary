@@ -1,14 +1,9 @@
 package com.mattworzala.canary.server.instance;
 
-import com.mattworzala.canary.server.givemeahome.Structure;
-import com.mattworzala.canary.server.givemeahome.TestExecutor;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.coordinate.Vec;
-import net.minestom.server.entity.Entity;
 import net.minestom.server.instance.*;
-import net.minestom.server.instance.block.Block;
 import net.minestom.server.world.DimensionType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

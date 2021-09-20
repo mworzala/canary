@@ -5,11 +5,8 @@ import com.mattworzala.canary.platform.givemeahome.SandboxTestEnvironment;
 import com.mattworzala.canary.platform.util.hint.EnvType;
 import com.mattworzala.canary.platform.util.hint.Environment;
 import com.mattworzala.canary.server.givemeahome.TestCoordinator;
-import com.mattworzala.canary.server.givemeahome.TestCoordinator;
-import com.mattworzala.canary.server.instance.BasicGenerator;
+import com.mattworzala.canary.server.execution.TestCoordinator;
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.instance.Instance;
-import net.minestom.server.instance.InstanceManager;
 
 @Environment(EnvType.MINESTOM)
 public class HeadlessServer {

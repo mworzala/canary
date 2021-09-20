@@ -1,5 +1,7 @@
 package com.mattworzala.canary.platform.junit.discovery;
 
+import com.mattworzala.canary.api.IWAfterEach;
+import com.mattworzala.canary.api.IWBeforeEach;
 import com.mattworzala.canary.api.InWorldTest;
 import com.mattworzala.canary.platform.junit.TestDescriptorVisitor;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryEngineDescriptor;
@@ -8,6 +10,7 @@ import com.mattworzala.canary.platform.util.ClassLoaders;
 import com.mattworzala.canary.platform.util.hint.EnvType;
 import com.mattworzala.canary.platform.util.hint.Environment;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.platform.commons.util.ClassUtils;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.UniqueId;
@@ -16,6 +19,8 @@ import org.junit.platform.engine.support.descriptor.MethodSource;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.mattworzala.canary.platform.junit.discovery.CanaryDiscoverer.IsPotentialITestClass;
 import static com.mattworzala.canary.platform.junit.discovery.CanaryDiscoverer.IsPotentialTestMethod;
@@ -58,27 +63,57 @@ public record DiscoveryPostProcessor(TestDescriptorVisitor... processors) {
      */
     @Environment(EnvType.PLATFORM)
     public static class ResolveMethods implements TestDescriptorVisitor {
-        private static final Class<? extends Annotation> annotation = ClassLoaders.loadAnnotation(ClassLoaders.MINESTOM, InWorldTest.class);
+        private static final Class<? extends Annotation> inWorldTestAnnotation = ClassLoaders.loadAnnotation(ClassLoaders.MINESTOM, InWorldTest.class);
+        private static final Class<? extends Annotation> iwBeforeEachAnnotation = ClassLoaders.loadAnnotation(ClassLoaders.MINESTOM, IWBeforeEach.class);
+        private static final Class<? extends Annotation> iwAfterEachAnnotation = ClassLoaders.loadAnnotation(ClassLoaders.MINESTOM, IWAfterEach.class);
 
         static {
-            assert annotation != null;
+            assert inWorldTestAnnotation != null;
+            assert iwBeforeEachAnnotation != null;
+            assert iwAfterEachAnnotation != null;
         }
 
         @Override
         public boolean visitTestClass(@NotNull CanaryTestDescriptor test, @NotNull ClassSource source) {
             Class<?> testClass = source.getJavaClass();
+            List<Method> preEffects = new ArrayList<>();
+            List<Method> postEffects = new ArrayList<>();
 
-            // Inspect every method
+            // Collect before/afterEach effects
             for (Method method : testClass.getDeclaredMethods()) {
                 // Test basics such as modifiers, return type, and parameters
                 if (!IsPotentialTestMethod.test(method)) continue;
 
-                Annotation inWorldTest = method.getAnnotation(annotation);
+                if (method.getAnnotation(iwBeforeEachAnnotation) != null) {
+                    preEffects.add(method);
+                }
+
+                if (method.getAnnotation(iwAfterEachAnnotation) != null) {
+                    if (preEffects.contains(method)) {
+                        //todo logging? there is a junit logger that we could wrap to handle slf4j in sandbox
+                        throw new RuntimeException("A @IWAfterEach method may not also be annotated with @IWBeforeEach.");
+                    } else {
+                        postEffects.add(method);
+                    }
+                }
+
+            }
+
+            // Search for `inWorldTest` methods
+            for (Method method : testClass.getDeclaredMethods()) {
+                // Test basics such as modifiers, return type, and parameters
+                if (!IsPotentialTestMethod.test(method)) continue;
+
+                Annotation inWorldTest = method.getAnnotation(inWorldTestAnnotation);
                 if (inWorldTest == null) continue;
+                if (preEffects.contains(method) || postEffects.contains(method)) {
+                    //todo logging? there is a junit logger that we could wrap to handle slf4j in sandbox
+                    throw new RuntimeException("An @InWorldTest method may not also be annotated with @IWBeforeEach or @IWAfterEach.");
+                }
 
                 String methodId = String.format("%s(%s)", method.getName(), ClassUtils.nullSafeToString(method.getParameterTypes()));
                 UniqueId childId = test.getUniqueId().append("test", methodId);
-                var child = new CanaryTestDescriptor(childId, method);
+                var child = new CanaryTestDescriptor(childId, method, preEffects, postEffects);
                 test.addChild(child);
             }
 

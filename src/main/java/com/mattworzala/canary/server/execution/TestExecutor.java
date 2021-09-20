@@ -1,11 +1,12 @@
-package com.mattworzala.canary.server.givemeahome;
+package com.mattworzala.canary.server.execution;
 
-import com.mattworzala.canary.api.TestEnvironment;
 import com.mattworzala.canary.platform.givemeahome.TestExecutionListener;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryTestDescriptor;
 import com.mattworzala.canary.server.assertion.AssertionImpl;
 import com.mattworzala.canary.server.env.TestEnvironmentImpl;
-import com.mattworzala.canary.server.instance.OffsetInstanceDelegate;
+import com.mattworzala.canary.server.givemeahome.BoundingBoxHandler;
+import com.mattworzala.canary.server.givemeahome.JsonStructureIO;
+import com.mattworzala.canary.server.givemeahome.Structure;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.Tickable;
 import net.minestom.server.coordinate.Point;
@@ -16,18 +17,18 @@ import net.minestom.server.event.EventNode;
 import net.minestom.server.event.instance.InstanceTickEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceContainer;
-import net.minestom.server.network.packet.server.play.BlockEntityDataPacket;
 import net.minestom.server.utils.validate.Check;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.platform.commons.util.ReflectionUtils;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 
-import java.awt.*;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.mattworzala.canary.platform.util.ReflectionUtils.invokeMethodOptionalParameter;
 
 // one per test method (reused), handles instantiating the test class, invoking the before/run/after methods, cleaning up the test for the next execution (replace structure).
 //   Executing a test is not blocking, it must be ticked until it reports that it has a result.
@@ -51,6 +52,7 @@ public class TestExecutor implements Tickable {
     // Mid-test state (anything which is accumulated while running a test)
     private volatile boolean running;
     private TestExecutionListener executionListener;
+    private Object classInstance;
     private final List<AssertionImpl<?, ?>> assertions = new ArrayList<>();
 
     public TestExecutor(CanaryTestDescriptor testDescriptor, InstanceContainer rootInstance, Point offset) {
@@ -104,47 +106,70 @@ public class TestExecutor implements Tickable {
         executionListener.start(testDescriptor);
         try {
             MethodSource source = (MethodSource) testDescriptor.getSource().get();
-            Object classInstance = createEnclosingClass(source);
+            classInstance = ReflectionUtils.newInstance(source.getJavaClass());
             var environment = new TestEnvironmentImpl(this);
 
-            //todo beforeEach/All
+            // "Before Each" methods
+            for (Method method : testDescriptor.getPreEffects()) {
+                invokeMethodOptionalParameter(method, classInstance, environment);
+            }
 
-            invokeTestMethod(source.getJavaMethod(), classInstance, environment);
-
-            //todo afterEach/All
+            invokeMethodOptionalParameter(source.getJavaMethod(), classInstance, environment);
 
         } catch (Throwable throwable) {
             executionListener.end(testDescriptor, throwable);
         }
 
         running = true;
-        ticks = 0;
     }
 
-    int ticks = 0;
 
     @Override
     public void tick(long time) {
         System.out.println("TICKING...");
 
-        if (++ticks == 50) {
-            executionListener.end(testDescriptor, new RuntimeException("AN ERROR"));
-            reset();
+        try {
+            assertions.forEach(AssertionImpl::tick);
+        } catch (AssertionError error) {
+            end(error);
+            return;
         }
-    }
 
-    public void reset() {
-        // Reset state
-        running = false;
-        executionListener = null;
-        assertions.clear();
+        assertions.removeIf(AssertionImpl::hasDefinitiveResult);
+        if (assertions.isEmpty()) {
+            end(null);
+        }
 
-        // Reset structure
-        //todo
     }
 
     private boolean isValidTick(InstanceTickEvent event) {
         return this.running && this.instance.equals(event.getInstance());
+    }
+
+    public boolean isRunning() {
+        return running;
+    }
+
+    private void end(@Nullable Throwable error) {
+        System.out.println("ENDING TEST");
+        // "After Each" methods
+        var environment = new TestEnvironmentImpl(this); // We could keep track of the one from the init method, but it keeps no state so it doesnt really matter.
+        for (Method method : testDescriptor.getPostEffects()) {
+            invokeMethodOptionalParameter(method, classInstance, environment);
+        }
+        //todo reset stuff from test environment (like removing entities)
+
+        // "Officially" end test
+        executionListener.end(testDescriptor, error);
+
+        // Reset state
+        running = false;
+        executionListener = null;
+        classInstance = null;
+        assertions.clear();
+
+        // Reset structure
+        //todo
     }
 
     private void createStructure() {
@@ -153,38 +178,11 @@ public class TestExecutor implements Tickable {
                 .withTag(BoundingBoxHandler.Tags.SizeX, structure.getSize().blockX())
                 .withTag(BoundingBoxHandler.Tags.SizeY, structure.getSize().blockY())
                 .withTag(BoundingBoxHandler.Tags.SizeZ, structure.getSize().blockZ());
-//        BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket();
         Point blockPos = origin.add(new Vec(0, -1, 0));
-//        blockEntityDataPacket.blockPosition = blockPos;
-//        blockEntityDataPacket.action = 7;
-//        blockEntityDataPacket.nbtCompound = boundingBox.nbt();
-
 
         getInstance().setBlock(blockPos, boundingBox);
 
         structure.loadIntoBlockSetter(getInstance(), origin);
         System.out.println("Loaded structure for " + getTestDescriptor().getUniqueId());
-
-        //todo place structure
-    }
-
-    public boolean isRunning() {
-        return running;
-    }
-
-    /**
-     * Invokes any method related to a test which takes parameters such as the environment
-     */
-    private void invokeTestMethod(Method method, Object instance, TestEnvironment env) {
-        if (method.getParameterCount() == 1) {
-            ReflectionUtils.invokeMethod(method, instance, env);
-        } else {
-            ReflectionUtils.invokeMethod(method, instance);
-        }
-    }
-
-    private Object createEnclosingClass(MethodSource source) {
-        Class<?> target = source.getJavaClass();
-        return ReflectionUtils.newInstance(target);
     }
 }

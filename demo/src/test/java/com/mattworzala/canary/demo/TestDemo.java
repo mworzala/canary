@@ -9,12 +9,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class TestDemo {
 
-    @Test
+//    @Test
     public void helloWorld() {
 
     }
 
-    @InWorldTest
+//    @InWorldTest
     public void aMinestomTest() {
 //        assertEquals(1, 2);
 
