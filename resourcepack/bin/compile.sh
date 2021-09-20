@@ -14,7 +14,7 @@ cp -r src/** canary_helper
 
 # Compile resource pack
 echo "Compiling resource pack..."
-zip out/canary_helper.zip canary_helper
+zip out/canary_helper.zip canary_helper/**
 
 # Create hash
 echo "Creating sha1 hash..."
