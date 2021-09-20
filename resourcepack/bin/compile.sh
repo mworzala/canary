@@ -4,17 +4,19 @@
 cd $( dirname $0 )/..
 
 # Create working directories
-mkdir canary_helper
+mkdir tmp
 mkdir out
 
 # Copy src folder
-cp -r src/** canary_helper
+cp -r src/** tmp
 
 # todo replace version str
 
 # Compile resource pack
 echo "Compiling resource pack..."
-zip out/canary_helper.zip canary_helper/**
+cd tmp
+zip -r ../out/canary_helper.zip .
+cd ..
 
 # Create hash
 echo "Creating sha1 hash..."
@@ -23,6 +25,6 @@ shasum -a 1 out/canary_helper.zip | \
   xargs > out/canary_helper.sha1
 
 # Cleanup
-rm -rf canary_helper
+rm -rf tmp
 
 echo "Done!"
