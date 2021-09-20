@@ -1,4 +1,4 @@
-package com.mattworzala.canary.server.givemeahome;
+package com.mattworzala.canary.server.execution;
 
 import com.mattworzala.canary.platform.givemeahome.TestExecutionListener;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryEngineDescriptor;

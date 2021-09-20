@@ -3,10 +3,10 @@ package com.mattworzala.canary.server.env;
 import com.mattworzala.canary.api.Assertion;
 import com.mattworzala.canary.api.TestEnvironment;
 import com.mattworzala.canary.platform.util.ClassLoaders;
-import com.mattworzala.canary.server.assertion.AssertionImpl;
 import com.mattworzala.canary.server.assertion.AssertionResult;
 import com.mattworzala.canary.server.givemeahome.Structure;
 import com.mattworzala.canary.server.givemeahome.StructureReader;
+import com.mattworzala.canary.server.execution.TestExecutor;
 import com.mattworzala.canary.server.givemeahome.TestExecutor;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.builder.arguments.minecraft.ArgumentBlockState;
@@ -145,6 +145,7 @@ public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironm
 //        }
         return AssertionResult.FAIL;
     }
+
     /*
      * Structure Variables
      */
