@@ -2,7 +2,6 @@ package com.mattworzala.canary.api;
 
 import com.mattworzala.canary.platform.util.hint.EnvType;
 import com.mattworzala.canary.platform.util.hint.Environment;
-import com.mattworzala.canary.server.assertion.AssertionResult;
 import com.mattworzala.canary.server.givemeahome.Structure;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
@@ -52,9 +51,9 @@ public interface TestEnvironment {
 
     <T> Assertion<T> expect(T actual);
 
-    AssertionResult tick();
+//    AssertionResult tick();
 
-    AssertionResult startTesting();
+//    AssertionResult startTesting();
 
     // Instance manipulation utilities
 

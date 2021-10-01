@@ -5,7 +5,6 @@ import com.mattworzala.canary.platform.junit.descriptor.CanaryTestDescriptor;
 import com.mattworzala.canary.server.assertion.AssertionImpl;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.Tickable;
-import net.minestom.server.coordinate.Vec;
 import net.minestom.server.event.EventFilter;
 import net.minestom.server.event.EventListener;
 import net.minestom.server.event.EventNode;
@@ -30,7 +29,7 @@ public class TestExecutor implements Tickable {
 
     private int executionCount = 0;
     private final TestInstance instance;
-    private final Structure structure;
+//    private final Structure structure;
     // The position in the viewer instance. Only used if we are running in sandbox mode.
 //    private final Point origin; //todo
 
@@ -42,7 +41,7 @@ public class TestExecutor implements Tickable {
     public TestExecutor(CanaryTestDescriptor testDescriptor) {
         this.testDescriptor = testDescriptor;
         this.instance = new TestInstance();
-        this.structure = new Structure(new Vec(15, 15, 15));
+//        this.structure = new Structure(new Vec(15, 15, 15));
 
         var tickListener = EventListener.builder(InstanceTickEvent.class)
                 .filter(this::isValidTick).build();
@@ -118,7 +117,7 @@ public class TestExecutor implements Tickable {
 
     private void createStructure() {
         // Visual Blocks
-        instance.setBlock(0, 41, 0, CanaryBlocks.BoundingBox(structure.size()));
+//        instance.setBlock(0, 41, 0, CanaryBlocks.BoundingBox(structure.size()));
 
 //        instance.setBlock(0, 42, 0, Block.LECTERN);
 
