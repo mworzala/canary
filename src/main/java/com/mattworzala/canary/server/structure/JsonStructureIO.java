@@ -1,4 +1,4 @@
-package com.mattworzala.canary.server.givemeahome;
+package com.mattworzala.canary.server.structure;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;

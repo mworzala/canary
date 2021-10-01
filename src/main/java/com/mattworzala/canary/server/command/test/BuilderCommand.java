@@ -1,8 +1,8 @@
 package com.mattworzala.canary.server.command.test;
 
-import com.mattworzala.canary.server.givemeahome.JsonStructureIO;
-import com.mattworzala.canary.server.givemeahome.Structure;
-import com.mattworzala.canary.server.givemeahome.StructureWriter;
+import com.mattworzala.canary.server.structure.JsonStructureIO;
+import com.mattworzala.canary.server.structure.Structure;
+import com.mattworzala.canary.server.structure.StructureWriter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minestom.server.MinecraftServer;

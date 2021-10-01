@@ -1,13 +1,9 @@
 package com.mattworzala.canary.server.instance;
 
-import com.mattworzala.canary.server.givemeahome.Structure;
-import com.mattworzala.canary.server.givemeahome.TestExecutor;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.coordinate.Vec;
 import net.minestom.server.instance.*;
-import net.minestom.server.instance.block.Block;
 import net.minestom.server.world.DimensionType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,7 +12,9 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class ViewerInstance extends InstanceContainer {
-    private static record MirrorConfig(Instance target, int realX, int realZ) { }
+    private static record MirrorConfig(Instance target, int realX, int realZ) {
+    }
+
     private final Long2ObjectMap<MirrorConfig> testInstances = new Long2ObjectOpenHashMap<>();
 
     public ViewerInstance() {
