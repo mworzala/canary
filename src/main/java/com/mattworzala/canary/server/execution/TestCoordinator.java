@@ -8,6 +8,7 @@ import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.instance.InstanceContainer;
+import org.jetbrains.annotations.NotNull;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.UniqueId;
@@ -45,6 +46,18 @@ public class TestCoordinator {
 
     public InstanceContainer getInstance() {
         return instance;
+    }
+
+    public CanaryEngineDescriptor getEngineDescriptor() {
+        return engineDescriptor;
+    }
+
+    public TestExecutor getExecutor(@NotNull UniqueId uniqueId) {
+        return executors.get(uniqueId);
+    }
+
+    public TestExecutor getExecutor(@NotNull CanaryTestDescriptor descriptor) {
+        return executors.get(descriptor.getUniqueId());
     }
 
     public void indexTests(CanaryEngineDescriptor descriptor) {
@@ -101,7 +114,7 @@ public class TestCoordinator {
             executor.execute(listener); // non-blocking (starts execution)
 
             // temp wait until execution finished
-            while (executor.isRunning());
+            while (executor.isRunning()) ;
         }
     }
 }
