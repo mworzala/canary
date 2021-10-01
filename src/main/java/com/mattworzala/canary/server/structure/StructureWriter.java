@@ -1,4 +1,4 @@
-package com.mattworzala.canary.server.givemeahome;
+package com.mattworzala.canary.server.structure;
 
 import java.nio.file.Path;
 

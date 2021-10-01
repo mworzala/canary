@@ -1,4 +1,4 @@
-package com.mattworzala.canary.server.givemeahome;
+package com.mattworzala.canary.server.structure;
 
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.instance.block.Block;
