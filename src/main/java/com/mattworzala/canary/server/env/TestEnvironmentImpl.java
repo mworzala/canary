@@ -4,19 +4,13 @@ import com.mattworzala.canary.api.Assertion;
 import com.mattworzala.canary.api.TestEnvironment;
 import com.mattworzala.canary.platform.util.ClassLoaders;
 import com.mattworzala.canary.server.assertion.AssertionImpl;
-import com.mattworzala.canary.server.assertion.AssertionResult;
 import com.mattworzala.canary.server.givemeahome.JsonStructureIO;
 import com.mattworzala.canary.server.givemeahome.Structure;
 import com.mattworzala.canary.server.givemeahome.StructureReader;
-import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.LivingEntity;
-import net.minestom.server.event.Event;
-import net.minestom.server.event.EventListener;
-import net.minestom.server.event.EventNode;
-import net.minestom.server.event.instance.InstanceTickEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.batch.RelativeBlockBatch;
 import net.minestom.server.instance.block.Block;
@@ -27,7 +21,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -77,83 +70,84 @@ public class TestEnvironmentImpl implements TestEnvironment {
         return assertion;
     }
 
-    public AssertionResult tick() {
-        System.out.println("IN TEST ENVIRONMENT TICK");
-        boolean failed = false;
-        boolean allPassed = true;
-        for (var assertion : assertions) {
-            var result = assertion.get();
-            switch (result) {
-                case FAIL -> {
-                    failed = true;
-                    allPassed = false;
-                }
-                case NO_RESULT -> allPassed = false;
-            }
-        }
-        // if any test failed, return failed
-        if (failed) {
-            return AssertionResult.FAIL;
-        }
-        // if all tests passed, return pass
-        if (allPassed) {
-            return AssertionResult.PASS;
-        }
-        // if not all the tests have finished, and nothing has failed, return no result
-        return AssertionResult.NO_RESULT;
-    }
+//    public AssertionResult tick() {
+//        System.out.println("IN TEST ENVIRONMENT TICK");
+//        boolean failed = false;
+//        boolean allPassed = true;
+//        for (var assertion : assertions) {
+//            var result = assertion.get();
+//            switch (result) {
+//                case FAIL -> {
+//                    failed = true;
+//                    allPassed = false;
+//                }
+//                case NO_RESULT -> allPassed = false;
+//            }
+//        }
+//        // if any test failed, return failed
+//        if (failed) {
+//            return AssertionResult.FAIL;
+//        }
+//        // if all tests passed, return pass
+//        if (allPassed) {
+//            return AssertionResult.PASS;
+//        }
+//        // if not all the tests have finished, and nothing has failed, return no result
+//        return AssertionResult.NO_RESULT;
+//    }
 
-    public AssertionResult startTesting() {
-        System.out.println("STARTING TESTING, there are " + assertions.size() + " assertions");
-        EventNode<Event> node = EventNode.all("assertions");
-        var handler = MinecraftServer.getGlobalEventHandler();
-        CountDownLatch assertionsFinished = new CountDownLatch(assertions.size());
-        for (final AssertionImpl<?, ? extends AssertionImpl<?, ?>> assertion : assertions) {
-            node.addListener(EventListener.builder(InstanceTickEvent.class)
-                    .expireWhen(event -> {
-                        if (assertion.get() != AssertionResult.NO_RESULT) {
-//                            System.out.println("THING FINISHED");
-                            assertionsFinished.countDown();
-                            return true;
-                        }
-                        return false;
-                    })
-                    .handler((event) -> {
+//    public AssertionResult startTesting() {
+//        System.out.println("STARTING TESTING, there are " + assertions.size() + " assertions");
+//        EventNode<Event> node = EventNode.all("assertions");
+//        var handler = MinecraftServer.getGlobalEventHandler();
+//        CountDownLatch assertionsFinished = new CountDownLatch(assertions.size());
+//        for (final AssertionImpl<?, ? extends AssertionImpl<?, ?>> assertion : assertions) {
+//            node.addListener(EventListener.builder(InstanceTickEvent.class)
+//                    .expireWhen(event -> {
+//                        if (assertion.get() != AssertionResult.NO_RESULT) {
+////                            System.out.println("THING FINISHED");
+//                            assertionsFinished.countDown();
+//                            return true;
+//                        }
+//                        return false;
+//                    })
+//                    .handler((event) -> {
+//
+//                    }).build());
+//            handler.addChild(node);
+//        }
+//
+//        try {
+//            assertionsFinished.await();
+////            System.out.println("All assertions finished");
+//            List<String> log = null;
+//            boolean failed = false;
+//            for (var assertion : assertions) {
+//                var result = assertion.get();
+//                if (result == AssertionResult.FAIL) {
+//                    log = assertion.getLogs();
+//                    failed = true;
+//                }
+//            }
+//            // if any test failed, return failed
+//            if (failed) {
+////                System.out.println("TEST FAILED");
+//                if (log != null) {
+//                    for (final String logEntry : log) {
+//                        System.out.println(logEntry);
+//                    }
+//                }
+//                return AssertionResult.FAIL;
+//            } else {
+////                System.out.println("TEST PASSED");
+//                return AssertionResult.PASS;
+//            }
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+//        return AssertionResult.FAIL;
+//    }
 
-                    }).build());
-            handler.addChild(node);
-        }
-
-        try {
-            assertionsFinished.await();
-//            System.out.println("All assertions finished");
-            List<String> log = null;
-            boolean failed = false;
-            for (var assertion : assertions) {
-                var result = assertion.get();
-                if (result == AssertionResult.FAIL) {
-                    log = assertion.getLogs();
-                    failed = true;
-                }
-            }
-            // if any test failed, return failed
-            if (failed) {
-//                System.out.println("TEST FAILED");
-                if (log != null) {
-                    for (final String logEntry : log) {
-                        System.out.println(logEntry);
-                    }
-                }
-                return AssertionResult.FAIL;
-            } else {
-//                System.out.println("TEST PASSED");
-                return AssertionResult.PASS;
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return AssertionResult.FAIL;
-    }
     /*
      * Structure Variables
      */
