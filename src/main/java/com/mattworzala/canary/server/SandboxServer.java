@@ -27,7 +27,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import net.minestom.server.instance.Instance;
-import net.minestom.server.instance.block.Block;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -92,7 +91,7 @@ public class SandboxServer extends HeadlessServer {
         commands.register(new TestsCommand());
 
         commands.register(new CanaryCommand());
-        commands.register(new TestCommand());
+        commands.register(new TestCommand(this));
         commands.register(new InstanceCommand());
         commands.register(new EntityCommand());
     }
