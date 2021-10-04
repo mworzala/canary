@@ -1,10 +1,9 @@
 package com.mattworzala.canary.server;
 
 import com.mattworzala.canary.api.TestEnvironment;
-import com.mattworzala.canary.platform.givemeahome.SandboxTestEnvironment;
 import com.mattworzala.canary.platform.util.hint.EnvType;
 import com.mattworzala.canary.platform.util.hint.Environment;
-import com.mattworzala.canary.server.givemeahome.TestCoordinator;
+import com.mattworzala.canary.server.env.TestEnvironmentImpl;
 import com.mattworzala.canary.server.execution.TestCoordinator;
 import net.minestom.server.MinecraftServer;
 
@@ -32,25 +31,11 @@ public class HeadlessServer {
         minecraftServer.start("0.0.0.0", port); //todo set localhost in headless environment?
     }
 
-    public final void stop() {
-        MinecraftServer.stopCleanly();
-    }
-
     public TestCoordinator getTestCoordinator() {
         return coordinator;
     }
 
-    protected void initServer() {
-        coordinator = new TestCoordinator(SandboxTestEnvironment.getInstance().getRoot());
-        // Create spawning instance
-        InstanceManager instanceManager = MinecraftServer.getInstanceManager();
-        instance = instanceManager.createInstanceContainer();
-        instance.setChunkGenerator(new BasicGenerator());
-
-//        instance = new ViewerInstance();
-//        instanceManager.registerInstance(instance);
-
-    }
+    protected void initServer() { }
 
     public void stop() {
         MinecraftServer.stopCleanly();

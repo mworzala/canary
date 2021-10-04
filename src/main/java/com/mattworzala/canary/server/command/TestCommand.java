@@ -40,9 +40,9 @@ public class TestCommand extends Command {
         addSyntax(this::onTeleport,         // Teleport
                 Literal("tp"), ArgumentType.StringArray("target"));
 
-        addSubcommand(new RunCommand());    // Run
-        addSubcommand(new FilterCommand()); // Filter
-        addSubcommand(new BuilderCommand());// Builder
+        addSubcommand(new RunCommand(server));  // Run
+        addSubcommand(new FilterCommand());     // Filter
+        addSubcommand(new BuilderCommand());    // Builder
     }
 
     private void onHelp(CommandSender sender, CommandContext context) {
