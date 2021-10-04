@@ -3,7 +3,6 @@ package com.mattworzala.canary.api;
 import com.mattworzala.canary.platform.util.hint.EnvType;
 import com.mattworzala.canary.platform.util.hint.Environment;
 import com.mattworzala.canary.server.structure.Structure;
-import com.mattworzala.canary.server.givemeahome.Structure;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
