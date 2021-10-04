@@ -8,6 +8,7 @@ import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.instance.InstanceContainer;
+import net.minestom.server.world.DimensionType;
 import org.jetbrains.annotations.NotNull;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestSource;
@@ -18,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Predicate;
 
 // 1 per server, keeps track of each TestExecutor to run tests given to it, also manages creation and destruction of TestInstances.
@@ -34,7 +36,8 @@ public class TestCoordinator {
     private final InstanceContainer instance;
 
     public TestCoordinator() {
-        instance = MinecraftServer.getInstanceManager().createInstanceContainer();
+        instance = new InstanceContainer(new UUID(0, 0), DimensionType.OVERWORLD);
+        MinecraftServer.getInstanceManager().registerInstance(instance);
         instance.setChunkGenerator(new BasicGenerator());
 
         for (int x = -10; x <= 10; x++) {
@@ -72,7 +75,17 @@ public class TestCoordinator {
     private void indexTestsRecursive(TestDescriptor descriptor) {
         TestSource source = descriptor.getSource().orElse(null);
         if (source instanceof MethodSource) {
-            var executor = new TestExecutor((CanaryTestDescriptor) descriptor, instance, lastTestOrigin);
+            var testInstance = new InstanceContainer(UUID.randomUUID(), DimensionType.OVERWORLD);
+            MinecraftServer.getInstanceManager().registerInstance(testInstance);
+            testInstance.setChunkGenerator(new BasicGenerator());
+            var executor = new TestExecutor((CanaryTestDescriptor) descriptor, testInstance, lastTestOrigin);
+
+            {
+                // Add structure to sandbox instance as well
+                //TODO this does not handle resets
+                executor.getStructure().loadIntoBlockSetter(getInstance(), lastTestOrigin);
+            }
+
             executors.put(descriptor.getUniqueId(), executor);
             lastTestOrigin = lastTestOrigin.withZ(z -> z + executor.getStructure().getSizeZ() + 5);
         }

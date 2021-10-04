@@ -7,14 +7,17 @@ import com.mattworzala.canary.server.env.TestEnvironmentImpl;
 import com.mattworzala.canary.server.givemeahome.BoundingBoxHandler;
 import com.mattworzala.canary.server.structure.JsonStructureIO;
 import com.mattworzala.canary.server.structure.Structure;
+import com.mattworzala.canary.server.givemeahome.CameraPlayer;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.Tickable;
 import net.minestom.server.coordinate.Point;
+import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.event.EventFilter;
 import net.minestom.server.event.EventListener;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.instance.InstanceTickEvent;
+import net.minestom.server.event.player.PlayerLoginEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.utils.validate.Check;
@@ -27,6 +30,7 @@ import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.mattworzala.canary.platform.util.ReflectionUtils.invokeMethodOptionalParameter;
 
@@ -48,6 +52,7 @@ public class TestExecutor implements Tickable {
     private final Instance instance;
     private final Structure structure;
     private final Point origin;
+    private final CameraPlayer camera;
 
     // Mid-test state (anything which is accumulated while running a test)
     private volatile boolean running;
@@ -68,7 +73,17 @@ public class TestExecutor implements Tickable {
                 .filter(this::isValidTick).build();
         TICK_NODE.addListener(tickListener);
 
+        camera = new CameraPlayer(this.instance, new Pos(origin).sub(new Pos(2, 0, 2)), new CopyOnWriteArrayList<>());
         createStructure();
+
+        MinecraftServer.getGlobalEventHandler().addListener(EventListener
+                .builder(PlayerLoginEvent.class)
+                .handler(event -> {
+                    if (event.getPlayer() instanceof CameraPlayer)
+                        return;
+                    camera.addCameraViewer(event.getPlayer());
+                })
+                .build());
     }
 
     @NotNull
@@ -173,6 +188,15 @@ public class TestExecutor implements Tickable {
     }
 
     private void createStructure() {
+
+
+
+        for (int x = -10; x <= 10; x++) {
+            for (int z = -10; z <= 10; z++) {
+                instance.loadChunk(x, z).join();
+            }
+        }
+
         // Visual Blocks
         var boundingBox = BoundingBoxHandler.BLOCK
                 .withTag(BoundingBoxHandler.Tags.SizeX, structure.getSize().blockX())

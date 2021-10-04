@@ -3,10 +3,6 @@ package com.mattworzala.canary.server;
 import com.mattworzala.canary.platform.util.hint.EnvType;
 import com.mattworzala.canary.platform.util.hint.Environment;
 import com.mattworzala.canary.server.command.*;
-import com.mattworzala.canary.server.instance.TestInstance;
-import com.mattworzala.canary.server.instance.ViewableInstance;
-import com.mattworzala.canary.server.instance.ViewerInstance;
-import com.mattworzala.canary.server.instance.BasicGenerator;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.CommandManager;
 import net.minestom.server.coordinate.Pos;
@@ -25,11 +21,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import net.minestom.server.instance.Instance;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Environment(EnvType.MINESTOM)
 public class SandboxServer extends HeadlessServer {
@@ -48,8 +39,6 @@ public class SandboxServer extends HeadlessServer {
         RESOURCE_PACK_HASH = hash;
     }
 
-    public static List<Instance> instances = new ArrayList<>();
-
     @Override
     public void initServer() {
         super.initServer();
@@ -64,11 +53,8 @@ public class SandboxServer extends HeadlessServer {
         GlobalEventHandler globalEventHandler = MinecraftServer.getGlobalEventHandler();
         globalEventHandler.addListener(PlayerLoginEvent.class, event -> {
             final Player player = event.getPlayer();
-            var instance = MinecraftServer.getInstanceManager().createInstanceContainer();
-            instance.setChunkGenerator(new BasicGenerator());
             event.setSpawningInstance(getTestCoordinator().getInstance());
             player.setRespawnPoint(new Pos(0, 41, 0));
-
         });
         globalEventHandler.addListener(PlayerSpawnEvent.class, event -> {
             if (event.isFirstSpawn()) {

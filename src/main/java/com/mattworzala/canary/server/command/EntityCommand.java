@@ -1,9 +1,11 @@
 package com.mattworzala.canary.server.command;
 
+import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.CommandSender;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.CommandContext;
 import net.minestom.server.command.builder.CommandExecutor;
+import net.minestom.server.command.builder.arguments.ArgumentType;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityCreature;
@@ -12,15 +14,25 @@ import net.minestom.server.entity.ai.EntityAIGroup;
 import net.minestom.server.entity.ai.EntityAIGroupBuilder;
 import net.minestom.server.entity.ai.GoalSelector;
 import net.minestom.server.entity.ai.goal.RandomStrollGoal;
+import net.minestom.server.instance.Instance;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.UUID;
+
 public class EntityCommand extends Command {
+
+
     public EntityCommand() {
         super("entity");
 
+        var instances = MinecraftServer.getInstanceManager().getInstances().stream().map(Instance::getUniqueId).map(UUID::toString).toArray(String[]::new);
+        var instanceId = ArgumentType.Word("instance").from(instances);
+
         addSyntax((sender, context) -> {
-            var instance = sender.asPlayer().getInstance();
+            var target = context.get(instanceId);
+            var instance = MinecraftServer.getInstanceManager().getInstance(UUID.fromString(target));
+//            var instance = sender.asPlayer().getInstance();
 
             EntityCreature entity = new EntityCreature(EntityType.ZOMBIE);
             entity.addAIGroup(new EntityAIGroupBuilder()
@@ -28,7 +40,7 @@ public class EntityCommand extends Command {
                     .build());
             entity.setInstance(instance, new Vec(12, 41, 22));
 //            entity.getNavigator().setPathTo(new Vec(42, 41, 22), true);
-        });
+        }, instanceId);
     }
 
     public static class TestGoal extends GoalSelector {

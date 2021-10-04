@@ -1,21 +1,17 @@
 package com.mattworzala.canary.server.command;
 
-import com.mattworzala.canary.server.SandboxServer;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.arguments.ArgumentType;
 import net.minestom.server.instance.Instance;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class InstanceCommand extends Command {
     public InstanceCommand() {
         super("instance");
 
-        var instances = SandboxServer.instances.stream().map(Instance::getUniqueId).map(UUID::toString).toArray(String[]::new);
+        var instances = MinecraftServer.getInstanceManager().getInstances().stream().map(Instance::getUniqueId).map(UUID::toString).toArray(String[]::new);
         var instanceId = ArgumentType.Word("instance").from(instances);
 
         addSyntax((sender, context) -> {

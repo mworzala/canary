@@ -11,6 +11,7 @@ public class StandOnBlockGoal extends GoalSelector {
     private static final int range = 10;
 
     private final Block targetBlock;
+    private boolean foundPath = false;
 
     public StandOnBlockGoal(@NotNull EntityCreature entityCreature, @NotNull Block targetBlock) {
         super(entityCreature);
@@ -35,6 +36,7 @@ public class StandOnBlockGoal extends GoalSelector {
         assert instance != null;
         final Pos entityPos = entityCreature.getPosition();
 
+        foundPath = false;
         for (int x = -range; x < range; x++) {
             for (int y = -range; y < range; y++) {
                 for (int z = -range; z < range; z++) {
@@ -42,8 +44,10 @@ public class StandOnBlockGoal extends GoalSelector {
                     final var block = instance.getBlock(offsetPos);
                     if (targetBlock.compare(block)) {
                         var isValid = entityCreature.getNavigator().setPathTo(offsetPos, true);
-                        if (isValid)
+                        if (isValid){
+                            foundPath = true;
                             return;
+                        }
                     }
                 }
             }
@@ -65,7 +69,7 @@ public class StandOnBlockGoal extends GoalSelector {
         final var posUnder = entityCreature.getPosition().withY(y -> y - 1);
         final var underEntity = instance.getBlock(posUnder);
 
-        return targetBlock.compare(underEntity) || entityCreature.getNavigator().getPath() == null;
+        return targetBlock.compare(underEntity) || !foundPath;
     }
 
     @Override

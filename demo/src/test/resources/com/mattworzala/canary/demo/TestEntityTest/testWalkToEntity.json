@@ -10,7 +10,7 @@
       "block": "minecraft:stone"
     },
     {
-      "block": "minecraft:gold_block"
+      "block": "minecraft:diamond_block"
     }
   ],
   "blocks": "0,17;1,1;0,7;-1,50"
