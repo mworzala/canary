@@ -29,8 +29,11 @@ public class RunCommand extends Command {
         ALL, PASSED, FAILED
     }
 
-    public RunCommand() {
+    private final SandboxServer server;
+
+    public RunCommand(SandboxServer server) {
         super("run", "r", "execute", "exec");
+        this.server = server;
 
         // No filter
         setDefaultExecutor(this::onRun);
@@ -48,7 +51,7 @@ public class RunCommand extends Command {
         version(sender, NAME, VERSION);
 
         MinecraftServer.getSchedulerManager().buildTask(() -> {
-            TestCoordinator coordinator = SandboxServer.getInstance().getTestCoordinator();
+            TestCoordinator coordinator = server.getTestCoordinator();
             System.out.println("STARTING EXECUTION");
             coordinator.execute(new TestExecutionListener() {
                 @Override
