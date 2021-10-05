@@ -5,8 +5,15 @@ import com.mattworzala.canary.platform.junit.descriptor.CanaryTestDescriptor;
 import com.mattworzala.canary.server.assertion.AssertionImpl;
 import com.mattworzala.canary.server.env.TestEnvironmentImpl;
 import com.mattworzala.canary.server.instance.block.BoundingBoxHandler;
+import com.mattworzala.canary.server.instance.block.CanaryBlocks;
 import com.mattworzala.canary.server.structure.JsonStructureIO;
 import com.mattworzala.canary.server.structure.Structure;
+import net.kyori.adventure.inventory.Book;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.Tickable;
 import net.minestom.server.coordinate.Point;
@@ -17,18 +24,28 @@ import net.minestom.server.event.EventListener;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.instance.InstanceTickEvent;
 import net.minestom.server.event.player.PlayerLoginEvent;
+import net.minestom.server.instance.Chunk;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceContainer;
+import net.minestom.server.instance.block.Block;
+import net.minestom.server.network.packet.server.play.BlockEntityDataPacket;
+import net.minestom.server.utils.time.TimeUnit;
 import net.minestom.server.utils.validate.Check;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jglrxavpok.hephaistos.nbt.NBTCompound;
 import org.junit.platform.commons.util.ReflectionUtils;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.mattworzala.canary.platform.util.ReflectionUtils.invokeMethodOptionalParameter;
@@ -36,6 +53,11 @@ import static com.mattworzala.canary.platform.util.ReflectionUtils.invokeMethodO
 // one per test method (reused), handles instantiating the test class, invoking the before/run/after methods, cleaning up the test for the next execution (replace structure).
 //   Executing a test is not blocking, it must be ticked until it reports that it has a result.
 public class TestExecutor implements Tickable {
+    /**
+     * The extra area around the structure to be loaded.
+     */
+    private static final int LOAD_AREA = 16;
+
     private static final EventFilter<InstanceTickEvent, Instance> FILTER_INSTANCE_TICK = EventFilter.from(InstanceTickEvent.class, Instance.class, InstanceTickEvent::getInstance);
     private static final EventNode<InstanceTickEvent> TICK_NODE = EventNode.type("EventExecutor_InstanceTick", FILTER_INSTANCE_TICK);
 
@@ -47,11 +69,15 @@ public class TestExecutor implements Tickable {
 
     private final CanaryTestDescriptor testDescriptor;
 
-    private int executionCount = 0;
     private final Instance instance;
     private final Structure structure;
     private final Point origin;
+
+    // Sandbox state
+    private final Instance sandboxInstance;
     private final CameraPlayer camera;
+    private final Point statusGlassBlock;
+    private final Point failureLectern;
 
     // Mid-test state (anything which is accumulated while running a test)
     private volatile boolean running;
@@ -67,13 +93,17 @@ public class TestExecutor implements Tickable {
         Check.notNull(structurePath, "Missing structure for " + testDescriptor.getUniqueId());
         this.structure = structureIo.readStructure(structurePath);
 
+        // Start ticking
         var tickListener = EventListener.builder(InstanceTickEvent.class)
                 .handler(event -> this.tick(event.getDuration()))
                 .filter(this::isValidTick).build();
         TICK_NODE.addListener(tickListener);
 
+        sandboxInstance = MinecraftServer.getInstanceManager().getInstance(new UUID(0, 0));
         camera = new CameraPlayer(this.instance, new Pos(origin).sub(new Pos(2, 0, 2)), new CopyOnWriteArrayList<>());
-        createStructure();
+        statusGlassBlock = origin.sub(0, 0, 1);
+        failureLectern = origin.add(1, 0, -1);
+        initialize();
 
         MinecraftServer.getGlobalEventHandler().addListener(EventListener
                 .builder(PlayerLoginEvent.class)
@@ -113,11 +143,15 @@ public class TestExecutor implements Tickable {
         }
 
         // Update internal state
-        executionCount++;
         executionListener = listener;
 
         // Instantiate class + execute test method & supporting.
         executionListener.start(testDescriptor);
+        setVisualStatus(null);
+        if (sandboxInstance != null) {
+            sandboxInstance.setBlock(failureLectern, Block.AIR);
+        }
+
         try {
             MethodSource source = (MethodSource) testDescriptor.getSource().get();
             classInstance = ReflectionUtils.newInstance(source.getJavaClass());
@@ -131,7 +165,8 @@ public class TestExecutor implements Tickable {
             invokeMethodOptionalParameter(source.getJavaMethod(), classInstance, environment);
 
         } catch (Throwable throwable) {
-            executionListener.end(testDescriptor, throwable);
+            end(throwable);
+            return;
         }
 
         running = true;
@@ -165,7 +200,7 @@ public class TestExecutor implements Tickable {
     }
 
     private void end(@Nullable Throwable error) {
-        System.out.println("ENDING TEST");
+
         // "After Each" methods
         var environment = new TestEnvironmentImpl(this); // We could keep track of the one from the init method, but it keeps no state so it doesnt really matter.
         for (Method method : testDescriptor.getPostEffects()) {
@@ -175,6 +210,10 @@ public class TestExecutor implements Tickable {
 
         // "Officially" end test
         executionListener.end(testDescriptor, error);
+        setVisualStatus(error == null);
+        if (error != null && sandboxInstance != null) {
+            sandboxInstance.setBlock(failureLectern, CanaryBlocks.Lectern(getTestDescriptor().getDisplayName(), error));
+        }
 
         // Reset state
         running = false;
@@ -183,29 +222,53 @@ public class TestExecutor implements Tickable {
         assertions.clear();
 
         // Reset structure
-        //todo
+        structure.loadIntoBlockSetter(instance, origin);
+        if (sandboxInstance != null) structure.loadIntoBlockSetter(sandboxInstance, origin);
     }
 
-    private void createStructure() {
+    private void initialize() {
+        loadWorldRegion(instance);
+        if (sandboxInstance != null) loadWorldRegion(sandboxInstance);
 
+        structure.loadIntoBlockSetter(instance, origin);
+        if (sandboxInstance != null) {
+            structure.loadIntoBlockSetter(sandboxInstance, origin);
 
+            // Bounding box
+            var boundingBox = CanaryBlocks.BoundingBox(structure.getSize());
+            sandboxInstance.setBlock(origin.sub(0, 1, 0), boundingBox);
 
-        for (int x = -10; x <= 10; x++) {
-            for (int z = -10; z <= 10; z++) {
-                instance.loadChunk(x, z).join();
+            // Beacon
+            CanaryBlocks.placeBeacon(sandboxInstance, origin.sub(0, 1, 1));
+            setVisualStatus(null);
+        }
+    }
+
+    private void loadWorldRegion(Instance instance) {
+        int minBlockX = origin.blockX() - LOAD_AREA, maxBlockX = origin.blockX() + structure.getSizeX() + LOAD_AREA;
+        int minBlockZ = origin.blockZ() - LOAD_AREA, maxBlockZ = origin.blockZ() + structure.getSizeZ() + LOAD_AREA;
+
+        // Load relevant chunks in parallel
+        List<CompletableFuture<?>> loadRequests = new ArrayList<>();
+        for (int x = minBlockX / Chunk.CHUNK_SIZE_X; x <= maxBlockX / Chunk.CHUNK_SIZE_X; x++) {
+            for (int z = minBlockZ / Chunk.CHUNK_SIZE_Z; z <= maxBlockZ / Chunk.CHUNK_SIZE_Z; z++) {
+                loadRequests.add(instance.loadChunk(x, z));
             }
         }
 
-        // Visual Blocks
-        var boundingBox = BoundingBoxHandler.BLOCK
-                .withTag(BoundingBoxHandler.Tags.SizeX, structure.getSize().blockX())
-                .withTag(BoundingBoxHandler.Tags.SizeY, structure.getSize().blockY())
-                .withTag(BoundingBoxHandler.Tags.SizeZ, structure.getSize().blockZ());
-        Point blockPos = origin.add(new Vec(0, -1, 0));
+        // Wait for all loads to complete
+        CompletableFuture.allOf(loadRequests.toArray(new CompletableFuture<?>[0])).join();
+    }
 
-        getInstance().setBlock(blockPos, boundingBox);
+    private void setVisualStatus(@Nullable Boolean status) {
+        if (sandboxInstance == null) return;
 
-        structure.loadIntoBlockSetter(getInstance(), origin);
-        System.out.println("Loaded structure for " + getTestDescriptor().getUniqueId());
+        if (status == null) {
+            sandboxInstance.setBlock(statusGlassBlock, Block.LIGHT_GRAY_STAINED_GLASS);
+        } else if (status) {
+            sandboxInstance.setBlock(statusGlassBlock, Block.GREEN_STAINED_GLASS);
+        } else {
+            sandboxInstance.setBlock(statusGlassBlock, Block.RED_STAINED_GLASS);
+        }
     }
 }
