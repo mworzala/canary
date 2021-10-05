@@ -53,23 +53,7 @@ public class RunCommand extends Command {
         MinecraftServer.getSchedulerManager().buildTask(() -> {
             TestCoordinator coordinator = server.getTestCoordinator();
             System.out.println("STARTING EXECUTION");
-            coordinator.execute(new TestExecutionListener() {
-                @Override
-                public void start(@NotNull TestDescriptor descriptor) {
-                    sender.sendMessage(Component.text(" ".repeat(indent) + "+" + descriptor.getDisplayName()).color(NamedTextColor.GREEN));
-                    indent += 1;
-                }
-
-                @Override
-                public void end(@NotNull TestDescriptor descriptor, @Nullable Throwable failure) {
-                    indent -= 1;
-                    sender.sendMessage(Component.text(" ".repeat(indent) + "-" + descriptor.getDisplayName()).color(failure == null ? NamedTextColor.GRAY : NamedTextColor.RED));
-                    if (failure != null) {
-                        System.out.println("TEST FAILED: " + descriptor.getUniqueId());
-                        failure.printStackTrace();
-                    }
-                }
-            });
+            coordinator.execute(TestExecutionListener.STDOUT);
             System.out.println("EXECUTION FINISHED");
         }).schedule();
 

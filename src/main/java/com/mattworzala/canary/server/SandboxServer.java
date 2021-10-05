@@ -49,13 +49,13 @@ public class SandboxServer extends HeadlessServer {
         PlacementRules.init();
         MojangAuth.init();
 
-        // Add an event callback to specify the spawning instance (and the spawn position)
         GlobalEventHandler globalEventHandler = MinecraftServer.getGlobalEventHandler();
         globalEventHandler.addListener(PlayerLoginEvent.class, event -> {
             final Player player = event.getPlayer();
             event.setSpawningInstance(getTestCoordinator().getInstance());
             player.setRespawnPoint(new Pos(0, 41, 0));
         });
+
         globalEventHandler.addListener(PlayerSpawnEvent.class, event -> {
             if (event.isFirstSpawn()) {
                 event.getPlayer().setGameMode(GameMode.CREATIVE);
@@ -74,7 +74,6 @@ public class SandboxServer extends HeadlessServer {
     private void registerCommands() {
         CommandManager commands = MinecraftServer.getCommandManager();
         commands.register(new StatusCommand());
-        commands.register(new TestsCommand());
 
         commands.register(new CanaryCommand());
         commands.register(new TestCommand(this));

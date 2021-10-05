@@ -14,7 +14,7 @@ public class TestDemo {
 
     }
 
-//    @InWorldTest
+    @InWorldTest
     public void aMinestomTest() {
 //        assertEquals(1, 2);
 
@@ -24,7 +24,7 @@ public class TestDemo {
 //        assertEquals(Block.AIR, instance.getBlock(0, 20, 0));
     }
 
-//    @InWorldTest
+    @InWorldTest
     public void anotherMinestomTest() {
         System.out.println("Hello");
 //        assertEquals(1, 2);
@@ -32,7 +32,7 @@ public class TestDemo {
 
     //todo(matt) there is a bug in the discovery logic - This class is being added to the engine descriptor not TestDemo's descriptor
     public static class MyOtherDemo {
-//        @InWorldTest
+        @InWorldTest
         public void innerTest() {
             System.out.println("INSIDE WOW");
         }

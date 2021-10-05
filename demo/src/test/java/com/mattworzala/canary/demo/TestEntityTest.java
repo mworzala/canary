@@ -7,7 +7,7 @@ import net.minestom.server.coordinate.Pos;
 
 public class TestEntityTest {
 
-//    @InWorldTest
+    @InWorldTest
     public void testWalkToDiamondBlock(TestEnvironment env) {
         final var diamondBlockPos = env.getPos("diamondBlock");
         final var entity = env.spawnEntity(TestEntity::new);

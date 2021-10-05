@@ -3,6 +3,7 @@ package com.mattworzala.canary.server.execution;
 import com.mattworzala.canary.platform.TestExecutionListener;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryEngineDescriptor;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryTestDescriptor;
+import com.mattworzala.canary.server.givemeahome.TestExecutorFactory;
 import com.mattworzala.canary.server.instance.BasicGenerator;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Point;
@@ -63,35 +64,39 @@ public class TestCoordinator {
         return executors.get(descriptor.getUniqueId());
     }
 
+    // Called from platform implementation
     public void indexTests(CanaryEngineDescriptor descriptor) {
         this.engineDescriptor = descriptor;
 
-        indexTestsRecursive(descriptor);
+        var factory = new TestExecutorFactory(this.executors);
+        factory.createExecutors(descriptor);
+
+//        indexTestsRecursive(descriptor);
         //todo index
     }
 
-    private Point lastTestOrigin = new Vec(2, 41, 0);
+//    private Point lastTestOrigin = new Vec(2, 41, 0);
 
-    private void indexTestsRecursive(TestDescriptor descriptor) {
-        TestSource source = descriptor.getSource().orElse(null);
-        if (source instanceof MethodSource) {
-            var testInstance = new InstanceContainer(UUID.randomUUID(), DimensionType.OVERWORLD);
-            MinecraftServer.getInstanceManager().registerInstance(testInstance);
-            testInstance.setChunkGenerator(new BasicGenerator());
-            var executor = new TestExecutor((CanaryTestDescriptor) descriptor, testInstance, lastTestOrigin);
-
-            {
-                // Add structure to sandbox instance as well
-                //TODO this does not handle resets
-                executor.getStructure().loadIntoBlockSetter(getInstance(), lastTestOrigin);
-            }
-
-            executors.put(descriptor.getUniqueId(), executor);
-            lastTestOrigin = lastTestOrigin.withZ(z -> z + executor.getStructure().getSizeZ() + 5);
-        }
-
-        descriptor.getChildren().forEach(this::indexTestsRecursive);
-    }
+//    private void indexTestsRecursive(TestDescriptor descriptor) {
+//        TestSource source = descriptor.getSource().orElse(null);
+//        if (source instanceof MethodSource) {
+//            var testInstance = new InstanceContainer(UUID.randomUUID(), DimensionType.OVERWORLD);
+//            MinecraftServer.getInstanceManager().registerInstance(testInstance);
+//            testInstance.setChunkGenerator(new BasicGenerator());
+//            var executor = new TestExecutor((CanaryTestDescriptor) descriptor, testInstance, lastTestOrigin);
+//
+//            {
+//                // Add structure to sandbox instance as well
+//                //TODO this does not handle resets
+//                executor.getStructure().loadIntoBlockSetter(getInstance(), lastTestOrigin);
+//            }
+//
+//            executors.put(descriptor.getUniqueId(), executor);
+//            lastTestOrigin = lastTestOrigin.withZ(z -> z + executor.getStructure().getSizeZ() + 5);
+//        }
+//
+//        descriptor.getChildren().forEach(this::indexTestsRecursive);
+//    }
 
     public void execute(TestExecutionListener listener) {
         //todo parallel execution
@@ -129,5 +134,17 @@ public class TestCoordinator {
             // temp wait until execution finished
             while (executor.isRunning()) ;
         }
+    }
+
+    private void createExecutorsRecursive(TestDescriptor descriptor) {
+        TestSource source = descriptor.getSource().orElse(null);
+        if (source == null) return;
+
+        if (source instanceof MethodSource) {
+            //todo create descriptor
+        }
+
+
+
     }
 }

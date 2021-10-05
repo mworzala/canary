@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class CameraPlayer extends Player {
+    public static volatile boolean DO_FORWARDING = true;
+    public static volatile boolean DO_DEBUG_LOG = false;
 
     private final List<Player> viewers;
 
@@ -110,12 +112,14 @@ public class CameraPlayer extends Player {
         @Override
         public void sendPacket(@NotNull ServerPacket serverPacket, boolean skipTranslating) {
             if (forwardWhitelist.stream().anyMatch(cl -> cl.isAssignableFrom(serverPacket.getClass()))) {
-                viewers.forEach(target -> target.getPlayerConnection().sendPacket(serverPacket));
-                System.out.println("FWD >> " + serverPacket.getClass().getSimpleName());
+                if (DO_FORWARDING)
+                    viewers.forEach(target -> target.getPlayerConnection().sendPacket(serverPacket));
+                if (DO_DEBUG_LOG)
+                    System.out.println("FWD >> " + serverPacket.getClass().getSimpleName());
             } else if (debugBlacklist.stream().noneMatch(cl -> cl.isAssignableFrom(serverPacket.getClass()))) {
-                System.out.println("NOFWD >> " + serverPacket.getClass().getSimpleName());
+                if (DO_DEBUG_LOG)
+                    System.out.println("NOFWD >> " + serverPacket.getClass().getSimpleName());
             }
-
         }
 
         @NotNull
