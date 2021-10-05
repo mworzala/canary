@@ -109,14 +109,11 @@ public class CameraPlayer extends Player {
 
         @Override
         public void sendPacket(@NotNull ServerPacket serverPacket, boolean skipTranslating) {
-
-            if (debugBlacklist.stream().noneMatch(cl -> cl.isAssignableFrom(serverPacket.getClass()))) {
-                System.out.println("SND >> " + serverPacket.getClass().getSimpleName());
-            }
-
             if (forwardWhitelist.stream().anyMatch(cl -> cl.isAssignableFrom(serverPacket.getClass()))) {
                 viewers.forEach(target -> target.getPlayerConnection().sendPacket(serverPacket));
                 System.out.println("FWD >> " + serverPacket.getClass().getSimpleName());
+            } else if (debugBlacklist.stream().noneMatch(cl -> cl.isAssignableFrom(serverPacket.getClass()))) {
+                System.out.println("NOFWD >> " + serverPacket.getClass().getSimpleName());
             }
 
         }
