@@ -1,6 +1,6 @@
 package com.mattworzala.canary.server.command.test;
 
-import com.mattworzala.canary.server.givemeahome.BoundingBoxHandler;
+import com.mattworzala.canary.server.instance.block.BoundingBoxHandler;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Player;

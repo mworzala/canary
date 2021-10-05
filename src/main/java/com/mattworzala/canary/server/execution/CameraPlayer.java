@@ -1,4 +1,4 @@
-package com.mattworzala.canary.server.givemeahome;
+package com.mattworzala.canary.server.execution;
 
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;

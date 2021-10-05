@@ -1,6 +1,6 @@
 package com.mattworzala.canary.platform.junit.execution;
 
-import com.mattworzala.canary.platform.givemeahome.TestExecutionListener;
+import com.mattworzala.canary.platform.TestExecutionListener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.platform.engine.EngineExecutionListener;

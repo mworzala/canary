@@ -1,12 +1,9 @@
 package com.mattworzala.canary.server.command.test;
 
-import com.mattworzala.canary.platform.givemeahome.SandboxTestEnvironment;
-import net.kyori.adventure.text.Component;
 import net.minestom.server.command.CommandSender;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.CommandContext;
 import net.minestom.server.command.builder.arguments.Argument;
-import net.minestom.server.command.builder.suggestion.SuggestionEntry;
 
 import static com.mattworzala.canary.server.command.TestCommand.version;
 import static com.mattworzala.canary.server.command.test.RunCommand.NAME;

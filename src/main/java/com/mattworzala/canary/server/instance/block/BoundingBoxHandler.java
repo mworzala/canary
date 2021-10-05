@@ -1,4 +1,4 @@
-package com.mattworzala.canary.server.givemeahome;
+package com.mattworzala.canary.server.instance.block;
 
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockHandler;
