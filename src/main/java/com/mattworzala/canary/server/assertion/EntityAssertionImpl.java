@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class EntityAssertionImpl<T extends Entity, A extends EntityAssertionImpl<T, A>> extends AssertionImpl<T, A> {
+public class EntityAssertionImpl<T extends Entity, This extends EntityAssertionImpl<T, This>> extends AssertionImpl<T, This> {
 
     public EntityAssertionImpl(T input) {
         super(input);
@@ -16,11 +16,12 @@ public class EntityAssertionImpl<T extends Entity, A extends EntityAssertionImpl
 
     @NotNull
     @Contract(value = "_ -> this", mutates = "this")
-    public A toBeAt(@NotNull Point position) {
+    public This toBeAt(@NotNull Point position) {
         this.assertionTest = (T entity) -> sameBlock(entity.getPosition(), position);
-        return (A) this;
+        return (This) this;
     }
 
+    //todo move this to some util
     public Boolean sameBlock(Point p1, Point p2) {
         return p1.blockX() == p2.blockX() &&
                 p1.blockY() == p2.blockY() &&
@@ -28,7 +29,7 @@ public class EntityAssertionImpl<T extends Entity, A extends EntityAssertionImpl
     }
 
     @NotNull
-    public A toBeAt(@NotNull Supplier<@NotNull Point> pointSupplier) {
+    public This toBeAt(@NotNull Supplier<@NotNull Point> pointSupplier) {
         this.assertionTest = (T entity) -> sameBlock(entity.getPosition(), pointSupplier.get());
 
         String assertionFormat = "Entity pos: %s\nOther pos: %s";
@@ -38,7 +39,13 @@ public class EntityAssertionImpl<T extends Entity, A extends EntityAssertionImpl
             String pointTwo = pointFormatter.apply(pointSupplier.get());
             return String.format(assertionFormat, pointOne, pointTwo);
         };
-        return (A) this;
+        return self();
+    }
+
+    @NotNull
+    public This toBeRemoved() {
+        this.assertionTest = Entity::isRemoved;
+        return self();
     }
 
 }

@@ -1,0 +1,14 @@
+{
+  "id": "testBasicUsage",
+  "size": [
+    5,
+    5,
+    5
+  ],
+  "blockmap": [
+    {
+      "block": "minecraft:stone"
+    }
+  ],
+  "blocks": "0,25;-1,100"
+}

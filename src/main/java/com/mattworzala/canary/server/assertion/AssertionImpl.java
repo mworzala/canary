@@ -98,4 +98,8 @@ public class AssertionImpl<T, This extends AssertionImpl<T, This>> {
     public List<String> getLogs() {
         return logs;
     }
+
+    protected This self() {
+        return (This) this;
+    }
 }
