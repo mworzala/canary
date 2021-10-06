@@ -1,5 +1,6 @@
 package com.mattworzala.canary.server.execution;
 
+import com.mattworzala.canary.platform.util.StringUtil;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
@@ -16,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class CameraPlayer extends Player {
     public static volatile boolean DO_FORWARDING = true;
@@ -25,7 +25,7 @@ public class CameraPlayer extends Player {
     private final List<Player> viewers;
 
     public CameraPlayer(@NotNull Instance instance, @NotNull Pos position, @NotNull List<Player> viewers) {
-        super(instance.getUniqueId(), generateName(), new Connection(viewers));
+        super(instance.getUniqueId(), "_cny_" + StringUtil.randomString(10), new Connection(viewers));
         this.viewers = viewers;
 
         MinecraftServer.getGlobalEventHandler().addListener(
@@ -73,13 +73,6 @@ public class CameraPlayer extends Player {
     private void handleTabList(PlayerConnection connection) {
         // Remove from tab-list
         MinecraftServer.getSchedulerManager().buildTask(() -> connection.sendPacket(getRemovePlayerToList())).delay(20, TimeUnit.SERVER_TICK).schedule();
-    }
-
-    @NotNull
-    private static String generateName() {
-        return "_cny_" + ThreadLocalRandom.current().ints(97, 123)
-                .limit(10)
-                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append);
     }
 
     private static class Connection extends PlayerConnection {
