@@ -1,10 +1,12 @@
 {
-  "id": "my-test-world",
   "size": [
     16,
     16,
     16
   ],
+  "markedBlocks": {
+    "my_mark": 12345
+  },
   "blockmap": [
     "minecraft:stone",
     "minecraft:cobblestone_stairs[facing=north]",

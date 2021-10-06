@@ -8,6 +8,8 @@ import net.minestom.server.command.CommandManager;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
+import net.minestom.server.entity.fakeplayer.FakePlayer;
+import net.minestom.server.entity.fakeplayer.FakePlayerOption;
 import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.event.player.PlayerLoginEvent;
 import net.minestom.server.event.player.PlayerSpawnEvent;
@@ -15,12 +17,14 @@ import net.minestom.server.extras.MojangAuth;
 import net.minestom.server.extras.PlacementRules;
 import net.minestom.server.extras.optifine.OptifineSupport;
 import net.minestom.server.resourcepack.ResourcePack;
+import net.minestom.server.utils.time.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.UUID;
 
 @Environment(EnvType.MINESTOM)
 public class SandboxServer extends HeadlessServer {
@@ -79,5 +83,6 @@ public class SandboxServer extends HeadlessServer {
         commands.register(new TestCommand(this));
         commands.register(new InstanceCommand());
         commands.register(new EntityCommand());
+        commands.register(new InteractionCommand());
     }
 }
