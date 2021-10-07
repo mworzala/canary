@@ -1,7 +1,10 @@
 package com.mattworzala.canary.server.instance.block;
 
+import me.kaimu.hastebin.Hastebin;
 import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
@@ -17,6 +20,7 @@ import net.minestom.server.utils.NamespaceID;
 import org.jetbrains.annotations.NotNull;
 import org.jglrxavpok.hephaistos.nbt.NBT;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
@@ -44,6 +48,7 @@ public class LecternHandler implements BlockHandler {
         final String testName = block.getTag(Tags.TestName);
         final String testFailure = block.getTag(Tags.TestFailure);
         final String testStacktrace = block.getTag(Tags.TestStacktrace);
+        final String testHasteUrl = block.getTag(Tags.TestHasteUrl);
 
         Component simpleErrorPage = Component.text()
                 .append(Component.text("Test Failed").color(TextColor.color(0xFF0000)).style(Style.style(TextDecoration.BOLD)))
@@ -53,11 +58,30 @@ public class LecternHandler implements BlockHandler {
                 .append(Component.text(testFailure))
                 .build();
 
+        TextComponent errorText;
+        String hasteURL = testHasteUrl;
+        try {
+            if (testHasteUrl == null) {
+                Hastebin hastebin = new Hastebin();
+                hasteURL = hastebin.post(testStacktrace, false);
+                interaction.getInstance().setBlock(interaction.getBlockPosition(), block.withTag(Tags.TestHasteUrl, hasteURL));
+            }
+
+            TextComponent urlComponent = Component.text(hasteURL)
+                    .clickEvent(ClickEvent.openUrl(hasteURL));
+
+            errorText = Component.text("Full Stack trace: ").append(urlComponent);
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            errorText = Component.text(testStacktrace);
+        }
+
         player.openBook(Book.builder()
                 .title(Component.text("Test Result"))
                 .author(Component.text("Canary Reporter"))
                 .addPage(simpleErrorPage)
-                .addPage(Component.text(testStacktrace))
+                .addPage(errorText == null ? Component.text(testStacktrace) : errorText)
                 .build());
 
         return false;
@@ -80,5 +104,6 @@ public class LecternHandler implements BlockHandler {
         public static final Tag<String> TestName = Tag.String("CNY_TestName");
         public static final Tag<String> TestFailure = Tag.String("CNY_TestFailure");
         public static final Tag<String> TestStacktrace = Tag.String("CNY_TestStacktrace");
+        public static final Tag<String> TestHasteUrl = Tag.String("CNY_TestHasteUrl");
     }
 }
