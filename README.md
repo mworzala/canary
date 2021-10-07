@@ -1,6 +1,6 @@
 # Canary
 
-Canary is a way of writing unit tests for [Minestom](https://minestom.net/).
+Canary is a way of writing tests for [Minestom](https://minestom.net/).
 
 ## Install
 
