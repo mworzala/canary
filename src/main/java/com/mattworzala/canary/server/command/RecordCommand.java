@@ -29,7 +29,6 @@ public class RecordCommand extends Command {
 
         addSyntax(this::onSave, ArgumentType.Literal("save"));
         addSyntax(this::onLoad, ArgumentType.Literal("load"));
-
     }
 
     private void onStart(CommandSender sender, CommandContext context) {
