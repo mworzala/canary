@@ -1,6 +1,7 @@
 package com.mattworzala.canary.server.recording;
 
 import com.mattworzala.canary.platform.util.StringUtil;
+import com.mattworzala.canary.server.givemeahome.DesyncedTicker;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.Player;
 import net.minestom.server.network.ConnectionManager;
@@ -10,15 +11,22 @@ import org.jetbrains.annotations.NotNull;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.*;
 
 public class PlaybackPlayer extends Player {
     private static final ConnectionManager CONNECTION_MANAGER = MinecraftServer.getConnectionManager();
 
+    /** Schedules ticks for all running playbacks */
+    private static final DesyncedTicker TICKER = new DesyncedTicker(50, TimeUnit.MILLISECONDS);
+
     private final PacketRecording recording;
 
-    private boolean running = false;
-    private int tick = 0;
+    // Running state
+    private List<PacketRecording.Record> packets = null;
+    private long startTime;
 
     public PlaybackPlayer(@NotNull PacketRecording recording) {
         this(UUID.randomUUID(), recording);
@@ -33,30 +41,41 @@ public class PlaybackPlayer extends Player {
 
     public void start() {
         refreshReceivedTeleportId(getLastSentTeleportId());
-        running = true;
+
+        packets = new ArrayList<>(recording.packets());
+        startTime = System.currentTimeMillis();
+
+        TICKER.add(this);
     }
 
     public void stop() {
-        running = false;
+        TICKER.remove(this);
     }
 
+
+
     @Override
-    public void update(long time) {
-        if (!running) {
-            super.update(time);
+    public void tick(long time) {
+        if (time != -1) {
+            super.tick(time);
             return;
         }
 
-        for (var rec : recording.packets()) {
-            if (rec.tickDelta() == tick) {
+        long delta = System.currentTimeMillis() - startTime;
+
+        var iter = packets.iterator();
+        while (iter.hasNext()) {
+            PacketRecording.Record rec = iter.next();
+
+            if (rec.timeDelta() <= delta) {
                 addPacketToQueue(rec.packet());
-                System.out.println("Sending " + rec.packet().getClass().getSimpleName());
+                iter.remove();
             }
         }
 
-        super.update(time);
-
-        tick++;
+        if (packets.isEmpty()) {
+            stop();
+        }
     }
 
     private static class EmptyPlayerConnection extends PlayerConnection {

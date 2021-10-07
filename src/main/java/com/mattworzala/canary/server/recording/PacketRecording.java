@@ -12,7 +12,7 @@ public record PacketRecording(
         @NotNull List<Record> packets)
         implements Iterable<PacketRecording.Record> {
 
-    public static record Record(short tickDelta, @NotNull ClientPlayPacket packet) {}
+    public static record Record(int timeDelta, @NotNull ClientPlayPacket packet) {}
 
     public int size() {
         return packets.size();

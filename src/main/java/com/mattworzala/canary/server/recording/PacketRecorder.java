@@ -10,6 +10,8 @@ import net.minestom.server.event.player.PlayerPacketEvent;
 import net.minestom.server.network.packet.client.ClientPacket;
 import net.minestom.server.network.packet.client.ClientPlayPacket;
 import net.minestom.server.network.packet.client.play.ClientChatMessagePacket;
+import net.minestom.server.network.packet.client.play.ClientKeepAlivePacket;
+import net.minestom.server.network.packet.server.play.PlayerInfoPacket;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -36,6 +38,7 @@ public class PacketRecorder {
         this.target = target;
 
         addFilter(ClientChatMessagePacket.class, packet -> false);
+        addFilter(ClientKeepAlivePacket.class, packet -> false);
     }
 
     public void start() {
@@ -80,7 +83,7 @@ public class PacketRecorder {
         }
 
         // Append entry
-        short tickDelta = (short) ((System.currentTimeMillis() - startTime) / MinecraftServer.TICK_PER_SECOND);
+        int tickDelta = (int) (System.currentTimeMillis() - startTime);
         packets.add(new PacketRecording.Record(tickDelta, playPacket));
     }
 }

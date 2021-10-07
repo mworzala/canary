@@ -53,45 +53,35 @@ public class CprWriter implements PacketRecordingWriter {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() throws IOException {
         output.close();
         buffer.close();
     }
 
     /**
-     * Writes a .cpr file header with the following format (64 bytes long in total):
-     * <p>2 bytes | magic number</p>
-     * <p>2 bytes | version</p>
-     * <p>2 bytes | # of packets in recording</p>
-     * <p>8 bytes | start position x</p>
-     * <p>8 bytes | start position y</p>
-     * <p>8 bytes | start position z</p>
-     * <p>4 bytes | start position pitch</p>
-     * <p>4 bytes | start position yaw</p>
-     * <p>26 bytes | unused</p>
+     * Writes a .cpr file header (see package-info for definition)
      *
      * @param recording The recording for which to write a header
      */
     private void writeHeader(@NotNull PacketRecording recording) {
         buffer.writeShort(MAGIC_NUMBER);
         buffer.writeShort(VERSION);
+        buffer.writeInt(MinecraftServer.PROTOCOL_VERSION);
+
         buffer.writeShort((short) recording.size());
 
         var startPos = recording.startPosition();
         buffer.writeDouble(startPos.x());
         buffer.writeDouble(startPos.y());
         buffer.writeDouble(startPos.z());
-        buffer.writeDouble(startPos.pitch());
-        buffer.writeDouble(startPos.yaw());
+        buffer.writeFloat(startPos.pitch());
+        buffer.writeFloat(startPos.yaw());
 
-        buffer.writeBytes(new byte[26]);
+        buffer.writeBytes(new byte[22]);
     }
 
     /**
-     * Writes a single packet record with the following format:
-     * <p>2 bytes | tick delta (# of ticks after recording start)</p>
-     * <p>2 bytes | packet id</p>
-     * <p>N bytes | raw packet data</p>
+     * Writes a single packet record (see package-info for definition)
      *
      * @param rec The packet record to write
      */
@@ -100,7 +90,7 @@ public class CprWriter implements PacketRecordingWriter {
         short packetId = ClientPacketIdMapper.getPacketId(rec.packet());
 
         // Write entry
-        buffer.writeShort(rec.tickDelta());
+        buffer.writeInt(rec.timeDelta());
         buffer.writeShort(packetId);
         rec.packet().write(buffer);
     }
@@ -129,7 +119,7 @@ public class CprWriter implements PacketRecordingWriter {
         }
 
         public static short getPacketId(@NotNull ClientPacket packet) throws IllegalArgumentException {
-            Check.argCondition(packetToId.containsKey(packet.getClass()), "Unknown packet: " + packet.getClass().getName());
+            Check.argCondition(!packetToId.containsKey(packet.getClass()), "Unknown packet: " + packet.getClass().getName());
             return packetToId.getShort(packet.getClass());
         }
     }
