@@ -3,12 +3,14 @@ package com.mattworzala.canary.server.command.test;
 import com.mattworzala.canary.server.structure.JsonStructureIO;
 import com.mattworzala.canary.server.structure.Structure;
 import com.mattworzala.canary.server.structure.StructureWriter;
+import com.mattworzala.canary.server.testbuilder.TestBuilderController;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.CommandSender;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.CommandContext;
+import net.minestom.server.command.builder.arguments.ArgumentType;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.Event;
@@ -32,17 +34,35 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 import static com.mattworzala.canary.server.command.TestCommand.version;
+import static net.minestom.server.command.builder.arguments.ArgumentType.Literal;
 
 public class BuilderCommand extends Command {
     private static final String NAME = "builder";
     private static final String VERSION = "0.0.1";
 
     private ItemStack testBuilderItem;
+    private TestBuilderController testBuilderController;
 
     public BuilderCommand() {
         super("builder", "b");
 
-        setDefaultExecutor(this::onBuild);
+//        setDefaultExecutor(this::onBuild);
+//        setDefaultExecutor(this::onNewTest);
+
+        addSyntax(((sender, context) -> {
+            if (testBuilderController != null) {
+                testBuilderController.finish();
+                testBuilderController = null;
+            }
+        }), Literal("done"));
+
+        var structureName = ArgumentType.String("structure-name");
+        addSyntax(((sender, context) -> {
+            final String name = context.get(structureName);
+            testBuilderController = new TestBuilderController(name);
+            testBuilderController.addPlayer(sender.asPlayer());
+        }), structureName);
+
         this.testBuilderItem = getTestBuilderItem();
 
     }
@@ -51,6 +71,13 @@ public class BuilderCommand extends Command {
         return ItemStack.builder(Material.BOOK)
                 .displayName(Component.text("Test Builder", NamedTextColor.GREEN))
                 .build();
+    }
+
+    private void onNewTest(@NotNull CommandSender commandSender, @NotNull CommandContext commandContext) {
+//        Player player = commandSender.asPlayer();
+//        InstanceManager instanceManager = MinecraftServer.getInstanceManager();
+//
+//        testBuilderController = new TestBuilderController(player);
     }
 
     private void onBuild(@NotNull CommandSender commandSender, @NotNull CommandContext commandContext) {
