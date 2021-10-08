@@ -31,6 +31,30 @@ that part that you want to save you can see this from a bounding box while you a
 When you save a structure the server could send you some stub code for the test to copy (with ah correctly named method
 and the like)
 
+# Commands
+
+## While in a normal canary instance
+
+/test builder import <new-structure-name>
+
+Gives you an item that lets you select blocks from your current instance to import into the test builder instance. Once
+you are done selecting your blocks, you are brought to the test builder instance along with your imported blocks.
+
+/test builder new <new-structure-name>
+
+Brings you to a blank test builder instance
+
+/test builder duplicate <old-structure-name> <new-structure-name>
+
+Brings you to a test builder instance that starts with an already existing structure
+
+## While in the test builder instance
+
+/test builder done
+
+Saves the current test, puts you back where ever you started.
+
+
 
 
 
