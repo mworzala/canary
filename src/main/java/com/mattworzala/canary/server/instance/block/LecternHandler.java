@@ -1,6 +1,5 @@
 package com.mattworzala.canary.server.instance.block;
 
-import me.kaimu.hastebin.Hastebin;
 import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -20,7 +19,13 @@ import net.minestom.server.utils.NamespaceID;
 import org.jetbrains.annotations.NotNull;
 import org.jglrxavpok.hephaistos.nbt.NBT;
 
+import javax.net.ssl.HttpsURLConnection;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 
@@ -62,8 +67,7 @@ public class LecternHandler implements BlockHandler {
         String hasteURL = testHasteUrl;
         try {
             if (testHasteUrl == null) {
-                Hastebin hastebin = new Hastebin();
-                hasteURL = hastebin.post(testStacktrace, false);
+                hasteURL = postToHastebin(testStacktrace, false);
                 interaction.getInstance().setBlock(interaction.getBlockPosition(), block.withTag(Tags.TestHasteUrl, hasteURL));
             }
 
@@ -105,5 +109,40 @@ public class LecternHandler implements BlockHandler {
         public static final Tag<String> TestFailure = Tag.String("CNY_TestFailure");
         public static final Tag<String> TestStacktrace = Tag.String("CNY_TestStacktrace");
         public static final Tag<String> TestHasteUrl = Tag.String("CNY_TestHasteUrl");
+    }
+
+    public static String postToHastebin(String text, boolean raw) throws IOException {
+        byte[] postData = text.getBytes(StandardCharsets.UTF_8);
+        int postDataLength = postData.length;
+
+        String requestURL = "https://hastebin.com/documents";
+        URL url = new URL(requestURL);
+        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+        conn.setDoOutput(true);
+        conn.setInstanceFollowRedirects(false);
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("User-Agent", "Hastebin Java Api");
+        conn.setRequestProperty("Content-Length", Integer.toString(postDataLength));
+        conn.setUseCaches(false);
+
+        String response = null;
+        DataOutputStream wr;
+        try {
+            wr = new DataOutputStream(conn.getOutputStream());
+            wr.write(postData);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            response = reader.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (response.contains("\"key\"")) {
+            response = response.substring(response.indexOf(":") + 2, response.length() - 2);
+
+            String postURL = raw ? "https://hastebin.com/raw/" : "https://hastebin.com/";
+            response = postURL + response;
+        }
+
+        return response;
     }
 }
