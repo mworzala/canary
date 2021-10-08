@@ -1,7 +1,13 @@
 package com.mattworzala.canary.server.assertion;
 
+import com.mattworzala.canary.api.supplier.EntitySupplier;
+import com.mattworzala.canary.api.supplier.LivingEntitySupplier;
+import com.mattworzala.canary.api.supplier.PointSupplier;
 import net.minestom.server.coordinate.Point;
+import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
+import net.minestom.server.entity.EntityCreature;
+import net.minestom.server.entity.LivingEntity;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
