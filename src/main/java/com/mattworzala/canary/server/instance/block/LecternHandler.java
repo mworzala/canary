@@ -55,14 +55,6 @@ public class LecternHandler implements BlockHandler {
         final String testStacktrace = block.getTag(Tags.TestStacktrace);
         final String testHasteUrl = block.getTag(Tags.TestHasteUrl);
 
-        Component simpleErrorPage = Component.text()
-                .append(Component.text("Test Failed").color(TextColor.color(0xFF0000)).style(Style.style(TextDecoration.BOLD)))
-                .append(Component.newline())
-                .append(Component.text(testName).color(NamedTextColor.GRAY))
-                .append(Component.newline())
-                .append(Component.text(testFailure))
-                .build();
-
         TextComponent errorText;
         String hasteURL = testHasteUrl;
         try {
@@ -74,18 +66,28 @@ public class LecternHandler implements BlockHandler {
             TextComponent urlComponent = Component.text(hasteURL)
                     .clickEvent(ClickEvent.openUrl(hasteURL));
 
-            errorText = Component.text("Full Stack trace: ").append(urlComponent);
+            errorText = Component.text("View on Hastebin: ").append(urlComponent);
         } catch (IOException e) {
             e.printStackTrace();
 
             errorText = Component.text(testStacktrace);
         }
 
+        Component simpleErrorPage = Component.text()
+                .append(Component.text("Test Failed").color(TextColor.color(0xFF0000)).style(Style.style(TextDecoration.BOLD)))
+                .append(Component.newline())
+                .append(Component.text(testName).color(NamedTextColor.GRAY))
+                .append(Component.newline())
+                .append(Component.text(testFailure))
+                .append(Component.newline())
+                .append(Component.newline())
+                .append(errorText)
+                .build();
+
         player.openBook(Book.builder()
                 .title(Component.text("Test Result"))
                 .author(Component.text("Canary Reporter"))
                 .addPage(simpleErrorPage)
-                .addPage(errorText == null ? Component.text(testStacktrace) : errorText)
                 .build());
 
         return false;
