@@ -1,28 +1,21 @@
 package com.mattworzala.canary.server.env;
 
-import com.mattworzala.canary.api.Assertion;
 import com.mattworzala.canary.api.TestEnvironment;
-import com.mattworzala.canary.platform.util.ClassLoaders;
-import com.mattworzala.canary.server.assertion.AssertionResult;
+import com.mattworzala.canary.api.supplier.*;
+import com.mattworzala.canary.server.assertion.AssertionImpl;
 import com.mattworzala.canary.server.execution.TestExecutor;
-import com.mattworzala.canary.server.structure.JsonStructureIO;
-import com.mattworzala.canary.server.structure.Structure;
-import com.mattworzala.canary.server.structure.StructureReader;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
-import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.LivingEntity;
 import net.minestom.server.instance.Instance;
-import net.minestom.server.instance.batch.RelativeBlockBatch;
 import net.minestom.server.instance.block.Block;
 import org.jetbrains.annotations.NotNull;
 
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import static com.mattworzala.canary.api.Assertion.*;
 
 public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironment {
 
@@ -35,28 +28,62 @@ public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironm
      * Assertions
      */
 
+    // Pos
     @Override
-    public <T extends Entity> Assertion.EntityAssertion<T> expect(T actual) {
-        Assertion.EntityAssertion<T> assertion = new Assertion.EntityAssertion<>(actual);
-        executor.register(assertion);
-        return assertion;
+    public PosSupplier get(Pos actual) {
+        return null; //todo
     }
 
     @Override
-    public <T extends LivingEntity> Assertion.LivingEntityAssertion<T> expect(T actual) {
-        Assertion.LivingEntityAssertion<T> assertion = new Assertion.LivingEntityAssertion<>(actual);
-        executor.register(assertion);
-        return assertion;
+    public PosAssertion expect(PosSupplier actual) {
+        return reg(new PosAssertion(actual));
+    }
+
+    // Point/Vec
+    @Override
+    public PointSupplier get(Point actual) {
+        return null; //todo
     }
 
     @Override
-    public <T> Assertion<T> expect(T actual) {
-        Assertion<T> assertion = new Assertion<>(actual);
-        executor.register(assertion);
-        return assertion;
+    public PointAssertion expect(PointSupplier actual) {
+        return reg(new PointAssertion(actual));
     }
 
-//    public AssertionResult tick() {
+    // LivingEntity
+    @Override
+    public LivingEntitySupplier get(LivingEntity actual) {
+        return null; //todo
+    }
+
+    @Override
+    public LivingEntityAssertion expect(LivingEntitySupplier actual) {
+        return reg(new LivingEntityAssertion(actual));
+    }
+
+    // Entity
+    @Override
+    public EntitySupplier get(Entity actual) {
+        return null; //todo
+    }
+
+    @Override
+    public EntityAssertion expect(EntitySupplier actual) {
+        return reg(new EntityAssertion(actual));
+    }
+
+    // Instance
+    @Override
+    public InstanceSupplier get(Instance actual) {
+        return null; //todo
+    }
+
+    @Override
+    public InstanceAssertion expect(InstanceSupplier actual) {
+        return reg(new InstanceAssertion(actual));
+    }
+
+    //    public AssertionResult tick() {
 //        System.out.println("IN TEST ENVIRONMENT TICK");
 //        boolean failed = false;
 //        boolean allPassed = true;
@@ -82,7 +109,7 @@ public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironm
 //        return AssertionResult.NO_RESULT;
 //    }
 
-    public AssertionResult startTesting() {
+//    public AssertionResult startTesting() {
 //        System.out.println("STARTING TESTING, there are " + assertions.size() + " assertions");
 //        EventNode<Event> node = EventNode.all("assertions");
 //        var handler = MinecraftServer.getGlobalEventHandler();
@@ -124,8 +151,8 @@ public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironm
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();
 //        }
-        return AssertionResult.FAIL;
-    }
+//        return AssertionResult.FAIL;
+//    }
 
     /*
      * Structure Variables
@@ -151,30 +178,6 @@ public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironm
     }
 
     @Override
-    public Structure loadWorldData(String fileName, int originX, int originY, int originZ) {
-        var resource = ClassLoaders.MINESTOM.getResource(fileName);
-        if (resource == null) {
-
-        return null;
-        }
-        try {
-            var uri = resource.toURI();
-            Path p = Paths.get(uri);
-            StructureReader structureReader = new JsonStructureIO();
-            var structure = structureReader.readStructure(p);
-
-            RelativeBlockBatch blockBatch = new RelativeBlockBatch();
-            structure.loadIntoBlockSetter(blockBatch, Vec.ZERO);
-            blockBatch.apply(getInstance(), originX, originY, originZ, () -> System.out.println("Applied the structure to the world!"));
-
-            return structure;
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    @Override
     public <T extends Entity> T spawnEntity(Supplier<T> constructor, Pos position, Consumer<T> config) {
         //todo we probably want to track the entity
         T entity = constructor.get();
@@ -182,5 +185,11 @@ public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironm
             config.accept(entity);
         entity.setInstance(getInstance(), position.add(executor().getOrigin()));
         return entity;
+    }
+
+    // Private utils
+    private <A extends AssertionImpl<?, ?>> A reg(A assertion) {
+        executor.register(assertion);
+        return assertion;
     }
 }
