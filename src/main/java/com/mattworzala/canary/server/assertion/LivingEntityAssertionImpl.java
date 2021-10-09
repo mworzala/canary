@@ -1,10 +1,10 @@
 package com.mattworzala.canary.server.assertion;
 
-import net.minestom.server.entity.LivingEntity;
+import com.mattworzala.canary.api.supplier.LivingEntitySupplier;
+import org.jetbrains.annotations.NotNull;
 
-public class LivingEntityAssertionImpl<T extends LivingEntity, A extends LivingEntityAssertionImpl<T, A>> extends EntityAssertionImpl<T, A> {
-
-    public LivingEntityAssertionImpl(T input) {
-        super(input);
+public class LivingEntityAssertionImpl<S extends LivingEntitySupplier, This extends LivingEntityAssertionImpl<S, This>> extends EntityAssertionImpl<S, This> {
+    public LivingEntityAssertionImpl(@NotNull S actual) {
+        super(actual);
     }
 }

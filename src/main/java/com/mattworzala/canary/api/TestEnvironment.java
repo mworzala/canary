@@ -1,9 +1,6 @@
 package com.mattworzala.canary.api;
 
-import com.mattworzala.canary.api.supplier.EntitySupplier;
-import com.mattworzala.canary.api.supplier.LivingEntitySupplier;
-import com.mattworzala.canary.api.supplier.PointSupplier;
-import com.mattworzala.canary.api.supplier.PosSupplier;
+import com.mattworzala.canary.api.supplier.*;
 import com.mattworzala.canary.platform.util.hint.EnvType;
 import com.mattworzala.canary.platform.util.hint.Environment;
 import com.mattworzala.canary.server.env.TestEnvironmentImpl;
@@ -12,10 +9,6 @@ import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.LivingEntity;
-import net.minestom.server.event.EventFilter;
-import net.minestom.server.event.EventNode;
-import net.minestom.server.instance.Chunk;
-import net.minestom.server.instance.DynamicChunk;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import org.jetbrains.annotations.NotNull;
@@ -24,8 +17,7 @@ import java.io.IOException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static com.mattworzala.canary.api.Assertion.EntityAssertion;
-import static com.mattworzala.canary.api.Assertion.LivingEntityAssertion;
+import static com.mattworzala.canary.api.Assertion.*;
 
 @Environment(EnvType.MINESTOM)
 public interface TestEnvironment {
@@ -51,35 +43,36 @@ public interface TestEnvironment {
     <T> T run(String action, Object... args);
 
     // Assertions
+    // @formatter:off
 
     // Pos
-    void expect(PosSupplier actual);
-    default void expect(Pos actual) { expect((PosSupplier) () -> actual); }
+    PosSupplier get(Pos actual);
+    PosAssertion expect(PosSupplier actual);
+    default PosAssertion expect(Pos actual) { return expect(() -> actual); }
 
     // Point/Vec
-    void expect(PointSupplier actual);
-    default void expect(Point actual) { expect((PointSupplier) () -> actual); }
+    PointSupplier get(Point actual);
+    PointAssertion expect(PointSupplier actual);
+    default PointAssertion expect(Point actual) { return expect(() -> actual); }
 
     // LivingEntity
-    <T extends LivingEntity> void expect(LivingEntitySupplier<T> actual);
-    default <T extends LivingEntity> void expect(T actual) { expect((LivingEntitySupplier<T>) () -> actual); }
+    LivingEntitySupplier get(LivingEntity actual);
+    LivingEntityAssertion expect(LivingEntitySupplier actual);
+    default LivingEntityAssertion expect(LivingEntity actual) { return expect(() -> actual); }
 
     // Entity
-    <T extends Entity> void expect(EntitySupplier<T> actual);
-    default <T extends Entity> void expect(T actual) { expect((EntitySupplier<T>) () -> actual); }
+    EntitySupplier get(Entity actual);
+    EntityAssertion expect(EntitySupplier actual);
+    default EntityAssertion expect(Entity actual) { return expect(() -> actual); }
 
-//    <T extends Entity> void expect(EntitySupplier<T> actual);
-//    <T extends LivingEntity> void expect(Supplier<T> actual);
+    // Instance
+    InstanceSupplier get(Instance actual);
+    InstanceAssertion expect(InstanceSupplier actual);
+    default InstanceAssertion expect(Instance actual) { return expect(() -> actual); }
 
-//    <T extends Entity> EntityAssertion<T> expect(T actual);
-
-//    <T extends LivingEntity> LivingEntityAssertion<T> expect(T actual);
-
-//    <T> Assertion<T> expect(T actual);
+    // @formatter:on
 
     // Instance manipulation utilities
-
-    Structure loadWorldData(String fileName, int originX, int originY, int originZ) throws IOException;
 
     default <T extends Entity> T spawnEntity(Supplier<T> constructor) {
         return spawnEntity(constructor, Pos.ZERO, null);
@@ -90,13 +83,4 @@ public interface TestEnvironment {
     }
 
     <T extends Entity> T spawnEntity(Supplier<T> constructor, Pos position, Consumer<T> config);
-
-    public static void main(String[] args) {
-        LivingEntity li = new LivingEntity();
-        TestEnvironment env = new TestEnvironmentImpl();
-
-        env.expect(li);
-
-        env.expect(li::getPosition);
-    }
 }

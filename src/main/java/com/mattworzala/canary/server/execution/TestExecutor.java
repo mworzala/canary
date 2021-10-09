@@ -4,21 +4,13 @@ import com.mattworzala.canary.platform.TestExecutionListener;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryTestDescriptor;
 import com.mattworzala.canary.server.assertion.AssertionImpl;
 import com.mattworzala.canary.server.env.TestEnvironmentImpl;
-import com.mattworzala.canary.server.instance.block.BoundingBoxHandler;
 import com.mattworzala.canary.server.instance.block.CanaryBlocks;
 import com.mattworzala.canary.server.structure.JsonStructureIO;
 import com.mattworzala.canary.server.structure.Structure;
-import net.kyori.adventure.inventory.Book;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.Style;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.Tickable;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
-import net.minestom.server.coordinate.Vec;
 import net.minestom.server.event.EventFilter;
 import net.minestom.server.event.EventListener;
 import net.minestom.server.event.EventNode;
@@ -28,18 +20,12 @@ import net.minestom.server.instance.Chunk;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.block.Block;
-import net.minestom.server.network.packet.server.play.BlockEntityDataPacket;
-import net.minestom.server.utils.time.TimeUnit;
 import net.minestom.server.utils.validate.Check;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jglrxavpok.hephaistos.nbt.NBTCompound;
 import org.junit.platform.commons.util.ReflectionUtils;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -175,19 +161,20 @@ public class TestExecutor implements Tickable {
 
     @Override
     public void tick(long time) {
-        System.out.println("TICKING...");
 
-        try {
-            assertions.forEach(AssertionImpl::tick);
-        } catch (AssertionError error) {
-            end(error);
-            return;
-        }
+        throw new RuntimeException("Test ticking not implemented.");
 
-        assertions.removeIf(AssertionImpl::hasDefinitiveResult);
-        if (assertions.isEmpty()) {
-            end(null);
-        }
+//        try {
+//            assertions.forEach(AssertionImpl::tick); //todo
+//        } catch (AssertionError error) {
+//            end(error);
+//            return;
+//        }
+//
+//        assertions.removeIf(AssertionImpl::hasDefinitiveResult);
+//        if (assertions.isEmpty()) {
+//            end(null);
+//        }
 
     }
 
