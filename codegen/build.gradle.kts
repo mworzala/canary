@@ -1,6 +1,5 @@
 plugins {
     java
-    id("com.github.johnrengelman.shadow") version "7.0.0"
 }
 
 group = "com.mattworzala.canary"
@@ -20,7 +19,6 @@ dependencies {
     val minestomVersion: String by rootProject
     implementation("com.github.$minestomVariant:Minestom:$minestomVersion")
 
-
     implementation("com.squareup:javapoet:1.13.0")
 
     val junitVersion: String by rootProject
@@ -31,5 +29,7 @@ dependencies {
 tasks {
     test {
         useJUnitPlatform()
+
+        testLogging.showExceptions = true
     }
 }

@@ -27,7 +27,7 @@ public class HeadlessServer {
         // Initialization
         MinecraftServer minecraftServer = MinecraftServer.init();
         initServer();
-        System.out.println("Starting on port " + port);
+        System.out.println("Starting on port: " + port);
         minecraftServer.start("0.0.0.0", port); //todo set localhost in headless environment?
     }
 

@@ -13,6 +13,10 @@ repositories {
 }
 
 dependencies {
+    annotationProcessor(project(":codegen"))
+
+    //todo should be java-library
+
     val minestomVariant: String by project
     val minestomVersion: String by project
     implementation("com.github.$minestomVariant:Minestom:$minestomVersion")
@@ -22,8 +26,11 @@ dependencies {
     implementation("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
     val junitPlatformVersion: String by project
     implementation("org.junit.platform:junit-platform-launcher:$junitPlatformVersion")
+}
 
-    annotationProcessor(project(":codegen"))
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 tasks {
@@ -31,5 +38,7 @@ tasks {
         useJUnitPlatform {
             excludeEngines("canary-test-engine")
         }
+
+        testLogging.showExceptions = true
     }
 }
