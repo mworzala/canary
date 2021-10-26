@@ -6,7 +6,9 @@ public interface PackageConstants {
     String PKG_ASSERTION = "com.mattworzala.canary.server.assertion";
     String PKG_ASSERTION_SPEC = PKG_ASSERTION + ".spec";
     String PKG_ASSERTION_IMPL = PKG_ASSERTION + ".impl";
-    String PKG_SUPPLIER = "com.mattworzala.canary.api.supplier";
+
+    String PKG_API = "com.mattworzala.canary.api";
+    String PKG_SUPPLIER = PKG_API + ".supplier";
 
     // Jetbrains Annotations
     String PKG_JB_ANNOTATION_JB = "org.jetbrains.annotations";

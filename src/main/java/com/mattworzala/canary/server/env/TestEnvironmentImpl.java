@@ -2,6 +2,7 @@ package com.mattworzala.canary.server.env;
 
 import com.mattworzala.canary.api.TestEnvironment;
 import com.mattworzala.canary.api.supplier.*;
+import com.mattworzala.canary.server.assertion.AssertionStep;
 import com.mattworzala.canary.server.execution.TestExecutor;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
@@ -11,8 +12,11 @@ import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import static com.mattworzala.canary.api.Assertions.*;
 
 public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironment {
 
@@ -21,10 +25,10 @@ public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironm
         return executor.getInstance();
     }
 
-//    /*
-//     * Assertions
-//     */
-//
+    /*
+     * Assertions
+     */
+
 //    // Pos
 //    @Override
 //    public PosSupplier get(Pos actual) {
@@ -46,29 +50,29 @@ public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironm
 //    public PointAssertion expect(PointSupplier actual) {
 //        return reg(new PointAssertion(actual));
 //    }
-//
-//    // LivingEntity
-//    @Override
-//    public LivingEntitySupplier get(LivingEntity actual) {
-//        return null; //todo
-//    }
-//
-//    @Override
-//    public LivingEntityAssertion expect(LivingEntitySupplier actual) {
-//        return reg(new LivingEntityAssertion(actual));
-//    }
-//
-//    // Entity
-//    @Override
-//    public EntitySupplier get(Entity actual) {
-//        return null; //todo
-//    }
-//
-//    @Override
-//    public EntityAssertion expect(EntitySupplier actual) {
-//        return reg(new EntityAssertion(actual));
-//    }
-//
+
+    // LivingEntity
+    @Override
+    public LivingEntitySupplier get(LivingEntity actual) {
+        return null; //todo
+    }
+
+    @Override
+    public LivingEntityAssertion expect(LivingEntitySupplier actual) {
+        return new LivingEntityAssertion(actual, newAssertion());
+    }
+
+    // Entity
+    @Override
+    public EntitySupplier get(Entity actual) {
+        return null; //todo
+    }
+
+    @Override
+    public EntityAssertion expect(EntitySupplier actual) {
+        return new EntityAssertion(actual, newAssertion());
+    }
+
 //    // Instance
 //    @Override
 //    public InstanceSupplier get(Instance actual) {
@@ -185,8 +189,7 @@ public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironm
     }
 
 //     Private utils
-//    private <A extends AssertionImpl<?, ?>> A reg(A assertion) {
-//        executor.register(assertion);
-//        return assertion;
-//    }
+    private List<AssertionStep> newAssertion() {
+        return executor.createAssertion();
+    }
 }

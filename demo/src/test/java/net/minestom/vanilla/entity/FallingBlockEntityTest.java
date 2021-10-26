@@ -7,7 +7,7 @@ import net.minestom.server.coordinate.Vec;
 import net.minestom.server.instance.block.Block;
 
 public class FallingBlockEntityTest {
-    @InWorldTest
+//    @InWorldTest
     public void testBasicUsage(TestEnvironment env) {
         Point startPos = new Vec(3, 4, 3);
         Point endPos = new Vec(3, 1, 3);

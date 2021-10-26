@@ -1,16 +1,22 @@
 package com.mattworzala.canary.api;
 
+import com.mattworzala.canary.api.supplier.EntitySupplier;
+import com.mattworzala.canary.api.supplier.LivingEntitySupplier;
+import com.mattworzala.canary.api.supplier.PosSupplier;
 import com.mattworzala.canary.platform.util.hint.EnvType;
 import com.mattworzala.canary.platform.util.hint.Environment;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
+import net.minestom.server.entity.LivingEntity;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import static com.mattworzala.canary.api.Assertions.*;
 
 @Environment(EnvType.MINESTOM)
 public interface TestEnvironment {
@@ -35,35 +41,35 @@ public interface TestEnvironment {
      */
     <T> T run(String action, Object... args);
 
-//    // Assertions
-//    // @formatter:off
-//
-//    // Pos
+    // Assertions
+    // @formatter:off
+
+    // Pos
 //    PosSupplier get(Pos actual);
 //    PosAssertion expect(PosSupplier actual);
 //    default PosAssertion expect(Pos actual) { return expect(() -> actual); }
-//
+
 //    // Point/Vec
 //    PointSupplier get(Point actual);
 //    PointAssertion expect(PointSupplier actual);
 //    default PointAssertion expect(Point actual) { return expect(() -> actual); }
-//
-//    // LivingEntity
-//    LivingEntitySupplier get(LivingEntity actual);
-//    LivingEntityAssertion expect(LivingEntitySupplier actual);
-//    default LivingEntityAssertion expect(LivingEntity actual) { return expect(() -> actual); }
-//
-//    // Entity
-//    EntitySupplier get(Entity actual);
-//    EntityAssertion expect(EntitySupplier actual);
-//    default EntityAssertion expect(Entity actual) { return expect(() -> actual); }
-//
+
+    // LivingEntity
+    LivingEntitySupplier get(LivingEntity actual);
+    LivingEntityAssertion expect(LivingEntitySupplier actual);
+    default LivingEntityAssertion expect(LivingEntity actual) { return expect(() -> actual); }
+
+    // Entity
+    EntitySupplier get(Entity actual);
+    EntityAssertion expect(EntitySupplier actual);
+    default EntityAssertion expect(Entity actual) { return expect(() -> actual); }
+
 //    // Instance
 //    InstanceSupplier get(Instance actual);
 //    InstanceAssertion expect(InstanceSupplier actual);
 //    default InstanceAssertion expect(Instance actual) { return expect(() -> actual); }
-//
-//    // @formatter:on
+
+    // @formatter:on
 
     // Instance manipulation utilities
 
