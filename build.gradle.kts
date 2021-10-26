@@ -22,6 +22,8 @@ dependencies {
     implementation("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
     val junitPlatformVersion: String by project
     implementation("org.junit.platform:junit-platform-launcher:$junitPlatformVersion")
+
+    annotationProcessor(project(":codegen"))
 }
 
 tasks {

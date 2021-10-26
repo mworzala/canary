@@ -2,7 +2,6 @@ package com.mattworzala.canary.server.execution;
 
 import com.mattworzala.canary.platform.TestExecutionListener;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryTestDescriptor;
-import com.mattworzala.canary.server.assertion.AssertionImpl;
 import com.mattworzala.canary.server.env.TestEnvironmentImpl;
 import com.mattworzala.canary.server.instance.block.CanaryBlocks;
 import com.mattworzala.canary.server.structure.JsonStructureIO;
@@ -69,7 +68,7 @@ public class TestExecutor implements Tickable {
     private volatile boolean running;
     private TestExecutionListener executionListener;
     private Object classInstance;
-    private final List<AssertionImpl<?, ?>> assertions = new ArrayList<>();
+//    private final List<AssertionImpl<?, ?>> assertions = new ArrayList<>();
 
     public TestExecutor(CanaryTestDescriptor testDescriptor, InstanceContainer rootInstance, Point offset) {
         this.testDescriptor = testDescriptor;
@@ -119,9 +118,9 @@ public class TestExecutor implements Tickable {
         return origin;
     }
 
-    public void register(AssertionImpl<?, ?> assertion) {
-        assertions.add(assertion);
-    }
+//    public void register(AssertionImpl<?, ?> assertion) {
+//        assertions.add(assertion);
+//    }
 
     public void execute(TestExecutionListener listener) {
         if (running) {
@@ -206,7 +205,7 @@ public class TestExecutor implements Tickable {
         running = false;
         executionListener = null;
         classInstance = null;
-        assertions.clear();
+//        assertions.clear();
 
         // Reset structure
         structure.loadIntoBlockSetter(instance, origin);

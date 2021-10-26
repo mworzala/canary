@@ -1,0 +1,77 @@
+
+States
+P   PASS        A pass which is assumed to always pass in the future (cacheable)
+SP  SOFT PASS   A pass which may fail in the future (not cacheable)
+SF  SOFT FAIL   A fail which may pass in the future (not cacheable)
+F   FAIL        A fail which is assumed to always fail in the future (cacheable)
+
+Cacheable things need to be cached by operators which use them COME BACK HERE
+
+NOOP = should not happen, throw exception
+
+
+ALWAYS          |   NEVER
+P   > SP        |   P   > F
+SP  > SP        |   SP  > F
+SF  > F         |   SF  > SP
+F   > F         |   F   > SP
+
+NOT
+P   > F
+SP  > SF
+SF  > SP
+F   > P
+
+AND             |   OR
+P   P   > P     |   P   _   > P
+SP  SP  > SP    |   SP  _   > SP
+SP  P   > SP    |   SF  F   > SF
+SF  _   > SF    |   SF  SF  > SF
+F   _   > F     |   F   F   > F
+
+THEN (FIRST, SECOND)
+<FIRST>
+P   X   > X (->SECOND)
+SP  X   > X (->SECOND)
+SF  _   > SF
+F   _   > F
+<SECOND>
+SF  _   > NOOP
+F   _   > F
+SP  X   > X
+P   X   > X
+
+
+
+
+
+
+A   B   AA  AB  THEN
+(sequential)
+P   SF  SP  F
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
