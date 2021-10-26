@@ -7,10 +7,10 @@ import net.minestom.server.coordinate.Pos;
 
 public class TestEntityTest {
 
-    @InWorldTest
+//    @InWorldTest
     public void testWalkToDiamondBlock(TestEnvironment env) {
-        final var diamondBlockPos = env.getPos("diamondBlock");
-        final var entity = env.spawnEntity(TestEntity::new);
+//        final var diamondBlockPos = env.getPos("diamondBlock");
+//        final var entity = env.spawnEntity(TestEntity::new);
 
 //        env.expect(entity).toBeAt(diamondBlockPos);
     }
@@ -21,6 +21,6 @@ public class TestEntityTest {
         final var entity = env.spawnEntity(TestEntity::new, new Pos(3, 1, 1));
         final var target = env.spawnEntity(TestEntity::new, new Pos(1, 1, 1));
 
-//        env.expect(entity).toBeAt(target::getPosition);
+        env.expect(entity).toBeAt(target.getPosition());
     }
 }

@@ -2,6 +2,9 @@ package com.mattworzala.canary.server.execution;
 
 import com.mattworzala.canary.platform.TestExecutionListener;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryTestDescriptor;
+import com.mattworzala.canary.server.assertion.AeSimpleParser;
+import com.mattworzala.canary.server.assertion.AssertionStep;
+import com.mattworzala.canary.server.assertion.node.AeNode;
 import com.mattworzala.canary.server.env.TestEnvironmentImpl;
 import com.mattworzala.canary.server.instance.block.CanaryBlocks;
 import com.mattworzala.canary.server.structure.JsonStructureIO;
@@ -68,7 +71,8 @@ public class TestExecutor implements Tickable {
     private volatile boolean running;
     private TestExecutionListener executionListener;
     private Object classInstance;
-//    private final List<AssertionImpl<?, ?>> assertions = new ArrayList<>();
+    private final List<List<AssertionStep>> rawAssertions = new ArrayList<>();
+    private final List<AeNode> assertions = new ArrayList<>();
 
     public TestExecutor(CanaryTestDescriptor testDescriptor, InstanceContainer rootInstance, Point offset) {
         this.testDescriptor = testDescriptor;
@@ -118,9 +122,11 @@ public class TestExecutor implements Tickable {
         return origin;
     }
 
-//    public void register(AssertionImpl<?, ?> assertion) {
-//        assertions.add(assertion);
-//    }
+    public List<AssertionStep> createAssertion() {
+        List<AssertionStep> assertionSteps = new ArrayList<>();
+        rawAssertions.add(assertionSteps);
+        return assertionSteps;
+    }
 
     public void execute(TestExecutionListener listener) {
         if (running) {
@@ -147,7 +153,25 @@ public class TestExecutor implements Tickable {
                 invokeMethodOptionalParameter(method, classInstance, environment);
             }
 
+            // Invoke the actual test method
             invokeMethodOptionalParameter(source.getJavaMethod(), classInstance, environment);
+
+            // Compile assertions
+            for (var assertionSteps : rawAssertions) {
+                AeNode node = new AeSimpleParser(assertionSteps).parse();
+                if (node == null) {
+                    throw new RuntimeException("Failed to compile assertion!"); //todo can show errors here, but probably want stacktrace elements to render
+                }
+                assertions.add(node);
+            }
+//            rawAssertions.clear();
+
+            System.out.println("");
+            for (AeNode assertion : assertions) {
+                System.out.println(assertion.toString());
+            }
+
+
 
         } catch (Throwable throwable) {
             end(throwable);
@@ -161,8 +185,6 @@ public class TestExecutor implements Tickable {
     @Override
     public void tick(long time) {
 
-        throw new RuntimeException("Test ticking not implemented.");
-
 //        try {
 //            assertions.forEach(AssertionImpl::tick); //todo
 //        } catch (AssertionError error) {
@@ -174,6 +196,8 @@ public class TestExecutor implements Tickable {
 //        if (assertions.isEmpty()) {
 //            end(null);
 //        }
+
+        end(null);
 
     }
 

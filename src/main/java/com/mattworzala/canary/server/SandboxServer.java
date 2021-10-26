@@ -1,8 +1,10 @@
 package com.mattworzala.canary.server;
 
+import com.mattworzala.canary.platform.TestExecutionListener;
 import com.mattworzala.canary.platform.util.hint.EnvType;
 import com.mattworzala.canary.platform.util.hint.Environment;
 import com.mattworzala.canary.server.command.*;
+import com.mattworzala.canary.server.execution.TestCoordinator;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.CommandManager;
 import net.minestom.server.coordinate.Pos;
@@ -69,6 +71,13 @@ public class SandboxServer extends HeadlessServer {
         });
 
         registerCommands();
+
+        MinecraftServer.getSchedulerManager().buildTask(() -> {
+            TestCoordinator coordinator = getTestCoordinator();
+            System.out.println("STARTING EXECUTION");
+            coordinator.execute(TestExecutionListener.STDOUT);
+            System.out.println("EXECUTION FINISHED");
+        }).schedule();
     }
 
     private void registerCommands() {
