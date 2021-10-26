@@ -1,5 +1,6 @@
 plugins {
     java
+    id("com.github.johnrengelman.shadow") version "7.0.0"
 }
 
 group = "com.mattworzala.canary"
@@ -12,9 +13,13 @@ repositories {
 }
 
 dependencies {
+    annotationProcessor("com.google.auto.service:auto-service:1.0")
+    implementation("com.google.auto.service:auto-service:1.0")
+
     val minestomVariant: String by rootProject
     val minestomVersion: String by rootProject
     implementation("com.github.$minestomVariant:Minestom:$minestomVersion")
+
 
     implementation("com.squareup:javapoet:1.13.0")
 

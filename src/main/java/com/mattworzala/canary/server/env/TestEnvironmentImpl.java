@@ -2,7 +2,6 @@ package com.mattworzala.canary.server.env;
 
 import com.mattworzala.canary.api.TestEnvironment;
 import com.mattworzala.canary.api.supplier.*;
-import com.mattworzala.canary.server.assertion.AssertionImpl;
 import com.mattworzala.canary.server.execution.TestExecutor;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
@@ -15,8 +14,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static com.mattworzala.canary.api.Assertion.*;
-
 public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironment {
 
     @Override
@@ -24,64 +21,64 @@ public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironm
         return executor.getInstance();
     }
 
-    /*
-     * Assertions
-     */
-
-    // Pos
-    @Override
-    public PosSupplier get(Pos actual) {
-        return null; //todo
-    }
-
-    @Override
-    public PosAssertion expect(PosSupplier actual) {
-        return reg(new PosAssertion(actual));
-    }
-
-    // Point/Vec
-    @Override
-    public PointSupplier get(Point actual) {
-        return null; //todo
-    }
-
-    @Override
-    public PointAssertion expect(PointSupplier actual) {
-        return reg(new PointAssertion(actual));
-    }
-
-    // LivingEntity
-    @Override
-    public LivingEntitySupplier get(LivingEntity actual) {
-        return null; //todo
-    }
-
-    @Override
-    public LivingEntityAssertion expect(LivingEntitySupplier actual) {
-        return reg(new LivingEntityAssertion(actual));
-    }
-
-    // Entity
-    @Override
-    public EntitySupplier get(Entity actual) {
-        return null; //todo
-    }
-
-    @Override
-    public EntityAssertion expect(EntitySupplier actual) {
-        return reg(new EntityAssertion(actual));
-    }
-
-    // Instance
-    @Override
-    public InstanceSupplier get(Instance actual) {
-        return null; //todo
-    }
-
-    @Override
-    public InstanceAssertion expect(InstanceSupplier actual) {
-        return reg(new InstanceAssertion(actual));
-    }
+//    /*
+//     * Assertions
+//     */
+//
+//    // Pos
+//    @Override
+//    public PosSupplier get(Pos actual) {
+//        return null; //todo
+//    }
+//
+//    @Override
+//    public PosAssertion expect(PosSupplier actual) {
+//        return reg(new PosAssertion(actual));
+//    }
+//
+//    // Point/Vec
+//    @Override
+//    public PointSupplier get(Point actual) {
+//        return null; //todo
+//    }
+//
+//    @Override
+//    public PointAssertion expect(PointSupplier actual) {
+//        return reg(new PointAssertion(actual));
+//    }
+//
+//    // LivingEntity
+//    @Override
+//    public LivingEntitySupplier get(LivingEntity actual) {
+//        return null; //todo
+//    }
+//
+//    @Override
+//    public LivingEntityAssertion expect(LivingEntitySupplier actual) {
+//        return reg(new LivingEntityAssertion(actual));
+//    }
+//
+//    // Entity
+//    @Override
+//    public EntitySupplier get(Entity actual) {
+//        return null; //todo
+//    }
+//
+//    @Override
+//    public EntityAssertion expect(EntitySupplier actual) {
+//        return reg(new EntityAssertion(actual));
+//    }
+//
+//    // Instance
+//    @Override
+//    public InstanceSupplier get(Instance actual) {
+//        return null; //todo
+//    }
+//
+//    @Override
+//    public InstanceAssertion expect(InstanceSupplier actual) {
+//        return reg(new InstanceAssertion(actual));
+//    }
 
     //    public AssertionResult tick() {
 //        System.out.println("IN TEST ENVIRONMENT TICK");
@@ -187,9 +184,9 @@ public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironm
         return entity;
     }
 
-    // Private utils
-    private <A extends AssertionImpl<?, ?>> A reg(A assertion) {
-        executor.register(assertion);
-        return assertion;
-    }
+//     Private utils
+//    private <A extends AssertionImpl<?, ?>> A reg(A assertion) {
+//        executor.register(assertion);
+//        return assertion;
+//    }
 }
