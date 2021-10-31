@@ -11,6 +11,7 @@ import net.minestom.server.command.CommandSender;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.CommandContext;
 import net.minestom.server.command.builder.arguments.ArgumentType;
+import net.minestom.server.command.builder.condition.CommandCondition;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.Event;
@@ -49,19 +50,30 @@ public class BuilderCommand extends Command {
 //        setDefaultExecutor(this::onBuild);
 //        setDefaultExecutor(this::onNewTest);
 
-        addSyntax(((sender, context) -> {
+
+        var structureName = ArgumentType.String("structure-name");
+        CommandCondition inTestCondition = (sender, commandString) -> testBuilderController != null;
+        addConditionalSyntax(inTestCondition, ((sender, context) -> {
             if (testBuilderController != null) {
+                sender.asPlayer().sendMessage("Done making structure \"" + testBuilderController.getName() + "\"");
                 testBuilderController.finish();
                 testBuilderController = null;
+                sender.asPlayer().refreshCommands();
+            } else {
+                sender.asPlayer().sendMessage("\"test builder done\" is used to save a structure, you are not currently in a structure");
             }
         }), Literal("done"));
 
-        var structureName = ArgumentType.String("structure-name");
         addSyntax(((sender, context) -> {
+            if (testBuilderController != null) {
+                sender.asPlayer().sendMessage("You are currently building structure \"" + testBuilderController.getName() + "\"");
+            }
             final String name = context.get(structureName);
             testBuilderController = new TestBuilderController(name);
             testBuilderController.addPlayer(sender.asPlayer());
-        }), structureName);
+            sender.asPlayer().sendMessage("Making a new structure with name \"" + name + "\"");
+            sender.asPlayer().refreshCommands();
+        }), Literal("new"), structureName);
 
         this.testBuilderItem = getTestBuilderItem();
 
