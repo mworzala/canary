@@ -13,7 +13,6 @@ import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.PlayerBlockBreakEvent;
 import net.minestom.server.event.player.PlayerBlockPlaceEvent;
 import net.minestom.server.event.trait.PlayerEvent;
-import net.minestom.server.instance.Chunk;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.block.Block;
@@ -66,14 +65,17 @@ public class TestBuilderController {
         player.setInstance(testBuilderInstance, new Vec(0, 41, 0));
         System.out.println("tried to set the player instance");
         EventNode<PlayerEvent> testBuilderPlayerEventNode = EventNode.value("Player Block Place:" + player.getDisplayName(), EventFilter.PLAYER, player1 -> player1.getUuid().equals(player.getUuid()));
+
         testBuilderPlayerEventNode.addListener(PlayerBlockPlaceEvent.class, playerBlockPlaceEvent -> {
             System.out.println("PLAYER BLOCK PLACE EVENT");
+            System.out.println("BLOCK POS: " + playerBlockPlaceEvent.getBlockPosition());
             addPositionToBlockCoordLists(playerBlockPlaceEvent.getBlockPosition());
             this.updateStructureOutline();
         });
 
         testBuilderPlayerEventNode.addListener(PlayerBlockBreakEvent.class, playerBlockBreakEvent -> {
             System.out.println("PLAYER BLOCK BREAK EVENT");
+            System.out.println("BLOCK POS: " + playerBlockBreakEvent.getBlockPosition());
             removePositionFromBlockCoordLists(playerBlockBreakEvent.getBlockPosition());
             this.updateStructureOutline();
         });
@@ -119,29 +121,87 @@ public class TestBuilderController {
         int sizeY = maxPoint.blockY() - minPoint.blockY() + 1;
         int sizeZ = maxPoint.blockZ() - minPoint.blockZ() + 1;
 
-        var boundingBox = BoundingBoxHandler.BLOCK
-                .withTag(BoundingBoxHandler.Tags.SizeX, sizeX)
-                .withTag(BoundingBoxHandler.Tags.SizeY, sizeY)
-                .withTag(BoundingBoxHandler.Tags.SizeZ, sizeZ);
-        BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket();
+        // put the structure block as low as possible (48 blocks down) without going into negative y
+        final int MAX_STRUCTURE_BLOCK_OFFSET = 48;
+        int structureBlockYPos = minPoint.blockY() <= MAX_STRUCTURE_BLOCK_OFFSET ? 0 : minPoint.blockY() - MAX_STRUCTURE_BLOCK_OFFSET;
+        int structureBlockYOffset = minPoint.blockY() - structureBlockYPos;
 
-        Point blockPos = minPoint.add(new Vec(0, -1, 0));
-        blockEntityDataPacket.blockPosition = blockPos;
-        blockEntityDataPacket.action = 7;
-        blockEntityDataPacket.nbtCompound = boundingBox.nbt();
+        // TODO - clean this up and remove the duplication, also do any amount of safety checks
 
-        if (lastOverwrittenBlock != null) {
-            testBuilderInstance.setBlock(structureBlockPos, lastOverwrittenBlock);
-        }
-        lastOverwrittenBlock = testBuilderInstance.getBlock(blockPos);
-        structureBlockPos = blockPos;
-        testBuilderInstance.setBlock(blockPos, boundingBox);
+        // if this is our first time placing the structure block
+        if (structureBlockPos == null) {
+            var boundingBox = BoundingBoxHandler.BLOCK
+                    .withTag(BoundingBoxHandler.Tags.SizeX, sizeX)
+                    .withTag(BoundingBoxHandler.Tags.SizeY, sizeY)
+                    .withTag(BoundingBoxHandler.Tags.SizeZ, sizeZ)
+                    .withTag(BoundingBoxHandler.Tags.PosY, structureBlockYOffset);
+            BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket();
 
-        Chunk minPointChunk = testBuilderInstance.getChunkAt(minPoint);
-        if (minPointChunk != null) {
-            minPointChunk.sendPacketToViewers(blockEntityDataPacket);
+            Point blockPos = minPoint.add(new Vec(0, -structureBlockYOffset, 0));
+            blockEntityDataPacket.blockPosition = blockPos;
+            blockEntityDataPacket.action = 7;
+            blockEntityDataPacket.nbtCompound = boundingBox.nbt();
+
+            player.sendPacket(blockEntityDataPacket);
+
+            System.out.println("first time placing structure block");
+            if (lastOverwrittenBlock != null) {
+                testBuilderInstance.setBlock(structureBlockPos, lastOverwrittenBlock);
+            }
+            lastOverwrittenBlock = testBuilderInstance.getBlock(blockPos);
+            structureBlockPos = blockPos;
+            testBuilderInstance.setBlock(blockPos, boundingBox);
         } else {
-            System.out.println("MIN POINT CHUNK WAS NULL");
+            Point structureBlockOffset = minPoint.sub(structureBlockPos);
+            int x = structureBlockOffset.blockX();
+            int y = structureBlockOffset.blockY();
+            int z = structureBlockOffset.blockZ();
+
+            if (x <= MAX_STRUCTURE_BLOCK_OFFSET &&
+                    y <= MAX_STRUCTURE_BLOCK_OFFSET &&
+                    z <= MAX_STRUCTURE_BLOCK_OFFSET) {
+                // if the structure block doesn't need to move
+                System.out.println("Don't need to move structure block, updating offset");
+                var boundingBox = BoundingBoxHandler.BLOCK
+                        .withTag(BoundingBoxHandler.Tags.SizeX, sizeX)
+                        .withTag(BoundingBoxHandler.Tags.SizeY, sizeY)
+                        .withTag(BoundingBoxHandler.Tags.SizeZ, sizeZ)
+                        .withTag(BoundingBoxHandler.Tags.PosX, x)
+                        .withTag(BoundingBoxHandler.Tags.PosZ, z)
+                        .withTag(BoundingBoxHandler.Tags.PosY, y);
+                BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket();
+
+//                Point blockPos = minPoint.add(new Vec(0, -structureBlockYOffset, 0));
+                blockEntityDataPacket.blockPosition = structureBlockPos;
+                blockEntityDataPacket.action = 7;
+                blockEntityDataPacket.nbtCompound = boundingBox.nbt();
+
+                player.sendPacket(blockEntityDataPacket);
+            } else {
+                // the structure block does need to move
+                System.out.println("Do need to move structure block");
+                var boundingBox = BoundingBoxHandler.BLOCK
+                        .withTag(BoundingBoxHandler.Tags.SizeX, sizeX)
+                        .withTag(BoundingBoxHandler.Tags.SizeY, sizeY)
+                        .withTag(BoundingBoxHandler.Tags.SizeZ, sizeZ)
+                        .withTag(BoundingBoxHandler.Tags.PosY, structureBlockYOffset);
+                BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket();
+
+                Point blockPos = minPoint.add(new Vec(0, -structureBlockYOffset, 0));
+                blockEntityDataPacket.blockPosition = blockPos;
+                blockEntityDataPacket.action = 7;
+                blockEntityDataPacket.nbtCompound = boundingBox.nbt();
+
+                player.sendPacket(blockEntityDataPacket);
+
+                if (lastOverwrittenBlock != null) {
+                    testBuilderInstance.setBlock(structureBlockPos, lastOverwrittenBlock);
+                }
+                lastOverwrittenBlock = testBuilderInstance.getBlock(blockPos);
+                structureBlockPos = blockPos;
+                testBuilderInstance.setBlock(blockPos, boundingBox);
+            }
+
         }
     }
 
