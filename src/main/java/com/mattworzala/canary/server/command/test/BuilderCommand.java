@@ -43,6 +43,7 @@ public class BuilderCommand extends Command {
 
     private ItemStack testBuilderItem;
     private TestBuilderController testBuilderController;
+    private boolean isPlayerInTestBuilder = false;
 
     public BuilderCommand() {
         super("builder", "b");
@@ -52,31 +53,47 @@ public class BuilderCommand extends Command {
 
 
         var structureName = ArgumentType.String("structure-name");
-        CommandCondition inTestCondition = (sender, commandString) -> testBuilderController != null;
+        CommandCondition inTestCondition = (sender, commandString) -> isPlayerInTestBuilder;
+        CommandCondition notInTestCondition = (sender, commandString) -> !isPlayerInTestBuilder;
         addConditionalSyntax(inTestCondition, ((sender, context) -> {
             if (testBuilderController != null) {
                 sender.asPlayer().sendMessage("Done making structure \"" + testBuilderController.getName() + "\"");
                 testBuilderController.finish();
                 testBuilderController = null;
+                isPlayerInTestBuilder = false;
                 sender.asPlayer().refreshCommands();
             } else {
                 sender.asPlayer().sendMessage("\"test builder done\" is used to save a structure, you are not currently in a structure");
             }
         }), Literal("done"));
 
-        addSyntax(((sender, context) -> {
+        addConditionalSyntax(notInTestCondition, ((sender, context) -> {
             if (testBuilderController != null) {
                 sender.asPlayer().sendMessage("You are currently building structure \"" + testBuilderController.getName() + "\"");
             }
             final String name = context.get(structureName);
             testBuilderController = new TestBuilderController(name);
             testBuilderController.addPlayer(sender.asPlayer());
+            isPlayerInTestBuilder = true;
             sender.asPlayer().sendMessage("Making a new structure with name \"" + name + "\"");
             sender.asPlayer().refreshCommands();
         }), Literal("new"), structureName);
 
+        addConditionalSyntax(notInTestCondition, ((sender, context) -> {
+            final String name = context.get(structureName);
+            testBuilderController = new TestBuilderController(name);
+            testBuilderController.addPlayer(sender.asPlayer());
+            isPlayerInTestBuilder = true;
+            sender.asPlayer().sendMessage("Making a new structure with name \"" + name + "\"");
+            sender.asPlayer().refreshCommands();
+        }), Literal("duplicate"), ArgumentType.Word("existing-structure-id").from(getExistingStructureNames()), structureName);
+
         this.testBuilderItem = getTestBuilderItem();
 
+    }
+
+    private String[] getExistingStructureNames() {
+        return new String[]{"test1", "test2", "test3"};
     }
 
     private ItemStack getTestBuilderItem() {
