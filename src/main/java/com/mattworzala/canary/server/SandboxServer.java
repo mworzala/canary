@@ -11,7 +11,6 @@ import net.minestom.server.entity.Player;
 import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.event.player.PlayerLoginEvent;
 import net.minestom.server.event.player.PlayerSpawnEvent;
-import net.minestom.server.extras.MojangAuth;
 import net.minestom.server.extras.PlacementRules;
 import net.minestom.server.extras.optifine.OptifineSupport;
 import net.minestom.server.resourcepack.ResourcePack;
@@ -29,6 +28,7 @@ public class SandboxServer extends HeadlessServer {
     private static final String RESOURCE_PACK_URL = "https://raw.githubusercontent.com/mworzala/canary/resourcepack/canary_helper.zip";
     private static final String RESOURCE_PACK_HASH_URL = "https://raw.githubusercontent.com/mworzala/canary/resourcepack/canary_helper.sha1";
     private static final String RESOURCE_PACK_HASH;
+
     static {
         String hash = "";
         try (InputStream in = new URL(RESOURCE_PACK_HASH_URL).openStream()) {
@@ -47,7 +47,7 @@ public class SandboxServer extends HeadlessServer {
         // Util options
         OptifineSupport.enable();
         PlacementRules.init();
-        MojangAuth.init();
+//        MojangAuth.init();
 
         GlobalEventHandler globalEventHandler = MinecraftServer.getGlobalEventHandler();
         globalEventHandler.addListener(PlayerLoginEvent.class, event -> {
@@ -79,5 +79,6 @@ public class SandboxServer extends HeadlessServer {
         commands.register(new TestCommand(this));
         commands.register(new InstanceCommand());
         commands.register(new EntityCommand());
+        commands.register(PromptCommand.getInstance());
     }
 }
