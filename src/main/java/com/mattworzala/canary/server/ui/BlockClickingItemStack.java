@@ -15,13 +15,13 @@ import java.util.function.Function;
 
 public class BlockClickingItemStack {
 
-    private ItemStack itemStack;
-    private Function<Point, Boolean> leftClickHandler;
-    private Function<Point, Boolean> rightClickHandler;
+    private final ItemStack itemStack;
+    private final Function<Point, Boolean> leftClickHandler;
+    private final Function<Point, Boolean> rightClickHandler;
     private EventListener<PlayerBlockBreakEvent> blockBreakEventEventListener;
     private EventListener<PlayerUseItemOnBlockEvent> useItemOnBlockEventEventListener;
 
-    private static EventNode<PlayerEvent> eventNode = EventNode.type("blockClickingItemStack", EventFilter.PLAYER);
+    private static final EventNode<PlayerEvent> eventNode = EventNode.type("blockClickingItemStack", EventFilter.PLAYER);
 
     static {
         MinecraftServer.getGlobalEventHandler().addChild(eventNode);
