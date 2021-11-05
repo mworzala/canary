@@ -30,7 +30,7 @@ public class PromptCommand extends Command {
         return instance;
     }
 
-    private List<CommandExecutor> registeredPrompts = new ArrayList<>();
+    private final List<CommandExecutor> registeredPrompts = new ArrayList<>();
 
     public PromptCommand() {
         super("prompt");
