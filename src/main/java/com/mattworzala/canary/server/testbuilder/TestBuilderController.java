@@ -42,6 +42,8 @@ public class TestBuilderController {
     private Instance playerPreviousInstance;
     private Point playerPreviousIntancePos;
 
+    private EventNode<PlayerEvent> testBuilderPlayerEventNode;
+
     private String name;
 
     public TestBuilderController(String name) {
@@ -56,6 +58,10 @@ public class TestBuilderController {
                 testBuilderInstance.setBlock(point, Block.STONE);
             }
         }
+
+
+        testBuilderPlayerEventNode = EventNode.value("Player Block Place:" + player.getDisplayName(), EventFilter.PLAYER, player1 -> player1.getUuid().equals(player.getUuid()));
+        MinecraftServer.getGlobalEventHandler().addChild(testBuilderPlayerEventNode);
     }
 
     public void addPlayer(Player player) {
@@ -64,7 +70,6 @@ public class TestBuilderController {
         playerPreviousIntancePos = player.getPosition();
         player.setInstance(testBuilderInstance, new Vec(0, 41, 0));
         System.out.println("tried to set the player instance");
-        EventNode<PlayerEvent> testBuilderPlayerEventNode = EventNode.value("Player Block Place:" + player.getDisplayName(), EventFilter.PLAYER, player1 -> player1.getUuid().equals(player.getUuid()));
 
         testBuilderPlayerEventNode.addListener(PlayerBlockPlaceEvent.class, playerBlockPlaceEvent -> {
             System.out.println("PLAYER BLOCK PLACE EVENT");
@@ -79,7 +84,6 @@ public class TestBuilderController {
             removePositionFromBlockCoordLists(playerBlockBreakEvent.getBlockPosition());
             this.updateStructureOutline();
         });
-        MinecraftServer.getGlobalEventHandler().addChild(testBuilderPlayerEventNode);
     }
 
     public void finish() {
