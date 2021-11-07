@@ -1,1 +1,2 @@
 com.mattworzala.canary.codegen.genspec.GenSpecAP,aggregating
+com.mattworzala.canary.codegen.safety.SafetyAP,isolating

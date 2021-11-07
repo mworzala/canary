@@ -2,9 +2,8 @@ package com.mattworzala.canary.api;
 
 import com.mattworzala.canary.api.supplier.EntitySupplier;
 import com.mattworzala.canary.api.supplier.LivingEntitySupplier;
-import com.mattworzala.canary.api.supplier.PosSupplier;
-import com.mattworzala.canary.platform.util.hint.EnvType;
-import com.mattworzala.canary.platform.util.hint.Environment;
+import com.mattworzala.canary.platform.util.safety.EnvType;
+import com.mattworzala.canary.platform.util.safety.Env;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
@@ -18,7 +17,7 @@ import java.util.function.Supplier;
 
 import static com.mattworzala.canary.api.Assertions.*;
 
-@Environment(EnvType.MINESTOM)
+@Env(EnvType.MINESTOM)
 public interface TestEnvironment {
 
     @NotNull Instance getInstance();

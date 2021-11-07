@@ -1,4 +1,4 @@
-package com.mattworzala.canary.platform.util.hint;
+package com.mattworzala.canary.platform.util.safety;
 
 import org.jetbrains.annotations.ApiStatus;
 

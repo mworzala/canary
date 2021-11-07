@@ -1,7 +1,7 @@
 package com.mattworzala.canary.platform.util;
 
-import com.mattworzala.canary.platform.util.hint.EnvType;
-import com.mattworzala.canary.platform.util.hint.Environment;
+import com.mattworzala.canary.platform.util.safety.EnvType;
+import com.mattworzala.canary.platform.util.safety.Env;
 import net.minestom.server.extras.selfmodification.MinestomRootClassLoader;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -12,7 +12,7 @@ import org.junit.platform.commons.logging.LoggerFactory;
 import java.lang.annotation.Annotation;
 import java.util.Objects;
 
-@Environment(EnvType.GLOBAL)
+@Env(EnvType.GLOBAL)
 @ApiStatus.Internal
 public class ClassLoaders {
     private static final Logger logger = LoggerFactory.getLogger(ClassLoaders.class);

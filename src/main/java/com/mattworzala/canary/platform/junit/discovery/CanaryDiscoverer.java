@@ -4,8 +4,8 @@ import com.mattworzala.canary.api.InWorldTest;
 import com.mattworzala.canary.api.TestEnvironment;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryEngineDescriptor;
 import com.mattworzala.canary.platform.util.ClassLoaders;
-import com.mattworzala.canary.platform.util.hint.EnvType;
-import com.mattworzala.canary.platform.util.hint.Environment;
+import com.mattworzala.canary.platform.util.safety.EnvType;
+import com.mattworzala.canary.platform.util.safety.Env;
 import org.junit.platform.commons.util.ClassFilter;
 import org.junit.platform.engine.EngineDiscoveryRequest;
 import org.junit.platform.engine.TestDescriptor;
@@ -20,7 +20,7 @@ import static com.mattworzala.canary.platform.util.ReflectionUtils.hasNoParamete
 import static com.mattworzala.canary.platform.util.ReflectionUtils.hasParameterTypes;
 import static org.junit.platform.commons.util.ReflectionUtils.*;
 
-@Environment(EnvType.PLATFORM)
+@Env(EnvType.PLATFORM)
 public class CanaryDiscoverer {
 
     // Ensure the class is public, not abstract, not an inner class (handled later) and contains at least one `InWorldTest` method.

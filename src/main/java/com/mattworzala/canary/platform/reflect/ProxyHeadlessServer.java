@@ -1,20 +1,18 @@
 package com.mattworzala.canary.platform.reflect;
 
-import com.mattworzala.canary.platform.junit.descriptor.CanaryEngineDescriptor;
-import com.mattworzala.canary.platform.util.hint.EnvType;
-import com.mattworzala.canary.platform.util.hint.Environment;
+import com.mattworzala.canary.platform.util.safety.EnvType;
+import com.mattworzala.canary.platform.util.safety.Env;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.List;
 
 import static com.mattworzala.canary.platform.util.ClassLoaders.MINESTOM;
 import static com.mattworzala.canary.platform.util.ClassLoaders.loadClassRequired;
 import static com.mattworzala.canary.platform.util.ReflectionUtils.invokeConstructor;
 import static org.junit.platform.commons.util.ReflectionUtils.*;
 
-@Environment(EnvType.PLATFORM)
+@Env(EnvType.PLATFORM)
 public class ProxyHeadlessServer {
     private static final Class<?> headlessServerClass = loadClassRequired(MINESTOM, "com.mattworzala.canary.server.HeadlessServer");
 

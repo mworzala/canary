@@ -12,7 +12,6 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -29,6 +28,7 @@ public class GenSpecAP extends AbstractProcessor {
         // We do not want to do any processing on rounds after the very first. If more GenSpec annotations were created thats not good.
         //todo could error out here instead (if there are any results inside `annotations`)
         if (!isRoundOne) return false;
+//        isRoundOne = false;
         processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Compiling Canary GenSpec...");
 
         // Ok to get the first one since `annotations` will never contain more than one of the same type.
@@ -47,7 +47,8 @@ public class GenSpecAP extends AbstractProcessor {
 
             // Attempt to run our GenSpec processor on the class and write the output.
             try {
-                TypeSpec.Builder typeSpec = type.accept(new GenSpecProcessor(processingEnv.getMessager()), null);
+                List<TypeSpec> additonalTypes = new ArrayList<>();
+                TypeSpec.Builder typeSpec = type.accept(new GenSpecProcessor(processingEnv.getMessager(), additonalTypes::add), null);
                 if (typeSpec == null) {
                     return true;
                 } // Return immediately, we have already errored inside the processor.
@@ -60,6 +61,11 @@ public class GenSpecAP extends AbstractProcessor {
                         .build();
 
                 file.writeTo(processingEnv.getFiler());
+
+                //todo
+//                for (TypeSpec additionalType : additonalTypes) {
+//                    additionalType.writeTo(processingEnv.getFiler());
+//                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

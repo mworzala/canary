@@ -1,4 +1,4 @@
-package com.mattworzala.canary.platform.util.hint;
+package com.mattworzala.canary.platform.util.safety;
 
 import org.jetbrains.annotations.ApiStatus;
 
@@ -9,12 +9,10 @@ import java.lang.annotation.Target;
 
 /**
  * Defines which environment (classloader) a type may be accessed from.
- * <p>
- * This exists only has a hint to the developer.
  */
 @Retention(RetentionPolicy.SOURCE)
-@Target({ElementType.TYPE, ElementType.PACKAGE})
+@Target(ElementType.TYPE)
 @ApiStatus.Internal
-public @interface Environment {
+public @interface Env {
     EnvType value();
 }

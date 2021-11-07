@@ -7,8 +7,8 @@ import com.mattworzala.canary.platform.reflect.ProxyHeadlessServer;
 import com.mattworzala.canary.platform.reflect.ProxySandboxServer;
 import com.mattworzala.canary.platform.reflect.ProxyTestCoordinator;
 import com.mattworzala.canary.platform.util.MinestomMixin;
-import com.mattworzala.canary.platform.util.hint.EnvType;
-import com.mattworzala.canary.platform.util.hint.Environment;
+import com.mattworzala.canary.platform.util.safety.EnvType;
+import com.mattworzala.canary.platform.util.safety.Env;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.engine.*;
@@ -16,7 +16,7 @@ import org.junit.platform.engine.*;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
-@Environment(EnvType.PLATFORM)
+@Env(EnvType.PLATFORM)
 public class CanaryTestEngine implements TestEngine {
     private static final Logger logger = LoggerFactory.getLogger(CanaryTestEngine.class);
 
@@ -24,7 +24,7 @@ public class CanaryTestEngine implements TestEngine {
     public static final String NAME = "Canary Test Engine";
 
     private final boolean isHeadless;
-    private final ProxyHeadlessServer server;
+    private ProxyHeadlessServer server = null;
 
     public CanaryTestEngine() {
         this(true);
@@ -33,6 +33,10 @@ public class CanaryTestEngine implements TestEngine {
     public CanaryTestEngine(boolean isHeadless) {
         this.isHeadless = isHeadless;
 
+        //Do not do init in constructor in case test engine is disabled.
+    }
+
+    private void init() {
         // Inject Mixin (must be done before creating the server, since it will load a large part of Minestom into the classloader on its own)
         MinestomMixin.inject();
         // Create server
@@ -65,6 +69,8 @@ public class CanaryTestEngine implements TestEngine {
 
     @Override
     public TestDescriptor discover(EngineDiscoveryRequest discoveryRequest, UniqueId uniqueId) {
+        if (this.server == null) init();
+
         CanaryEngineDescriptor discoveryResult = CanaryDiscoverer.discover(discoveryRequest, uniqueId);
 
         ProxyTestCoordinator coordinator = server.getTestCoordinator();

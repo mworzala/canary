@@ -1,7 +1,7 @@
 package com.mattworzala.canary.platform.util;
 
-import com.mattworzala.canary.platform.util.hint.EnvType;
-import com.mattworzala.canary.platform.util.hint.Environment;
+import com.mattworzala.canary.platform.util.safety.EnvType;
+import com.mattworzala.canary.platform.util.safety.Env;
 import net.minestom.server.extensions.ExtensionManager;
 import net.minestom.server.extras.selfmodification.mixins.MixinCodeModifier;
 import net.minestom.server.extras.selfmodification.mixins.MixinServiceMinestom;
@@ -19,7 +19,7 @@ import java.util.Arrays;
  * <p>
  * Very similar to the Minestom bootstrap, except it doesn't execute a main class.
  */
-@Environment(EnvType.PLATFORM)
+@Env(EnvType.PLATFORM)
 public class MinestomMixin {
 
     public static void inject(String... args) {
