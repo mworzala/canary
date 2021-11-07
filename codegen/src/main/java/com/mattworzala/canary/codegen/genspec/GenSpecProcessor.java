@@ -15,10 +15,13 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static com.mattworzala.canary.codegen.PackageConstants.*;
+
+//todo testing? https://github.com/google/compile-testing
 
 /**
  * Processes GenSpec.* annotations, creating the relevant methods in the given {@link com.squareup.javapoet.JavaFile}.
@@ -29,9 +32,11 @@ public class GenSpecProcessor extends SimpleElementVisitor14<TypeSpec.Builder, T
     }};
 
     private final Messager messager;
+    private final Consumer<TypeSpec> typeSpecEmitter;
 
-    public GenSpecProcessor(Messager messager) {
+    public GenSpecProcessor(Messager messager, Consumer<TypeSpec> typeSpecEmitter) {
         this.messager = messager;
+        this.typeSpecEmitter = typeSpecEmitter;
     }
 
     /**
@@ -48,15 +53,15 @@ public class GenSpecProcessor extends SimpleElementVisitor14<TypeSpec.Builder, T
             error("GenSpec element must be annotated with @GenSpec", element);
             return null;
         }
-        AnnotationValue supplierType = ElementUtil.getAnnotationMember(genSpec, "supplierType");
+        AnnotationValue operator = ElementUtil.getAnnotationMember(genSpec, "operator");
         AnnotationValue superTypeName = ElementUtil.getAnnotationMember(genSpec, "supertype");
-        if (supplierType == null || superTypeName == null) {
-            error("@GenSpec must contain a valid `supplierType` and `supertype`", element);
+        if (operator == null || superTypeName == null) {
+            error("@GenSpec must contain a valid `operator` and `supertype`", element);
             return null;
         }
 
         // Generic types
-        typeSpec.addTypeVariable(TypeVariableName.get("T", ClassName.get((TypeMirror) supplierType.getValue())));
+        typeSpec.addTypeVariable(TypeVariableName.get("T", ClassName.get((TypeMirror) operator.getValue())));
         var thisType = ParameterizedTypeName.get(
                 ClassName.get(PKG_ASSERTION_IMPL, name),
                 TypeVariableName.get("T"), TypeVariableName.get("This"));
@@ -100,12 +105,6 @@ public class GenSpecProcessor extends SimpleElementVisitor14<TypeSpec.Builder, T
 
             // Apply the mixin
             try {
-
-//                System.out.println(ClassLoader.getSystemClassLoader().ge);
-//                var r = ClassLoader.getSystemResourceAsStream("blocks.json");
-
-//                error("R is null: " + Block.class.getClassLoader().getResourceAsStream("blocks.json"), null);
-
                 mixin.get().apply(element, result);
             } catch (Throwable error) {
                 StringWriter stringWriter = new StringWriter();
@@ -131,10 +130,9 @@ public class GenSpecProcessor extends SimpleElementVisitor14<TypeSpec.Builder, T
 
         if (ElementUtil.hasAnnotation(element, PKG_ASSERTION_SPEC + ".GenSpec.Condition")) {
             parseCondition(element, typeSpec);
-        } else if (ElementUtil.hasAnnotation(element, PKG_ASSERTION_SPEC + ".GenSpec.Transition")) {
-            parseTransition(element, typeSpec);
         } else {
-            error("public GenSpec methods must be either @Condition or @Transition.", element);
+            //todo probably can ignore this and only error if the method does not fit the requirements.
+            error("public GenSpec methods must be @Condition.", element);
         }
 
         return super.visitExecutable(element, typeSpec);
@@ -170,10 +168,6 @@ public class GenSpecProcessor extends SimpleElementVisitor14<TypeSpec.Builder, T
         typeSpec.addMethod(method.build());
     }
 
-    private void parseTransition(ExecutableElement element, TypeSpec.Builder typeSpec) {
-
-    }
-
     // *** Helpers ***
 
     @Override
@@ -188,5 +182,9 @@ public class GenSpecProcessor extends SimpleElementVisitor14<TypeSpec.Builder, T
 
     private void error(String message, Element element) {
         messager.printMessage(Diagnostic.Kind.ERROR, message, element);
+    }
+
+    private void emitAdditonalTypeSpec(TypeSpec typeSpec) {
+        typeSpecEmitter.accept(typeSpec);
     }
 }

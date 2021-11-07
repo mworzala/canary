@@ -1,14 +1,20 @@
 package com.mattworzala.canary.server.execution;
 
+import com.mattworzala.canary.api.supplier.ObjectSupplier;
 import com.mattworzala.canary.platform.TestExecutionListener;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryTestDescriptor;
 import com.mattworzala.canary.server.assertion.AeSimpleParser;
 import com.mattworzala.canary.server.assertion.AssertionStep;
+import com.mattworzala.canary.server.assertion.Result;
 import com.mattworzala.canary.server.assertion.node.AeNode;
+import com.mattworzala.canary.server.assertion.spec.GenSpec;
 import com.mattworzala.canary.server.env.TestEnvironmentImpl;
 import com.mattworzala.canary.server.instance.block.CanaryBlocks;
 import com.mattworzala.canary.server.structure.JsonStructureIO;
 import com.mattworzala.canary.server.structure.Structure;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.Tickable;
 import net.minestom.server.coordinate.Point;
@@ -71,8 +77,12 @@ public class TestExecutor implements Tickable {
     private volatile boolean running;
     private TestExecutionListener executionListener;
     private Object classInstance;
-    private final List<List<AssertionStep>> rawAssertions = new ArrayList<>();
-    private final List<AeNode> assertions = new ArrayList<>();
+
+    //todo these two records are both stupid
+    private static record RawAssertion(ObjectSupplier supplier, List<AssertionStep> steps) {}
+    private final List<RawAssertion> rawAssertions = new ArrayList<>();
+    private static record Assertion(ObjectSupplier supplier, AeNode root) {}
+    private final List<Assertion> assertions = new ArrayList<>();
 
     public TestExecutor(CanaryTestDescriptor testDescriptor, InstanceContainer rootInstance, Point offset) {
         this.testDescriptor = testDescriptor;
@@ -122,9 +132,9 @@ public class TestExecutor implements Tickable {
         return origin;
     }
 
-    public List<AssertionStep> createAssertion() {
+    public List<AssertionStep> createAssertion(ObjectSupplier actual) {
         List<AssertionStep> assertionSteps = new ArrayList<>();
-        rawAssertions.add(assertionSteps);
+        rawAssertions.add(new RawAssertion(actual, assertionSteps));
         return assertionSteps;
     }
 
@@ -158,20 +168,17 @@ public class TestExecutor implements Tickable {
 
             // Compile assertions
             for (var assertionSteps : rawAssertions) {
-                AeNode node = new AeSimpleParser(assertionSteps).parse();
+                AeNode node = new AeSimpleParser(assertionSteps.steps).parse();
                 if (node == null) {
                     throw new RuntimeException("Failed to compile assertion!"); //todo can show errors here, but probably want stacktrace elements to render
                 }
-                assertions.add(node);
+                assertions.add(new Assertion(assertionSteps.supplier, node));
             }
-//            rawAssertions.clear();
+            rawAssertions.clear();
 
-            System.out.println("");
-            for (AeNode assertion : assertions) {
-                System.out.println(assertion.toString());
+            for (Assertion assertion : assertions) {
+                System.out.println(assertion.root.toString());
             }
-
-
 
         } catch (Throwable throwable) {
             end(throwable);
@@ -181,9 +188,23 @@ public class TestExecutor implements Tickable {
         running = true;
     }
 
-
     @Override
     public void tick(long time) {
+
+        try {
+            assertions.removeIf(assn -> {
+                Result result = assn.root.evaluate(assn.supplier.get());
+                System.out.println("RESULT > " + (result == Result.PASSED ? "PASSED" : "FAILED"));
+                return result == Result.PASSED;
+            });
+        } catch (Throwable throwable) {
+            end(throwable);
+            return;
+        }
+
+        if (assertions.isEmpty()) {
+            end(null);
+        }
 
 //        try {
 //            assertions.forEach(AssertionImpl::tick); //todo
@@ -196,8 +217,6 @@ public class TestExecutor implements Tickable {
 //        if (assertions.isEmpty()) {
 //            end(null);
 //        }
-
-        end(null);
 
     }
 
@@ -229,7 +248,7 @@ public class TestExecutor implements Tickable {
         running = false;
         executionListener = null;
         classInstance = null;
-//        assertions.clear();
+        assertions.clear();
 
         // Reset structure
         structure.loadIntoBlockSetter(instance, origin);

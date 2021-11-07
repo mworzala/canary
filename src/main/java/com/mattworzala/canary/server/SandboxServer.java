@@ -71,13 +71,6 @@ public class SandboxServer extends HeadlessServer {
         });
 
         registerCommands();
-
-        MinecraftServer.getSchedulerManager().buildTask(() -> {
-            TestCoordinator coordinator = getTestCoordinator();
-            System.out.println("STARTING EXECUTION");
-            coordinator.execute(TestExecutionListener.STDOUT);
-            System.out.println("EXECUTION FINISHED");
-        }).schedule();
     }
 
     private void registerCommands() {

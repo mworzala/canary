@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public class AssertionBase<T, This extends AssertionBase<T, This>> {
-    private final ObjectSupplier supplier;
+    protected final ObjectSupplier supplier;
     protected final List<AssertionStep> steps;
 
     public AssertionBase(ObjectSupplier supplier, List<AssertionStep> steps) {

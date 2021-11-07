@@ -19,10 +19,10 @@ public class AeSimpleParser {
     }
 
     public AeNode parse() {
-        Iterator<AssertionStep> reverseIter = steps.iterator();
+        Iterator<AssertionStep> iter = steps.iterator();
 
-        while (reverseIter.hasNext()) {
-            lastNode = parseNode(reverseIter.next(), reverseIter);
+        while (iter.hasNext()) {
+            lastNode = parseNode(iter.next(), iter);
         }
 
         return lastNode;
@@ -111,5 +111,7 @@ public class AeSimpleParser {
 
         var parser = new AeSimpleParser(steps);
         System.out.println(parser.parse());
+
+
     }
 }

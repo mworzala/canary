@@ -4,7 +4,8 @@ import net.minestom.server.instance.block.Block;
 
 import static com.mattworzala.canary.server.assertion.spec.GenSpec.*;
 
-@GenSpec(supplierType = Block.class, supertype = "Assertion")
+@GenSpec(operator = Block.class, supertype = "Assertion")
+@Supplier
 @Mixin("block_properties")
 public class BlockAssertionSpec {
 
@@ -12,4 +13,5 @@ public class BlockAssertionSpec {
     public static boolean toHaveProperty(Block actual, String property, String value) {
         return value.equals(actual.getProperty(property));
     }
+
 }

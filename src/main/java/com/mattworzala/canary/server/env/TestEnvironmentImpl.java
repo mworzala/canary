@@ -59,7 +59,7 @@ public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironm
 
     @Override
     public LivingEntityAssertion expect(LivingEntitySupplier actual) {
-        return new LivingEntityAssertion(actual, newAssertion());
+        return new LivingEntityAssertion(actual, newAssertion(actual));
     }
 
     // Entity
@@ -70,7 +70,7 @@ public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironm
 
     @Override
     public EntityAssertion expect(EntitySupplier actual) {
-        return new EntityAssertion(actual, newAssertion());
+        return new EntityAssertion(actual, newAssertion(actual));
     }
 
 //    // Instance
@@ -189,7 +189,7 @@ public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironm
     }
 
 //     Private utils
-    private List<AssertionStep> newAssertion() {
-        return executor.createAssertion();
+    private List<AssertionStep> newAssertion(ObjectSupplier actual) {
+        return executor.createAssertion(actual);
     }
 }
