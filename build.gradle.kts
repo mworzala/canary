@@ -26,6 +26,8 @@ dependencies {
 
 tasks {
     test {
-        useJUnitPlatform()
+        useJUnitPlatform {
+            excludeEngines("canary-test-engine")
+        }
     }
 }
