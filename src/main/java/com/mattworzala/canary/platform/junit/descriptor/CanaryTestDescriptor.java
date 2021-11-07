@@ -1,7 +1,7 @@
 package com.mattworzala.canary.platform.junit.descriptor;
 
-import com.mattworzala.canary.platform.util.hint.EnvType;
-import com.mattworzala.canary.platform.util.hint.Environment;
+import com.mattworzala.canary.platform.util.safety.EnvType;
+import com.mattworzala.canary.platform.util.safety.Env;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.platform.engine.TestDescriptor;
@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-@Environment(EnvType.GLOBAL)
+@Env(EnvType.GLOBAL)
 public class CanaryTestDescriptor extends AbstractTestDescriptor {
     private final List<Method> preEffects;
     private final List<Method> postEffects;

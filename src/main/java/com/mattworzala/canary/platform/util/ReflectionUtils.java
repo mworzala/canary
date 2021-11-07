@@ -1,7 +1,7 @@
 package com.mattworzala.canary.platform.util;
 
-import com.mattworzala.canary.platform.util.hint.EnvType;
-import com.mattworzala.canary.platform.util.hint.Environment;
+import com.mattworzala.canary.platform.util.safety.EnvType;
+import com.mattworzala.canary.platform.util.safety.Env;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
@@ -10,7 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-@Environment(EnvType.GLOBAL)
+@Env(EnvType.GLOBAL)
 @ApiStatus.Internal
 public class ReflectionUtils {
     private ReflectionUtils() {

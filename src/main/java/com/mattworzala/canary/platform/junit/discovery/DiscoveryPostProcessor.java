@@ -7,10 +7,9 @@ import com.mattworzala.canary.platform.junit.TestDescriptorVisitor;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryEngineDescriptor;
 import com.mattworzala.canary.platform.junit.descriptor.CanaryTestDescriptor;
 import com.mattworzala.canary.platform.util.ClassLoaders;
-import com.mattworzala.canary.platform.util.hint.EnvType;
-import com.mattworzala.canary.platform.util.hint.Environment;
+import com.mattworzala.canary.platform.util.safety.EnvType;
+import com.mattworzala.canary.platform.util.safety.Env;
 import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.platform.commons.util.ClassUtils;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.UniqueId;
@@ -25,7 +24,7 @@ import java.util.List;
 import static com.mattworzala.canary.platform.junit.discovery.CanaryDiscoverer.IsPotentialITestClass;
 import static com.mattworzala.canary.platform.junit.discovery.CanaryDiscoverer.IsPotentialTestMethod;
 
-@Environment(EnvType.PLATFORM)
+@Env(EnvType.PLATFORM)
 public record DiscoveryPostProcessor(TestDescriptorVisitor... processors) {
 
     public void execute(CanaryEngineDescriptor engineDescriptor) {
@@ -36,7 +35,7 @@ public record DiscoveryPostProcessor(TestDescriptorVisitor... processors) {
     /**
      * Resolves all inner classes which contain canary test cases.
      */
-    @Environment(EnvType.PLATFORM)
+    @Env(EnvType.PLATFORM)
     public static class ResolveInnerClasses implements TestDescriptorVisitor {
         @Override
         public boolean visitTestClass(@NotNull CanaryTestDescriptor test, @NotNull ClassSource source) {
@@ -61,7 +60,7 @@ public record DiscoveryPostProcessor(TestDescriptorVisitor... processors) {
      * Resolves all canary test cases from the currently loaded classes.
      * Should be executed after {@link ResolveInnerClasses}.
      */
-    @Environment(EnvType.PLATFORM)
+    @Env(EnvType.PLATFORM)
     public static class ResolveMethods implements TestDescriptorVisitor {
         private static final Class<? extends Annotation> inWorldTestAnnotation = ClassLoaders.loadAnnotation(ClassLoaders.MINESTOM, InWorldTest.class);
         private static final Class<? extends Annotation> iwBeforeEachAnnotation = ClassLoaders.loadAnnotation(ClassLoaders.MINESTOM, IWBeforeEach.class);
@@ -124,7 +123,7 @@ public record DiscoveryPostProcessor(TestDescriptorVisitor... processors) {
     /**
      * Removes any class descriptors which contain no test methods.
      */
-    @Environment(EnvType.PLATFORM)
+    @Env(EnvType.PLATFORM)
     public static class PruneEmpty implements TestDescriptorVisitor {
         @Override
         public boolean visitTestClass(@NotNull CanaryTestDescriptor test, @NotNull ClassSource source) {

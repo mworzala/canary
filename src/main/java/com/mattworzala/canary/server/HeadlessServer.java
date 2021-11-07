@@ -1,13 +1,13 @@
 package com.mattworzala.canary.server;
 
 import com.mattworzala.canary.api.TestEnvironment;
-import com.mattworzala.canary.platform.util.hint.EnvType;
-import com.mattworzala.canary.platform.util.hint.Environment;
+import com.mattworzala.canary.platform.util.safety.EnvType;
+import com.mattworzala.canary.platform.util.safety.Env;
 import com.mattworzala.canary.server.env.TestEnvironmentImpl;
 import com.mattworzala.canary.server.execution.TestCoordinator;
 import net.minestom.server.MinecraftServer;
 
-@Environment(EnvType.MINESTOM)
+@Env(EnvType.MINESTOM)
 public class HeadlessServer {
     protected static boolean headless = true;
 

@@ -1,10 +1,8 @@
 package com.mattworzala.canary.server;
 
-import com.mattworzala.canary.platform.TestExecutionListener;
-import com.mattworzala.canary.platform.util.hint.EnvType;
-import com.mattworzala.canary.platform.util.hint.Environment;
+import com.mattworzala.canary.platform.util.safety.EnvType;
+import com.mattworzala.canary.platform.util.safety.Env;
 import com.mattworzala.canary.server.command.*;
-import com.mattworzala.canary.server.execution.TestCoordinator;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.CommandManager;
 import net.minestom.server.coordinate.Pos;
@@ -23,7 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-@Environment(EnvType.MINESTOM)
+@Env(EnvType.MINESTOM)
 public class SandboxServer extends HeadlessServer {
     private static final Logger logger = LoggerFactory.getLogger(SandboxServer.class);
 

@@ -2,8 +2,8 @@ package com.mattworzala.canary.platform.junit.discovery;
 
 import com.mattworzala.canary.platform.junit.descriptor.CanaryTestDescriptor;
 import com.mattworzala.canary.platform.util.ClassLoaders;
-import com.mattworzala.canary.platform.util.hint.EnvType;
-import com.mattworzala.canary.platform.util.hint.Environment;
+import com.mattworzala.canary.platform.util.safety.EnvType;
+import com.mattworzala.canary.platform.util.safety.Env;
 import org.junit.platform.commons.util.ClassFilter;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.UniqueId;
@@ -17,7 +17,7 @@ import java.util.Optional;
  * <p>
  * All test classes resolved will be loaded in {@link ClassLoaders#MINESTOM}
  */
-@Environment(EnvType.PLATFORM)
+@Env(EnvType.PLATFORM)
 public record ClassSelectorResolver(ClassFilter filter) implements SelectorResolver {
 
     /**
