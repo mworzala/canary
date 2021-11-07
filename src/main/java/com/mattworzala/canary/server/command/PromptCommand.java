@@ -12,8 +12,7 @@ import net.minestom.server.entity.Player;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
@@ -23,6 +22,8 @@ public class PromptCommand extends Command {
 
     private static PromptCommand instance;
 
+    private final int KEY_LENGTH = 6;
+
     public static PromptCommand getInstance() {
         if (instance == null) {
             instance = new PromptCommand();
@@ -30,7 +31,8 @@ public class PromptCommand extends Command {
         return instance;
     }
 
-    private final List<CommandExecutor> registeredPrompts = new ArrayList<>();
+    private final Map<String, CommandExecutor> registeredPrompts = new HashMap<>();
+//    private final List<CommandExecutor> registeredPrompts = new ArrayList<>();
 
     public PromptCommand() {
         super("prompt");
@@ -66,43 +68,80 @@ public class PromptCommand extends Command {
         })), Literal("item-test"));
 
         addSyntax((((sender, context) -> {
-//            List<Prompt.ChatPromptOption> options = new ArrayList<>(3);
-            var leftItem = ItemStack.builder(Material.RED_STAINED_GLASS).displayName(Component.text("")).lore(Component.text("cancel")).build();
-            var rightItem = ItemStack.builder(Material.GREEN_STAINED_GLASS).build();
-            var lhs = new Prompt.AnvilPromptOption(leftItem, s -> System.out.println("lhs clicked: " + s));
-            var rhs = new Prompt.AnvilPromptOption(rightItem, s -> System.out.println("rhs clicked: " + s));
-//            Prompt.chatPrompt(sender.asPlayer(), "test prompt wahoo", options);
-            Prompt.anvilPrompt(sender.asPlayer(), "Anvil Prompt", lhs, rhs);
+            List<Prompt.ChatPromptOption> options = new ArrayList<>(3);
+            options.add(new Prompt.ChatPromptOption("a", () -> System.out.println("a pressed!")));
+            options.add(new Prompt.ChatPromptOption("b", () -> System.out.println("b pressed!")));
+            options.add(new Prompt.ChatPromptOption("c", () -> System.out.println("c pressed!")));
+
+//            var leftItem = ItemStack.builder(Material.RED_STAINED_GLASS).displayName(Component.text("")).lore(Component.text("cancel")).build();
+//            var rightItem = ItemStack.builder(Material.GREEN_STAINED_GLASS).build();
+//            var lhs = new Prompt.AnvilPromptOption(leftItem, s -> System.out.println("lhs clicked: " + s));
+//            var rhs = new Prompt.AnvilPromptOption(rightItem, s -> System.out.println("rhs clicked: " + s));
+            Prompt.chatPrompt(sender.asPlayer(), "test prompt wahoo", options);
+//            Prompt.anvilPrompt(sender.asPlayer(), "Anvil Prompt", lhs, rhs);
         })), Literal("test"));
 
         addSyntax((((sender, context) -> {
-            int index = context.get("index");
-            if (index < registeredPrompts.size()) {
-                var prompt = registeredPrompts.get(index);
-                if (prompt != null) {
-                    prompt.apply(sender, context);
-                } else {
-                    System.out.println("prompt at index " + index + " has been unregistered");
-                }
+            String key = context.get("key");
+            CommandExecutor prompt = registeredPrompts.get(key);
+            if (prompt != null) {
+                prompt.apply(sender, context);
             } else {
-                System.out.println("index " + index + " out of range of registered prompts (size=" + registeredPrompts.size() + ")");
+                if (registeredPrompts.containsKey(key)) {
+                    System.out.println("The registered command for key " + key + " was null");
+                } else {
+                    System.out.println("There is no prompt registered for key " + key);
+                }
             }
-        })), ArgumentType.Integer("index"));
+        })), ArgumentType.String("key"));
     }
 
     public String registerCommand(CommandExecutor callback) {
-        String index = registeredPrompts.size() + "";
-        registeredPrompts.add(callback);
-        System.out.println("registered a prompt at index " + index);
+        String key = getNewPromptKey();
+        registeredPrompts.put(key, callback);
+        System.out.println("registered a prompt with key" + key);
 
-//        addSyntax(((s, c) -> {
-//            System.out.println("received command that is a prompt index");
-//        }), Literal(index));
-        return "/prompt " + index;
+        return "/prompt " + key;
     }
 
-    public void unregisterCommand(int index) {
-        registeredPrompts.set(index, null);
+    private String getNewPromptKey() {
+        String key = randomStringOfLength(KEY_LENGTH);
+        while (registeredPrompts.containsKey(key)) {
+            key = randomStringOfLength(KEY_LENGTH);
+        }
+        return key;
+    }
+
+    /**
+     * @param length Number of characters in returned string
+     * @return A random string of alphanumeric characters of the given length
+     */
+    private String randomStringOfLength(int length) {
+        StringBuilder res = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            res.append(randomAlphaNumeric());
+        }
+        return res.toString();
+    }
+
+    /**
+     * @return A random alphanumeric character [0-9a-zA-Z]
+     */
+    private char randomAlphaNumeric() {
+        final int numPossibleChars = 10 + 26 + 26;
+        Random r = new Random();
+        int v = r.nextInt(numPossibleChars);
+        if (v < 10) {
+            return (char) (48 + v); // 48 is the ascii code for '0'
+        }
+        if (v < 10 + 26) {
+            return (char) (97 + v - 10); // 97 is the ascii code for 'a'
+        }
+        return (char) (65 + v - 36); // 65 is the ascii code for 'A'
+    }
+
+    public void unregisterCommand(String key) {
+        registeredPrompts.remove(key);
     }
 
 
