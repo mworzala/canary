@@ -11,7 +11,7 @@ public interface EntitySupplier extends ObjectSupplier {
         throw new StubSupplierException("EntitySupplier#position");
     }
 
-    default InstanceSupplier instance() {
-        throw new StubSupplierException("EntitySupplier#instance");
-    }
+//    default InstanceSupplier instance() {
+//        throw new StubSupplierException("EntitySupplier#instance");
+//    }
 }
