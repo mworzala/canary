@@ -2,8 +2,8 @@ package com.mattworzala.canary.api;
 
 import com.mattworzala.canary.api.supplier.EntitySupplier;
 import com.mattworzala.canary.api.supplier.LivingEntitySupplier;
-import com.mattworzala.canary.platform.util.safety.EnvType;
-import com.mattworzala.canary.platform.util.safety.Env;
+import com.mattworzala.canary.internal.util.safety.EnvType;
+import com.mattworzala.canary.internal.util.safety.Env;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;

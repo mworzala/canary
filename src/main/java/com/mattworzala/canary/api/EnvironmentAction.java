@@ -1,7 +1,7 @@
 package com.mattworzala.canary.api;
 
-import com.mattworzala.canary.platform.util.safety.EnvType;
-import com.mattworzala.canary.platform.util.safety.Env;
+import com.mattworzala.canary.internal.util.safety.EnvType;
+import com.mattworzala.canary.internal.util.safety.Env;
 import org.intellij.lang.annotations.Pattern;
 
 import java.lang.annotation.ElementType;

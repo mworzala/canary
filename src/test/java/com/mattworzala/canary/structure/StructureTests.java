@@ -1,7 +1,7 @@
 package com.mattworzala.canary.structure;
 
-import com.mattworzala.canary.server.structure.JsonStructureIO;
-import com.mattworzala.canary.server.structure.Structure;
+import com.mattworzala.canary.internal.structure.JsonStructureIO;
+import com.mattworzala.canary.internal.structure.Structure;
 import net.minestom.server.MinecraftServer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

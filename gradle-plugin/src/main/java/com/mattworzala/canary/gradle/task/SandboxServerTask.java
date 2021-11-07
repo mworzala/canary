@@ -26,6 +26,6 @@ public class SandboxServerTask extends JavaExec { //todo switch to javaexec
         environment("CANARY_TEST_RESOURCES", new File(getProject().getProjectDir(), "src/test/resources")); //todo this does not handle people with weird source sets.
 
         classpath(testSourceSet.getRuntimeClasspath().getAsPath());
-        getMainClass().set("com.mattworzala.canary.platform.launcher.SandboxLauncher");
+        getMainClass().set("com.mattworzala.canary.internal.launch.SandboxLauncher");
     }
 }
