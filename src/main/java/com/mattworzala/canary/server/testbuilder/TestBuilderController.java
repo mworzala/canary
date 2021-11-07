@@ -9,6 +9,7 @@ import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.EventFilter;
+import net.minestom.server.event.EventListener;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.PlayerBlockBreakEvent;
 import net.minestom.server.event.player.PlayerBlockPlaceEvent;
@@ -27,8 +28,14 @@ import java.util.*;
 
 public class TestBuilderController {
 
-    private static final int MAX_STRUCTURE_DIMENSION = 45;
+    private static final int MAX_STRUCTURE_DIMENSION = 48;
 
+    private Point minPoint;
+    private Point maxPoint;
+
+    private int[] xBlockCounts = new int[MAX_STRUCTURE_DIMENSION];
+    private int[] yBlockCounts = new int[MAX_STRUCTURE_DIMENSION];
+    private int[] zBlockCounts = new int[MAX_STRUCTURE_DIMENSION];
     private List<Integer> blockXCoords = new ArrayList<>();
     private List<Integer> blockYCoords = new ArrayList<>();
     private List<Integer> blockZCoords = new ArrayList<>();
@@ -42,7 +49,11 @@ public class TestBuilderController {
     private Instance playerPreviousInstance;
     private Point playerPreviousIntancePos;
 
-    private EventNode<PlayerEvent> testBuilderPlayerEventNode;
+    private static final EventNode<PlayerEvent> testBuilderPlayerEventNode = EventNode.type("test-builder-controller-player", EventFilter.PLAYER);
+
+    static {
+        MinecraftServer.getGlobalEventHandler().addChild(testBuilderPlayerEventNode);
+    }
 
     private String name;
 
@@ -51,6 +62,9 @@ public class TestBuilderController {
 
         testBuilderInstance = new InstanceContainer(UUID.randomUUID(), DimensionType.OVERWORLD);
         MinecraftServer.getInstanceManager().registerInstance(testBuilderInstance);
+
+        minPoint = new Vec(0, 40, 0);
+        maxPoint = new Vec(5, 41, 5);
         for (int x = 0; x < 5; x++) {
             for (int z = 0; z < 5; z++) {
                 var point = new Vec(x, 40, z);
@@ -58,10 +72,6 @@ public class TestBuilderController {
                 testBuilderInstance.setBlock(point, Block.STONE);
             }
         }
-
-
-        testBuilderPlayerEventNode = EventNode.value("Player Block Place:" + player.getDisplayName(), EventFilter.PLAYER, player1 -> player1.getUuid().equals(player.getUuid()));
-        MinecraftServer.getGlobalEventHandler().addChild(testBuilderPlayerEventNode);
     }
 
     public void addPlayer(Player player) {
@@ -71,27 +81,34 @@ public class TestBuilderController {
         player.setInstance(testBuilderInstance, new Vec(0, 41, 0));
         System.out.println("tried to set the player instance");
 
-        testBuilderPlayerEventNode.addListener(PlayerBlockPlaceEvent.class, playerBlockPlaceEvent -> {
-            System.out.println("PLAYER BLOCK PLACE EVENT");
-            System.out.println("BLOCK POS: " + playerBlockPlaceEvent.getBlockPosition());
-            addPositionToBlockCoordLists(playerBlockPlaceEvent.getBlockPosition());
-            this.updateStructureOutline();
-        });
+        testBuilderPlayerEventNode.addListener(EventListener.builder(PlayerBlockPlaceEvent.class)
+                .filter(event -> event.getPlayer().equals(player))
+                .handler(playerBlockPlaceEvent -> {
+                    System.out.println("PLAYER BLOCK PLACE EVENT");
+                    System.out.println("BLOCK POS: " + playerBlockPlaceEvent.getBlockPosition());
+                    if (addPositionToBlockCoordLists(playerBlockPlaceEvent.getBlockPosition())) {
+                        this.updateStructureOutline();
+                    } else {
+                        playerBlockPlaceEvent.setCancelled(true);
+                    }
+                }).build());
 
-        testBuilderPlayerEventNode.addListener(PlayerBlockBreakEvent.class, playerBlockBreakEvent -> {
-            System.out.println("PLAYER BLOCK BREAK EVENT");
-            System.out.println("BLOCK POS: " + playerBlockBreakEvent.getBlockPosition());
-            removePositionFromBlockCoordLists(playerBlockBreakEvent.getBlockPosition());
-            this.updateStructureOutline();
-        });
+        testBuilderPlayerEventNode.addListener(EventListener.builder(PlayerBlockBreakEvent.class)
+                .filter(event -> event.getPlayer().equals(player))
+                .handler(playerBlockBreakEvent -> {
+                    System.out.println("PLAYER BLOCK BREAK EVENT");
+                    System.out.println("BLOCK POS: " + playerBlockBreakEvent.getBlockPosition());
+                    removePositionFromBlockCoordLists(playerBlockBreakEvent.getBlockPosition());
+                    this.updateStructureOutline();
+                }).build());
     }
 
     public void finish() {
         System.out.println("FINISHING BUILDING STRUCTURE: " + name);
         player.setInstance(playerPreviousInstance, playerPreviousIntancePos);
 
-        Point minPoint = this.getMinPoint();
-        Point maxPoint = this.getMaxPoint();
+//        Point minPoint = this.minPoint;
+//        Point maxPoint = this.getMaxPoint();
 
         int sizeX = maxPoint.blockX() - minPoint.blockX() + 1;
         int sizeY = maxPoint.blockY() - minPoint.blockY() + 1;
@@ -105,21 +122,127 @@ public class TestBuilderController {
         structureWriter.writeStructure(structure, filePath);
     }
 
-    private void addPositionToBlockCoordLists(Point point) {
-        addCoordToBlockCoordList(point.blockX(), blockXCoords);
-        addCoordToBlockCoordList(point.blockY(), blockYCoords);
-        addCoordToBlockCoordList(point.blockZ(), blockZCoords);
+    /**
+     * @param point
+     * @return true if block can be successfully added, false if it cannot be
+     */
+    private boolean addPositionToBlockCoordLists(Point point) {
+        Point newMin = minOfPoints(minPoint, point);
+        Point newMax = maxOfPoints(maxPoint, point);
+        Point newSize = newMax.sub(newMin);
+        // if the new block is in a position that cannot be encapsulated by a structure bounding box, don't insert
+        if (newSize.blockX() > MAX_STRUCTURE_DIMENSION || newSize.blockZ() > MAX_STRUCTURE_DIMENSION || newSize.blockY() > MAX_STRUCTURE_DIMENSION) {
+            return false;
+        }
+
+        Point delta = minPoint.sub(newMin);
+        if (delta.blockX() < 0 || delta.blockY() < 0 || delta.blockZ() < 0) {
+            System.out.println("delta had a negative component, which can't happen");
+            return false;
+        }
+
+        shiftArray(xBlockCounts, delta.blockX());
+        shiftArray(yBlockCounts, delta.blockY());
+        shiftArray(zBlockCounts, delta.blockZ());
+        minPoint = newMin;
+        maxPoint = newMax;
+        Point offset = point.sub(minPoint);
+        xBlockCounts[offset.blockX()] += 1;
+        yBlockCounts[offset.blockY()] += 1;
+        zBlockCounts[offset.blockZ()] += 1;
+        return true;
+    }
+
+    /**
+     * Shifts the elements in the array to the right by the shiftAmount
+     * Fills the empty space on the left with zeros
+     * If shiftAmount is negative does a left shift, filling the right with zeros
+     *
+     * @param arr
+     * @param shiftAmount
+     */
+    private void shiftArray(int[] arr, int shiftAmount) {
+        if (shiftAmount == 0)
+            return;
+
+        if (shiftAmount > 0) {
+            int i;
+            for (i = arr.length - 1; i >= shiftAmount; i--) {
+                arr[i] = arr[i - shiftAmount];
+            }
+            for (; i >= 0; i--) {
+                arr[i] = 0;
+            }
+        } else {
+            int i;
+            for (i = 0; i < (arr.length + shiftAmount); i++) {
+                arr[i] = arr[i - shiftAmount];
+            }
+            for (; i < arr.length; i++) {
+                arr[i] = 0;
+            }
+
+        }
     }
 
     private void removePositionFromBlockCoordLists(Point point) {
-        removeCoordFromBlockCoordList(point.blockX(), blockXCoords);
-        removeCoordFromBlockCoordList(point.blockY(), blockYCoords);
-        removeCoordFromBlockCoordList(point.blockZ(), blockZCoords);
+        Point offset = point.sub(minPoint);
+        xBlockCounts[offset.blockX()] -= 1;
+        yBlockCounts[offset.blockY()] -= 1;
+        zBlockCounts[offset.blockZ()] -= 1;
+
+        int deltaX = firstNonZero(xBlockCounts);
+        shiftArray(xBlockCounts, -deltaX);
+        minPoint = minPoint.withX(minPoint.x() + deltaX);
+        int deltaY = firstNonZero(yBlockCounts);
+        shiftArray(yBlockCounts, -deltaY);
+        minPoint = minPoint.withY(minPoint.y() + deltaY);
+        int deltaZ = firstNonZero(zBlockCounts);
+        shiftArray(zBlockCounts, -deltaZ);
+        minPoint = minPoint.withZ(minPoint.z() + deltaZ);
+
+        recomputeMaxPoint();
+    }
+
+    private void recomputeMaxPoint() {
+        Point offset = maxPoint.sub(minPoint);
+        for (int x = offset.blockX(); x >= 0; x--) {
+            if (xBlockCounts[x] != 0) {
+                maxPoint = maxPoint.withX(minPoint.x() + x);
+                break;
+            }
+        }
+        for (int y = offset.blockY(); y >= 0; y--) {
+            if (yBlockCounts[y] != 0) {
+                maxPoint = maxPoint.withY(minPoint.y() + y);
+                break;
+            }
+        }
+        for (int z = offset.blockZ(); z >= 0; z--) {
+            if (zBlockCounts[z] != 0) {
+                maxPoint = maxPoint.withZ(minPoint.z() + z);
+                break;
+            }
+        }
+    }
+
+    private int firstNonZero(int[] arr) {
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i] != 0) {
+                return i;
+            }
+        }
+        return arr.length;
     }
 
     private void updateStructureOutline() {
-        Point minPoint = this.getMinPoint();
-        Point maxPoint = this.getMaxPoint();
+        System.out.println("minPoint: " + minPoint);
+        System.out.println("maxPoint: " + maxPoint);
+        System.out.println("xBlockCounts: " + Arrays.toString(xBlockCounts));
+        System.out.println("yBlockCounts: " + Arrays.toString(yBlockCounts));
+        System.out.println("zBlockCounts: " + Arrays.toString(zBlockCounts));
+        Point minPoint = this.minPoint;
+        Point maxPoint = this.maxPoint;
 
         int sizeX = maxPoint.blockX() - minPoint.blockX() + 1;
         int sizeY = maxPoint.blockY() - minPoint.blockY() + 1;
@@ -207,43 +330,6 @@ public class TestBuilderController {
             }
 
         }
-    }
-
-    /**
-     * Adds the coordinate to the list of integers so that the list stays sorted least to greatest
-     *
-     * @param coord     The coordinate
-     * @param coordList The list of coordinates to insert the coordinate into
-     */
-    private void addCoordToBlockCoordList(int coord, List<Integer> coordList) {
-        int i = 0;
-        while (i < coordList.size() && coord > coordList.get(i)) {
-            i++;
-        }
-
-        // i is now either equal to the size of the coordinate list if coord is greater than every current entry
-        // or i is equal to the index of the first entry greater than coord
-
-        if (i < coordList.size()) {
-            coordList.add(i, coord);
-        } else {
-            coordList.add(coord);
-        }
-    }
-
-    private void removeCoordFromBlockCoordList(int coord, List<Integer> coordList) {
-        coordList.remove((Object) coord);
-    }
-
-    private Point getMinPoint() {
-        return new Vec(blockXCoords.get(0), blockYCoords.get(0), blockZCoords.get(0));
-    }
-
-    private Point getMaxPoint() {
-        return new Vec(
-                blockXCoords.get(blockXCoords.size() - 1),
-                blockYCoords.get(blockYCoords.size() - 1),
-                blockZCoords.get(blockZCoords.size() - 1));
     }
 
     private Point minOfPoints(Point p1, Point p2) {
