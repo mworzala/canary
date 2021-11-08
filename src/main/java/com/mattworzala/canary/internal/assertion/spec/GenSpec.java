@@ -15,7 +15,6 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface GenSpec {
-    // REFACTOR : Assertion Javadocs (using @Doc annotation on elements)
 
     /**
      * The class which this assertion operates on.
@@ -108,6 +107,13 @@ public @interface GenSpec {
         String name() default "";
 
         Class<?> target();
+    }
+
+    // REFACTOR : Assertion Javadocs (using @Doc annotation on elements)
+    @Target({ElementType.METHOD, ElementType.PARAMETER})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface Doc {
+        String value();
     }
 
 }

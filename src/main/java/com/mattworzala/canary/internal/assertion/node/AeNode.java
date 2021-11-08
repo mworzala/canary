@@ -1,6 +1,7 @@
 package com.mattworzala.canary.internal.assertion.node;
 
 import com.mattworzala.canary.internal.assertion.Result;
+import kotlin.NotImplementedError;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -9,6 +10,11 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public abstract class AeNode {
+    public static final AeNode MISSING = new AeNode(List.of()) {
+        protected @NotNull Result test(Object target) { throw new IllegalStateException("Missing assertion node!"); }
+        public String toString() { return "<!>"; }
+    };
+
     private final List<AeNode> children;
 
     private final List<Result> history = new ArrayList<>();
@@ -44,13 +50,13 @@ public abstract class AeNode {
     protected abstract Result test(Object target);
 
     protected AeNode getChild(int index) {
-        return children.get(index);
+        if (index < children.size() && index >= 0)
+            return children.get(index);
+        return AeNode.MISSING;
     }
 
     @Override
-    public String toString() {
-        return "<ERROR>";
-    }
+    public abstract String toString();
 
 
     /**

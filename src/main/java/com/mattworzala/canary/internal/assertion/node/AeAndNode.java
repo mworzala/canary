@@ -15,6 +15,8 @@ public class AeAndNode extends AeNode.Binary {
         Result left = lhs().evaluate(target), right = rhs().evaluate(target);
         if (left == Result.FAIL || right == Result.FAIL)
             return Result.FAIL;
+        if (left == Result.SOFT_PASS || right == Result.SOFT_PASS)
+            return Result.SOFT_PASS;
         return Result.PASS;
     }
 

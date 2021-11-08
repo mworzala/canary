@@ -12,7 +12,7 @@ public class MarkerItem implements ItemBehavior {
 
     @Override
     public void onRightClick(Point point) {
-        controller.addMarker(point);
+//        controller.addMarker(point);
     }
 
     @Override

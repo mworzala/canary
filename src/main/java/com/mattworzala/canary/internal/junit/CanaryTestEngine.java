@@ -69,6 +69,7 @@ public class CanaryTestEngine implements TestEngine {
 
     @Override
     public TestDescriptor discover(EngineDiscoveryRequest discoveryRequest, UniqueId uniqueId) {
+        // REFACTOR : Only initialize Minestom if we actually discover tests. Otherwise the engine should silently exit.
         if (this.server == null) init();
 
         CanaryEngineDescriptor discoveryResult = CanaryDiscoverer.discover(discoveryRequest, uniqueId);
