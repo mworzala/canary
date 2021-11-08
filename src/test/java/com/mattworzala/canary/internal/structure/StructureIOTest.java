@@ -1,9 +1,8 @@
 package com.mattworzala.canary.internal.structure;
 
-import com.mattworzala.canary.internal.structure.JsonStructureIO;
-import com.mattworzala.canary.internal.structure.Structure;
 import net.minestom.server.MinecraftServer;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -13,7 +12,7 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class TestStructureIO {
+public class StructureIOTest {
     @TempDir
     static Path tmpDir;
     static Path tempStructureFile;
@@ -46,9 +45,13 @@ public class TestStructureIO {
         Files.writeString(tempStructureFile, basicStructureJson);
     }
 
+    @BeforeEach
+    public void minestomInit() {
+        MinecraftServer.init();
+    }
+
     @Test
     public void testBasicJsonReadSize() {
-        MinecraftServer.init();
         JsonStructureIO jsonStructureIO = new JsonStructureIO();
         Structure structure = jsonStructureIO.readStructure(tempStructureFile);
         assertEquals(16, structure.getSizeX());
@@ -58,7 +61,6 @@ public class TestStructureIO {
 
     @Test
     public void testBasicJsonReadId() {
-        MinecraftServer.init();
         JsonStructureIO jsonStructureIO = new JsonStructureIO();
         Structure structure = jsonStructureIO.readStructure(tempStructureFile);
         assertEquals("my-test-world", structure.getId());

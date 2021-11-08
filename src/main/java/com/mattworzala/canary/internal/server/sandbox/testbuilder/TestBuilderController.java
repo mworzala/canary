@@ -80,6 +80,9 @@ public class TestBuilderController {
         }
     }
 
+    public void addMarker(Point p) {
+    }
+
     public void addPlayer(Player player) {
         this.player = player;
         playerPreviousInstance = player.getInstance();
