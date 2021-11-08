@@ -1,19 +1,23 @@
 package com.mattworzala.canary.internal.assertion.node;
 
+import com.mattworzala.canary.api.supplier.ObjectSupplier;
 import com.mattworzala.canary.internal.assertion.AssertionCondition;
 import com.mattworzala.canary.internal.assertion.Result;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 public class AeConditionNode extends AeNode {
-    private final AssertionCondition condition;
+    private final String debugName;
+    private final ObjectSupplier supplier;
+    private final Predicate<Object> test;
 
     public AeConditionNode(@NotNull AssertionCondition condition) {
         super(List.of());
 
-        this.condition = condition;
+        this.debugName = condition.debugName();
     }
 
     @Override
