@@ -13,9 +13,9 @@ public class AeNotNode extends AeNode.Unary {
     @Override
     protected @NotNull Result test(Object target) {
         Result result = item().evaluate(target);
-        if (result == Result.FAIL)
-            return Result.PASS;
-        return Result.FAIL;
+        if (result.isFail())
+            return Result.Pass();
+        return Result.Fail("TODO : Not Implemented");
     }
 
     @Override

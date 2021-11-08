@@ -1,16 +1,18 @@
 package com.mattworzala.canary.internal.assertion.spec;
 
 import com.mattworzala.canary.api.supplier.PointSupplier;
+import com.mattworzala.canary.internal.assertion.Result;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.instance.Instance;
 
-import static com.mattworzala.canary.internal.assertion.spec.GenSpec.Condition;
+import static com.mattworzala.canary.internal.assertion.spec.GenSpec.*;
 
 @GenSpec(operator = Entity.class, supertype = "Assertion")
 public class EntityAssertionSpec {
 
-    // TODO : Allow @Doc on transitions    @Transition
+    // TODO : Allow @Doc on transitions
+    @Transition
     public static Instance instance(Entity entity) {
         return entity.getInstance();
     }
@@ -24,23 +26,27 @@ public class EntityAssertionSpec {
 //        return actual.getPosition().sameBlock(expected);
 //    }
 
-    @Condition
-    public static boolean toBeAt(Entity actual, Point expected) {
-//        context.createErrorHandler((handler) -> {
-//            handler.addMarker(expected, 0xFF0000, "Not Reached!");
-//            return "Expected " + actual.getUuid() + " to reach " + expected;
-//        } /* implicit capture of `actual` and `expected` */);
-        return actual.getPosition().sameBlock(expected);
+    @Condition("entity@{0}")
+    public static Result toBeAt(Entity actual, Point expected) {
+        if (actual.getPosition().sameBlock(expected)) {
+            return Result.Pass();
+        }
+        return Result.Fail("Expected " + actual.getUuid() + " to reach " + expected)
+                .withMarker(expected, 0xFF0000, "Not Reached!");
     }
 
     @Condition
-    public static boolean toBeAt(Entity actual, PointSupplier expected) {
-        return actual.getPosition().sameBlock(expected.get());
+    public static Result toBeAt(Entity actual, PointSupplier expected) {
+        if (actual.getPosition().sameBlock(expected.get()))
+            return Result.Pass();
+        return Result.Fail("TODO : Not Implemented");
     }
 
     @Condition
-    public static boolean toBeAtStrict(Entity actual, Point expected) {
-        return actual.getPosition().samePoint(expected);
+    public static Result toBeAtStrict(Entity actual, Point expected) {
+        if (actual.getPosition().samePoint(expected))
+            return Result.Pass();
+        return Result.Fail("TODO : Not Implemented");
     }
 
 

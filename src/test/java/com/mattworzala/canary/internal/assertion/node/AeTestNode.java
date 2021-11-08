@@ -6,9 +6,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public class AeTestNode extends AeNode {
-    public static final AeTestNode PASS = new AeTestNode(Result.PASS);
+    public static final AeTestNode PASS = new AeTestNode(Result.Pass());
     public static final AeTestNode FAIL = new AeTestNode(Result.FAIL);
-    public static final AeTestNode SOFT_PASS = new AeTestNode(Result.SOFT_PASS);
+    public static final AeTestNode SOFT_PASS = new AeTestNode(Result.SoftPass());
 
     public Result result = Result.FAIL;
 

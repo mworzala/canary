@@ -1,5 +1,7 @@
 package com.mattworzala.canary.internal.assertion.spec;
 
+import com.mattworzala.canary.internal.assertion.Result;
+
 import static com.mattworzala.canary.internal.assertion.spec.GenSpec.*;
 
 @GenSpec(operator = Object.class, supertype = "")
@@ -25,8 +27,10 @@ public class AssertionSpec {
          */
 
     @Condition("value=\"{0}\"")
-    public static boolean toEqual(Object actual, Object expected) {
-        return expected.equals(actual);
+    public static Result toEqual(Object actual, Object expected) {
+        if (expected.equals(actual))
+            return Result.Pass();
+        return Result.Fail("TODO : Not Implemented");
     }
 
     @Doc("""
@@ -34,8 +38,10 @@ public class AssertionSpec {
             Note: {@link #toEqual} may be used to {@link Object#equals(Object)} equality.
             """)
     @Condition("value=\"{0}\"")
-    public static boolean toEqualStrict(Object actual, @Doc("The expected value") Object expected) {
-        return expected == actual;
+    public static Result toEqualStrict(Object actual, @Doc("The expected value") Object expected) {
+        if (expected == actual)
+            return Result.Pass();
+        return Result.Fail("TODO : Not Implemented");
     }
 
 }

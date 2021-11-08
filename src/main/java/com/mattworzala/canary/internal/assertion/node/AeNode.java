@@ -28,6 +28,7 @@ public abstract class AeNode {
         return history.stream();
     }
 
+    // TODO : Remove `target` parameter, it is never used.
     @NotNull
     public final Result evaluate(Object target) {
         Result result = test(target);
