@@ -21,7 +21,6 @@ import net.minestom.server.event.trait.PlayerEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.block.Block;
-import net.minestom.server.instance.block.BlockGetter;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.network.packet.server.play.BlockEntityDataPacket;
@@ -30,7 +29,7 @@ import net.minestom.server.world.DimensionType;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.UUID;
 import java.util.function.Function;
 
 // REFACTOR : Allow multiple players per test builder
@@ -129,7 +128,7 @@ public class TestBuilderController {
         System.out.println("FINISHING BUILDING STRUCTURE: " + name);
         player.setInstance(playerPreviousInstance, playerPreviousInstancePos);
 
-        Structure structure = this.readStructureFromWorld(blockBoundingBox.getMinPoint(), blockBoundingBox.getSize());
+        Structure structure = Structure.structureFromWorld(testBuilderInstance, name, blockBoundingBox.getMinPoint(), blockBoundingBox.getSize());
 
         Path root = FileSystems.getDefault().getPath("..").toAbsolutePath();
         Path filePath = Paths.get(root.toString(), "src", "main", "resources", name + ".json");
@@ -213,81 +212,6 @@ public class TestBuilderController {
 
     private Block boundingBoxBlockFromSizeAndYPos(Point size, int yPos) {
         return boundingBoxBlockFromSizeAndPos(size, new Vec(0, yPos, 0));
-    }
-
-
-    private Structure readStructureFromWorld(Point origin, Point size) {
-        return readStructureFromWorld(origin, size.blockX(), size.blockY(), size.blockZ());
-    }
-
-    private Structure readStructureFromWorld(Point origin, int sizeX, int sizeY, int sizeZ) {
-        Structure resultStructure = new Structure("testStruct", sizeX, sizeY, sizeZ);
-
-        Set<Block> blockSet = new HashSet<>();
-        blockSet.add(Block.AIR);
-        Map<Integer, Block> blockMap = new HashMap<>();
-
-        blockMap.put(-1, Block.AIR);
-        int blockMapIndex = 0;
-        Block lastBlock = null;
-        int lastBlockIndex = -1;
-        int currentBlockCount = 0;
-
-        for (int y = 0; y < sizeY; y++) {
-            for (int z = 0; z < sizeZ; z++) {
-                for (int x = 0; x < sizeX; x++) {
-//                    System.out.println("(" + (origin.blockX() + x) + ", " + (origin.blockY() + y) + ", " + (origin.blockZ() + z));
-                    Block b = this.testBuilderInstance.getBlock(origin.blockX() + x, origin.blockY() + y, origin.blockZ() + z, BlockGetter.Condition.NONE);
-                    // if this is the very first block
-                    if (lastBlock == null) {
-                        if (blockSet.add(b)) {
-                            // if this is a new block we haven't seen before
-                            // put it in the block map
-                            blockMap.put(blockMapIndex, b);
-                            blockMapIndex++;
-                            lastBlockIndex = 0;
-
-                            lastBlock = b;
-                        } else {
-                            lastBlock = b;
-                            lastBlockIndex = -1;
-                        }
-                        currentBlockCount++;
-                    } else {
-                        if (b.equals(lastBlock)) {
-                            currentBlockCount++;
-                        } else {
-                            resultStructure.addToBlockDefList(new Structure.BlockDef(lastBlockIndex, currentBlockCount));
-                            currentBlockCount = 1;
-                            if (blockSet.add(b)) {
-                                // if this is a new block we haven't seen before
-                                // put it in the block map
-                                blockMap.put(blockMapIndex, b);
-                                lastBlockIndex = blockMapIndex;
-                                blockMapIndex++;
-
-                                lastBlock = b;
-                            } else {
-                                lastBlock = b;
-                                for (int key : blockMap.keySet()) {
-                                    if (blockMap.get(key).equals(b)) {
-                                        lastBlockIndex = key;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        resultStructure.addToBlockDefList(new Structure.BlockDef(lastBlockIndex, currentBlockCount));
-
-        for (int key : blockMap.keySet()) {
-            resultStructure.putInBlockMap(key, blockMap.get(key));
-        }
-
-        return resultStructure;
     }
 
     public String getName() {

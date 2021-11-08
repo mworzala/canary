@@ -2,15 +2,13 @@ package com.mattworzala.canary.internal.structure;
 
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Vec;
+import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
+import net.minestom.server.instance.block.BlockGetter;
 import net.minestom.server.instance.block.BlockSetter;
 import org.jetbrains.annotations.NotNull;
-import sun.misc.Unsafe;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This will be replaced eventually
@@ -104,6 +102,80 @@ public class Structure {
 
     public Map<Integer, Block> getBlockMap() {
         return blockmap;
+    }
+
+    public static Structure structureFromWorld(Instance instance, String id, Point origin, Point size) {
+        return structureFromWorld(instance, id, origin, size.blockX(), size.blockY(), size.blockZ());
+    }
+
+    public static Structure structureFromWorld(Instance instance, String id, Point origin, int sizeX, int sizeY, int sizeZ) {
+        Structure resultStructure = new Structure(id, sizeX, sizeY, sizeZ);
+
+        Set<Block> blockSet = new HashSet<>();
+        blockSet.add(Block.AIR);
+        Map<Integer, Block> blockMap = new HashMap<>();
+
+        blockMap.put(-1, Block.AIR);
+        int blockMapIndex = 0;
+        Block lastBlock = null;
+        int lastBlockIndex = -1;
+        int currentBlockCount = 0;
+
+        for (int y = 0; y < sizeY; y++) {
+            for (int z = 0; z < sizeZ; z++) {
+                for (int x = 0; x < sizeX; x++) {
+//                    System.out.println("(" + (origin.blockX() + x) + ", " + (origin.blockY() + y) + ", " + (origin.blockZ() + z));
+                    Block b = instance.getBlock(origin.blockX() + x, origin.blockY() + y, origin.blockZ() + z, BlockGetter.Condition.NONE);
+                    // if this is the very first block
+                    if (lastBlock == null) {
+                        if (blockSet.add(b)) {
+                            // if this is a new block we haven't seen before
+                            // put it in the block map
+                            blockMap.put(blockMapIndex, b);
+                            blockMapIndex++;
+                            lastBlockIndex = 0;
+
+                            lastBlock = b;
+                        } else {
+                            lastBlock = b;
+                            lastBlockIndex = -1;
+                        }
+                        currentBlockCount++;
+                    } else {
+                        if (b.equals(lastBlock)) {
+                            currentBlockCount++;
+                        } else {
+                            resultStructure.addToBlockDefList(new Structure.BlockDef(lastBlockIndex, currentBlockCount));
+                            currentBlockCount = 1;
+                            if (blockSet.add(b)) {
+                                // if this is a new block we haven't seen before
+                                // put it in the block map
+                                blockMap.put(blockMapIndex, b);
+                                lastBlockIndex = blockMapIndex;
+                                blockMapIndex++;
+
+                                lastBlock = b;
+                            } else {
+                                lastBlock = b;
+                                for (int key : blockMap.keySet()) {
+                                    if (blockMap.get(key).equals(b)) {
+                                        lastBlockIndex = key;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        resultStructure.addToBlockDefList(new Structure.BlockDef(lastBlockIndex, currentBlockCount));
+
+        for (int key : blockMap.keySet()) {
+            resultStructure.putInBlockMap(key, blockMap.get(key));
+        }
+
+        return resultStructure;
     }
 
     @Override
