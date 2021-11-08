@@ -1,22 +1,24 @@
-package com.mattworzala.canary.codegen.genspec;
+package com.mattworzala.canary.codegen.genspec.assertion;
 
-import com.mattworzala.canary.codegen.genspec.mixin.BlockPropertiesMixin;
+import com.mattworzala.canary.codegen.CanaryAnnotationProcessor;
+import com.mattworzala.canary.codegen.RecursiveElementVisitor;
+import com.mattworzala.canary.codegen.genspec.assertion.mixin.BlockPropertiesMixin;
+import com.mattworzala.canary.codegen.genspec.assertion.mixin.GenSpecMixin;
 import com.mattworzala.canary.codegen.util.ElementUtil;
 import com.mattworzala.canary.codegen.util.StringUtil;
 import com.squareup.javapoet.*;
 
-import javax.annotation.processing.Messager;
 import javax.lang.model.element.*;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementScanner14;
 import javax.lang.model.util.SimpleElementVisitor14;
-import javax.tools.Diagnostic;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -27,17 +29,15 @@ import static com.mattworzala.canary.codegen.PackageConstants.*;
 /**
  * Processes GenSpec.* annotations, creating the relevant methods in the given {@link com.squareup.javapoet.JavaFile}.
  */
-public class GenSpecProcessor extends SimpleElementVisitor14<TypeSpec.Builder, TypeSpec.Builder> {
-    private static final Map<String, Supplier<GenSpecMixin>> MIXINS = new HashMap<>(){{
+public class AssertionGenerator extends RecursiveElementVisitor<TypeSpec.Builder> {
+    private static final Map<String, Supplier<GenSpecMixin>> MIXINS = new HashMap<>() {{
         put("block_properties", BlockPropertiesMixin::new);
     }};
 
-    private final Messager messager;
-    private final Consumer<TypeSpec> typeSpecEmitter;
+    private final CanaryAnnotationProcessor.Logger logger;
 
-    public GenSpecProcessor(Messager messager, Consumer<TypeSpec> typeSpecEmitter) {
-        this.messager = messager;
-        this.typeSpecEmitter = typeSpecEmitter;
+    public AssertionGenerator(CanaryAnnotationProcessor.Logger logger) {
+        this.logger = logger;
     }
 
     /**
@@ -51,18 +51,26 @@ public class GenSpecProcessor extends SimpleElementVisitor14<TypeSpec.Builder, T
 
         AnnotationMirror genSpec = ElementUtil.getAnnotation(element, PKG_ASSERTION_SPEC + ".GenSpec");
         if (genSpec == null) {
-            error("GenSpec element must be annotated with @GenSpec", element);
+            logger.error("GenSpec element must be annotated with @GenSpec", element);
             return null;
         }
         AnnotationValue operator = ElementUtil.getAnnotationMember(genSpec, "operator");
         AnnotationValue superTypeName = ElementUtil.getAnnotationMember(genSpec, "supertype");
         if (operator == null || superTypeName == null) {
-            error("@GenSpec must contain a valid `operator` and `supertype`", element);
+            logger.error("@GenSpec must contain a valid `operator` and `supertype`", element);
             return null;
         }
 
+        TypeName operatorType = ClassName.get((TypeMirror) operator.getValue());
+
+        // Add aggregate annotation
+        typeSpec.addAnnotation(AnnotationSpec
+                .builder(ClassName.get(PKG_ASSERTION_SPEC, "GenSpec", "IntermediateAssertion"))
+                .addMember("operator", "$T.class", operatorType)
+                .build());
+
         // Generic types
-        typeSpec.addTypeVariable(TypeVariableName.get("T", ClassName.get((TypeMirror) operator.getValue())));
+        typeSpec.addTypeVariable(TypeVariableName.get("T", operatorType));
         var thisType = ParameterizedTypeName.get(
                 ClassName.get(PKG_ASSERTION_IMPL, name),
                 TypeVariableName.get("T"), TypeVariableName.get("This"));
@@ -70,14 +78,17 @@ public class GenSpecProcessor extends SimpleElementVisitor14<TypeSpec.Builder, T
 
         // Supertype
         String supertype = (String) superTypeName.getValue();
-        if (supertype.isEmpty()) { supertype = "AssertionBase"; }
-        else { supertype = supertype + "Impl"; }
+        if (supertype.isEmpty()) {
+            supertype = "AssertionBase";
+        } else {
+            supertype = supertype + "Impl";
+        }
         typeSpec.superclass(ParameterizedTypeName.get(
                 ClassName.get(PKG_ASSERTION_IMPL, supertype),
                 TypeVariableName.get("T"), TypeVariableName.get("This")
         ));
 
-        // Constructor
+        // Constructor todo duplicated in AggregateProcessor
         ParameterSpec paramSupplier = ParameterSpec.builder(ClassName.get(PKG_SUPPLIER, "ObjectSupplier"), "supplier").build();
         ParameterSpec paramSteplist = ParameterSpec.builder(ParameterizedTypeName.get(
                 ClassName.get(List.class),
@@ -95,12 +106,13 @@ public class GenSpecProcessor extends SimpleElementVisitor14<TypeSpec.Builder, T
 
         // Mixins
         for (var annotation : ElementUtil.getAnnotations(element, PKG_ASSERTION_SPEC + ".GenSpec.Mixin")) {
-            AnnotationValue targetValue = ElementUtil.getAnnotationMember(annotation, "value"); assert targetValue != null;
+            AnnotationValue targetValue = ElementUtil.getAnnotationMember(annotation, "value");
+            assert targetValue != null;
             String mixinTarget = (String) targetValue.getValue();
 
             Supplier<GenSpecMixin> mixin = MIXINS.get(mixinTarget);
             if (mixin == null) {
-                error("Unknown mixin '" + mixinTarget + "'", element);
+                logger.error("Unknown mixin '" + mixinTarget + "'", element);
                 continue;
             }
 
@@ -110,7 +122,7 @@ public class GenSpecProcessor extends SimpleElementVisitor14<TypeSpec.Builder, T
             } catch (Throwable error) {
                 StringWriter stringWriter = new StringWriter();
                 error.printStackTrace(new PrintWriter(stringWriter));
-                error("Failed to apply mixin '" + mixinTarget + "'!\n" + stringWriter, null);
+                logger.error("Failed to apply mixin '" + mixinTarget + "'!\n" + stringWriter, null);
             }
         }
 
@@ -126,22 +138,23 @@ public class GenSpecProcessor extends SimpleElementVisitor14<TypeSpec.Builder, T
      */
     @Override
     public TypeSpec.Builder visitExecutable(ExecutableElement element, TypeSpec.Builder typeSpec) {
-        if (!element.getModifiers().contains(Modifier.STATIC) || !element.getModifiers().contains(Modifier.PUBLIC))
-            return super.visitExecutable(element, typeSpec);
-
         if (ElementUtil.hasAnnotation(element, PKG_ASSERTION_SPEC + ".GenSpec.Condition")) {
             parseCondition(element, typeSpec);
-        } else {
-            //todo probably can ignore this and only error if the method does not fit the requirements.
-            error("public GenSpec methods must be @Condition.", element);
         }
 
         return super.visitExecutable(element, typeSpec);
     }
 
     private void parseCondition(ExecutableElement element, TypeSpec.Builder typeSpec) {
+        // Ensure the method looks valid
+        if (!isValidCondition(element)) {
+            logger.error("@Condition methods must fit the criteria outlined in the @Condition Javadoc.", element);
+            return;
+        }
+
         // Get @Condition annotation
-        AnnotationMirror condition = ElementUtil.getAnnotation(element, PKG_ASSERTION_SPEC + ".GenSpec.Condition"); assert condition != null;
+        AnnotationMirror condition = ElementUtil.getAnnotation(element, PKG_ASSERTION_SPEC + ".GenSpec.Condition");
+        assert condition != null;
         AnnotationValue debugString = ElementUtil.getAnnotationMember(condition, "value");
         String debugStringPattern = debugString == null ? "<condition>" : (String) debugString.getValue();
 
@@ -153,7 +166,14 @@ public class GenSpecProcessor extends SimpleElementVisitor14<TypeSpec.Builder, T
         // Parameters (all but first)
         element.getParameters()
                 .stream().skip(1)
-                .map(param -> ParameterSpec.builder(ClassName.get(param.asType()), param.getSimpleName().toString()).build())
+                .map(param -> {
+                    //todo this is a hack to allow use of not-yet-generated supplier types. Need a better solution
+//                    if (param.asType().toString().equals("PointSupplier")) {
+//                        logger.info("I TRIGGERED");
+//                        return ParameterSpec.builder(ClassName.get(PKG_SUPPLIER, "PointSupplier"), param.getSimpleName().toString()).build();
+//                    }
+                    return ParameterSpec.builder(ClassName.get(param.asType()), param.getSimpleName().toString()).build();
+                })
                 .forEach(method::addParameter);
 
         // Body (appendCondition call)
@@ -188,7 +208,7 @@ public class GenSpecProcessor extends SimpleElementVisitor14<TypeSpec.Builder, T
             if (paramDocAnnotation != null) {
                 if (i == 0) {
                     // Ensure first parameter is *not* documented
-                    error("`actual` parameter may not have a Javadoc.", param);
+                    logger.error("`actual` parameter may not have a Javadoc.", param);
                     return;
                 }
 
@@ -198,23 +218,13 @@ public class GenSpecProcessor extends SimpleElementVisitor14<TypeSpec.Builder, T
         }
     }
 
-    // *** Helpers ***
-
-    @Override
-    protected TypeSpec.Builder defaultAction(Element e, TypeSpec.Builder typeSpec) {
-        e.getEnclosedElements().forEach(el -> el.accept(this, typeSpec));
-        return typeSpec;
+    // public static boolean ...(Operator actual, ...)
+    private static boolean isValidCondition(ExecutableElement element) {
+        //todo check first parameter type
+        return element.getParameters().size() >= 1 &&
+                element.getReturnType().getKind() == TypeKind.BOOLEAN &&
+                element.getModifiers().contains(Modifier.PUBLIC) &&
+                element.getModifiers().contains(Modifier.STATIC);
     }
 
-    private void info(String message) {
-        messager.printMessage(Diagnostic.Kind.NOTE, message);
-    }
-
-    private void error(String message, Element element) {
-        messager.printMessage(Diagnostic.Kind.ERROR, message, element);
-    }
-
-    private void emitAdditonalTypeSpec(TypeSpec typeSpec) {
-        typeSpecEmitter.accept(typeSpec);
-    }
 }

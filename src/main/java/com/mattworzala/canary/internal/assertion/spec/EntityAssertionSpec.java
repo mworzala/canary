@@ -1,17 +1,18 @@
 package com.mattworzala.canary.internal.assertion.spec;
 
-import com.mattworzala.canary.api.supplier.PointSupplier;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Entity;
+import net.minestom.server.instance.Instance;
 
 import static com.mattworzala.canary.internal.assertion.spec.GenSpec.*;
 
 @GenSpec(operator = Entity.class, supertype = "Assertion")
-@Supplier(transitions = {
-        @Transition(name = "instance", target = InstanceAssertionSpec.class),
-})
-//@Transition(name = "instance", type = InstanceAssertionSpec.class)
 public class EntityAssertionSpec {
+
+    @Transition
+    public static Instance instance(Entity entity) {
+        return entity.getInstance();
+    }
 
 //    @Condition
 //    public static boolean toBeAt(Entity actual, double x, double y, double z) {
@@ -31,10 +32,10 @@ public class EntityAssertionSpec {
         return actual.getPosition().sameBlock(expected);
     }
 
-    @Condition
-    public static boolean toBeAt(Entity actual, PointSupplier expected) {
-        return actual.getPosition().sameBlock(expected.get());
-    }
+//    @Condition
+//    public static boolean toBeAt(Entity actual, PointSupplier expected) {
+//        return actual.getPosition().sameBlock(expected.get());
+//    }
 
     @Condition
     public static boolean toBeAtStrict(Entity actual, Point expected) {

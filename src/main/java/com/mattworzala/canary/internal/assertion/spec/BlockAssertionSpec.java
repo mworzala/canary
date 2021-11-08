@@ -5,7 +5,6 @@ import net.minestom.server.instance.block.Block;
 import static com.mattworzala.canary.internal.assertion.spec.GenSpec.*;
 
 @GenSpec(operator = Block.class, supertype = "Assertion")
-@Supplier
 @Mixin("block_properties")
 public class BlockAssertionSpec {
 

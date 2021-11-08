@@ -90,24 +90,14 @@ public @interface GenSpec {
         String value() default "<condition>";
     }
 
-    /* Supplier & Transitions */
+    /* Transitions */
 
-    @Target(ElementType.TYPE)
-    @Retention(RetentionPolicy.SOURCE)
-    @interface Supplier {
-        String name() default "";
-
-        Transition[] transitions() default {};
-    }
-
-
-    @Target(ElementType.TYPE)
+    @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.SOURCE)
     @interface Transition {
-        String name() default "";
-
-        Class<?> target();
     }
+
+    /* Javadoc */
 
     /**
      * Allows adding Javadocs to the generated AssertionImpl. Newlines will be replaced with &lt;p&gt; tags.
@@ -122,6 +112,16 @@ public @interface GenSpec {
     @Retention(RetentionPolicy.SOURCE)
     @interface Doc {
         String value();
+    }
+
+    /**
+     * Internal. Should not be used directly.
+     */
+    @Deprecated
+    @Target(ElementType.TYPE)
+    @Retention(RetentionPolicy.SOURCE)
+    @interface IntermediateAssertion {
+        Class<?> operator();
     }
 
 }

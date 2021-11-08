@@ -1,7 +1,6 @@
-package com.mattworzala.canary.codegen.genspec.mixin;
+package com.mattworzala.canary.codegen.genspec.assertion.mixin;
 
 import com.google.common.base.CaseFormat;
-import com.mattworzala.canary.codegen.genspec.GenSpecMixin;
 import com.mattworzala.canary.codegen.util.IntegerUtil;
 import com.squareup.javapoet.*;
 import net.minestom.server.instance.block.Block;

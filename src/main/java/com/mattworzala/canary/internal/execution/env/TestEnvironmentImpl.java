@@ -1,8 +1,8 @@
 package com.mattworzala.canary.internal.execution.env;
 
 import com.mattworzala.canary.api.TestEnvironment;
-import com.mattworzala.canary.api.supplier.*;
-import com.mattworzala.canary.internal.assertion.AssertionStep;
+import com.mattworzala.canary.api.supplier.EntitySupplier;
+import com.mattworzala.canary.api.supplier.LivingEntitySupplier;
 import com.mattworzala.canary.internal.execution.TestExecutor;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
@@ -12,7 +12,6 @@ import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -59,7 +58,8 @@ public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironm
 
     @Override
     public LivingEntityAssertion expect(LivingEntitySupplier actual) {
-        return new LivingEntityAssertion(actual, newAssertion(actual));
+        return null;
+//        return new LivingEntityAssertion(actual, newAssertion(actual));
     }
 
     // Entity
@@ -70,7 +70,8 @@ public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironm
 
     @Override
     public EntityAssertion expect(EntitySupplier actual) {
-        return new EntityAssertion(actual, newAssertion(actual));
+        return null;
+//        return new EntityAssertion(actual, newAssertion(actual));
     }
 
 //    // Instance
@@ -189,7 +190,7 @@ public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironm
     }
 
 //     Private utils
-    private List<AssertionStep> newAssertion(ObjectSupplier actual) {
-        return executor.createAssertion(actual);
-    }
+//    private List<AssertionStep> newAssertion(ObjectSupplier actual) {
+//        return executor.createAssertion(actual);
+//    }
 }

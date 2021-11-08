@@ -3,7 +3,6 @@ package com.mattworzala.canary.internal.assertion.spec;
 import static com.mattworzala.canary.internal.assertion.spec.GenSpec.*;
 
 @GenSpec(operator = Object.class, supertype = "")
-/* Special case of no supplier here. */
 public class AssertionSpec {
 
     /*
