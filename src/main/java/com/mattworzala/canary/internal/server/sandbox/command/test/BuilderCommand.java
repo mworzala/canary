@@ -1,9 +1,7 @@
 package com.mattworzala.canary.internal.server.sandbox.command.test;
 
 import com.mattworzala.canary.internal.server.sandbox.testbuilder.TestBuilderController;
-import com.mattworzala.canary.internal.structure.JsonStructureIO;
 import com.mattworzala.canary.internal.structure.Structure;
-import com.mattworzala.canary.internal.structure.StructureWriter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minestom.server.MinecraftServer;
@@ -22,9 +20,6 @@ import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import org.jetbrains.annotations.NotNull;
 
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.concurrent.CountDownLatch;
 
 import static com.mattworzala.canary.internal.server.sandbox.command.TestCommand.version;
@@ -80,6 +75,7 @@ public class BuilderCommand extends Command {
             sender.asPlayer().refreshCommands();
         }), Literal("duplicate"), ArgumentType.Word("existing-structure-id").from(getExistingStructureNames()), structureName);
 
+        addConditionalSyntax(notInTestCondition, this::onBuild, Literal("import"));
         this.testBuilderItem = getTestBuilderItem();
 
     }
@@ -143,11 +139,18 @@ public class BuilderCommand extends Command {
 
             Structure structure = Structure.structureFromWorld(playerInstance, "structure-id", testBuilder.getOrigin(), testBuilder.getSize());
 
-            // TODO - don't do this, actually go somewhere reasonable
-            Path root = FileSystems.getDefault().getPath("..").toAbsolutePath();
-            Path filePath = Paths.get(root.toString(), "src", "main", "resources", "test.json");
-            StructureWriter structureWriter = new JsonStructureIO();
-            structureWriter.writeStructure(structure, filePath);
+            testBuilderController = new TestBuilderController("test-test");
+            testBuilderController.addPlayer(player);
+            testBuilderController.importStructure(structure);
+            isPlayerInTestBuilder = true;
+//            player.sendMessage("Making a new structure with name \"" + name + "\"");
+            player.refreshCommands();
+
+//            // TODO - don't do this, actually go somewhere reasonable
+//            Path root = FileSystems.getDefault().getPath("..").toAbsolutePath();
+//            Path filePath = Paths.get(root.toString(), "src", "main", "resources", "test.json");
+//            StructureWriter structureWriter = new JsonStructureIO();
+//            structureWriter.writeStructure(structure, filePath);
         }).start();
     }
 

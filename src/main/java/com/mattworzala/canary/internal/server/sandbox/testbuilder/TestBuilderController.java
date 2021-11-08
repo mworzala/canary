@@ -121,6 +121,23 @@ public class TestBuilderController {
         };
         BlockClickingItemStack bcis = new BlockClickingItemStack(itemStack, leftClick, rightClick);
         bcis.giveToPlayer(player, player.getHeldSlot());
+
+        updateStructureOutline();
+    }
+
+    public void importStructure(Structure structure) {
+        for (int x = 0; x < 5; x++) {
+            for (int z = 0; z < 5; z++) {
+                var point = new Vec(x, 40, z);
+//                blockBoundingBox.removeBlock(point);
+                testBuilderInstance.setBlock(point, Block.AIR);
+            }
+        }
+        this.blockBoundingBox = new BlockBoundingBox(MAX_STRUCTURE_DIMENSION);
+        TestBuilderBlockSetter testBuilderBlockSetter = new TestBuilderBlockSetter(this.testBuilderInstance, this.blockBoundingBox);
+        structure.loadIntoBlockSetter(testBuilderBlockSetter, new Vec(0, 40, 0));
+
+        updateStructureOutline();
     }
 
     // REFACTOR : Prompt to save when leaving test builder
@@ -137,6 +154,7 @@ public class TestBuilderController {
     }
 
     private void updateStructureOutline() {
+        blockBoundingBox.printDebugInfo();
         if (structureBlockPos == null) {
             recomputeStructureBlockPos();
         } else {
@@ -154,6 +172,7 @@ public class TestBuilderController {
                     z <= MAX_STRUCTURE_BLOCK_OFFSET) {
                 // if the structure block doesn't need to move, we just update the size and offset
                 System.out.println("Don't need to move structure block, updating offset");
+                System.out.println("size: " + size);
                 Block boundingBox = boundingBoxBlockFromSizeAndPos(size, structureBlockOffset);
                 BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket();
 

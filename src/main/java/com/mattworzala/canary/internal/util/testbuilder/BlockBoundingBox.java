@@ -4,6 +4,8 @@ import com.mattworzala.canary.internal.util.point.PointUtil;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Vec;
 
+import java.util.Arrays;
+
 /**
  * A class that lets you add and remove block to it, keeping track of the bounding box around those points
  * Used in TestBuilderController for handling the structure block bounding box
@@ -193,5 +195,13 @@ public class BlockBoundingBox {
      */
     public Point getSize() {
         return maxPoint.sub(minPoint).add(PointUtil.UNIT_VECTOR);
+    }
+
+    public void printDebugInfo() {
+        System.out.println("xBlocks: " + Arrays.toString(xBlockCounts));
+        System.out.println("yBlocks: " + Arrays.toString(yBlockCounts));
+        System.out.println("zBlocks: " + Arrays.toString(zBlockCounts));
+        System.out.println("minPoint: " + minPoint);
+        System.out.println("maxPoint: " + maxPoint);
     }
 }
