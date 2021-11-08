@@ -30,8 +30,12 @@ public class AssertionSpec {
         return expected.equals(actual);
     }
 
+    @Doc("""
+            Expects the provided value to be referentially equal to the actual value. Tested using `==`.
+            Note: {@link #toEqual} may be used to {@link Object#equals(Object)} equality.
+            """)
     @Condition("value=\"{0}\"")
-    public static boolean toEqualStrict(Object actual, Object expected) {
+    public static boolean toEqualStrict(Object actual, @Doc("The expected value") Object expected) {
         return expected == actual;
     }
 

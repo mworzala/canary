@@ -2,6 +2,7 @@ package com.mattworzala.canary.codegen.genspec;
 
 import com.mattworzala.canary.codegen.genspec.mixin.BlockPropertiesMixin;
 import com.mattworzala.canary.codegen.util.ElementUtil;
+import com.mattworzala.canary.codegen.util.StringUtil;
 import com.squareup.javapoet.*;
 
 import javax.annotation.processing.Messager;
@@ -165,7 +166,36 @@ public class GenSpecProcessor extends SimpleElementVisitor14<TypeSpec.Builder, T
                 ClassName.get(element.getEnclosingElement().asType()), element.getSimpleName(), parameterString);
         method.addStatement("return (This) this");
 
+        // Javadocs
+        insertJavadocs(element, method);
+
         typeSpec.addMethod(method.build());
+    }
+
+    private void insertJavadocs(ExecutableElement element, MethodSpec.Builder method) {
+        // body
+        AnnotationMirror bodyDocAnnotation = ElementUtil.getAnnotation(element, PKG_ASSERTION_SPEC + ".GenSpec.Doc");
+        if (bodyDocAnnotation != null) {
+            String value = (String) ElementUtil.getAnnotationMember(bodyDocAnnotation, "value").getValue();
+            method.addJavadoc(StringUtil.insertPTags(value.trim()) + "\n");
+        }
+
+        // Parameters
+        for (int i = 0; i < element.getParameters().size(); i++) {
+            VariableElement param = element.getParameters().get(i);
+            AnnotationMirror paramDocAnnotation = ElementUtil.getAnnotation(param, PKG_ASSERTION_SPEC + ".GenSpec.Doc");
+
+            if (paramDocAnnotation != null) {
+                if (i == 0) {
+                    // Ensure first parameter is *not* documented
+                    error("`actual` parameter may not have a Javadoc.", param);
+                    return;
+                }
+
+                String value = (String) ElementUtil.getAnnotationMember(paramDocAnnotation, "value").getValue();
+                method.addJavadoc("\n@param $L $L", param.getSimpleName(), value.trim());
+            }
+        }
     }
 
     // *** Helpers ***

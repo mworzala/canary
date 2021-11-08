@@ -109,7 +109,15 @@ public @interface GenSpec {
         Class<?> target();
     }
 
-    // REFACTOR : Assertion Javadocs (using @Doc annotation on elements)
+    /**
+     * Allows adding Javadocs to the generated AssertionImpl. Newlines will be replaced with &lt;p&gt; tags.
+     * <p>
+     * When annotating a condition, the value represents the main body of the Javadoc.
+     * When annotating a parameter, the value represents the Javadoc for the parameter.
+     * <p>
+     * Note: The `actual` (first) parameter may not be documented.
+     *
+     */
     @Target({ElementType.METHOD, ElementType.PARAMETER})
     @Retention(RetentionPolicy.SOURCE)
     @interface Doc {
