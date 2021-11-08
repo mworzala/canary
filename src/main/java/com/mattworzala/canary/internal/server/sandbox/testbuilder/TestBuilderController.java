@@ -40,14 +40,8 @@ public class TestBuilderController {
     private static final int MAX_STRUCTURE_DIMENSION = 48;
     // put the structure block as low as possible (48 blocks down) without going into negative y
     private static final int MAX_STRUCTURE_BLOCK_OFFSET = 48;
-//    private Point minPoint;
-//    private Point maxPoint;
 
     private BlockBoundingBox blockBoundingBox = new BlockBoundingBox(MAX_STRUCTURE_DIMENSION);
-    // REFACTOR : Move this to a separate class that doesnt reference minestom classes
-//    private int[] xBlockCounts = new int[MAX_STRUCTURE_DIMENSION];
-//    private int[] yBlockCounts = new int[MAX_STRUCTURE_DIMENSION];
-//    private int[] zBlockCounts = new int[MAX_STRUCTURE_DIMENSION];
 
     private Point structureBlockPos;
     private Block lastOverwrittenBlock;
@@ -72,13 +66,10 @@ public class TestBuilderController {
         testBuilderInstance = new InstanceContainer(UUID.randomUUID(), DimensionType.OVERWORLD);
         MinecraftServer.getInstanceManager().registerInstance(testBuilderInstance);
 
-//        minPoint = new Vec(0, 40, 0);
-//        maxPoint = new Vec(5, 41, 5);
         for (int x = 0; x < 5; x++) {
             for (int z = 0; z < 5; z++) {
                 var point = new Vec(x, 40, z);
                 blockBoundingBox.addBlock(point);
-//                addPositionToBlockCoordLists(point);
                 testBuilderInstance.setBlock(point, Block.STONE);
             }
         }
@@ -147,8 +138,6 @@ public class TestBuilderController {
     }
 
     private void updateStructureOutline() {
-
-        // if this is our first time placing the structure block
         if (structureBlockPos == null) {
             recomputeStructureBlockPos();
         } else {
@@ -164,7 +153,7 @@ public class TestBuilderController {
             if (x <= MAX_STRUCTURE_BLOCK_OFFSET &&
                     y <= MAX_STRUCTURE_BLOCK_OFFSET &&
                     z <= MAX_STRUCTURE_BLOCK_OFFSET) {
-                // if the structure block doesn't need to move
+                // if the structure block doesn't need to move, we just update the size and offset
                 System.out.println("Don't need to move structure block, updating offset");
                 Block boundingBox = boundingBoxBlockFromSizeAndPos(size, structureBlockOffset);
                 BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket();
@@ -202,14 +191,14 @@ public class TestBuilderController {
         blockEntityDataPacket.action = 7;
         blockEntityDataPacket.nbtCompound = boundingBox.nbt();
 
-        player.sendPacket(blockEntityDataPacket);
-
         if (lastOverwrittenBlock != null) {
             testBuilderInstance.setBlock(structureBlockPos, lastOverwrittenBlock);
         }
         lastOverwrittenBlock = testBuilderInstance.getBlock(blockPos);
         structureBlockPos = blockPos;
         testBuilderInstance.setBlock(blockPos, boundingBox);
+
+        player.sendPacket(blockEntityDataPacket);
     }
 
     private Block boundingBoxBlockFromSizeAndPos(Point size, Point pos) {

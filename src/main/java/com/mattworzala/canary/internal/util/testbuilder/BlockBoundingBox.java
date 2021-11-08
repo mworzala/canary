@@ -2,6 +2,7 @@ package com.mattworzala.canary.internal.util.testbuilder;
 
 import com.mattworzala.canary.internal.util.point.PointUtil;
 import net.minestom.server.coordinate.Point;
+import net.minestom.server.coordinate.Vec;
 
 /**
  * A class that lets you add and remove block to it, keeping track of the bounding box around those points
@@ -40,10 +41,9 @@ public class BlockBoundingBox {
     public boolean addBlock(Point p) {
         // if we haven't gotten any blocks, set up around this point
         if (minPoint == null) {
-            firstPoint(p);
+            handleFirstPoint(p);
             return true;
         }
-
 
         Point newMin = PointUtil.minOfPoints(minPoint, p);
         Point newMax = PointUtil.maxOfPoints(maxPoint, p);
@@ -71,7 +71,7 @@ public class BlockBoundingBox {
         return true;
     }
 
-    private void firstPoint(Point p) {
+    private void handleFirstPoint(Point p) {
         minPoint = p;
         maxPoint = p;
         xBlockCounts[0] = 1;
@@ -90,15 +90,15 @@ public class BlockBoundingBox {
         yBlockCounts[offset.blockY()] -= 1;
         zBlockCounts[offset.blockZ()] -= 1;
 
+        // we want the 0th index of every block counts array to actually blocks there
         int deltaX = firstNonZero(xBlockCounts);
         shiftArray(xBlockCounts, -deltaX);
-        minPoint = minPoint.withX(minPoint.x() + deltaX);
         int deltaY = firstNonZero(yBlockCounts);
         shiftArray(yBlockCounts, -deltaY);
-        minPoint = minPoint.withY(minPoint.y() + deltaY);
         int deltaZ = firstNonZero(zBlockCounts);
         shiftArray(zBlockCounts, -deltaZ);
-        minPoint = minPoint.withZ(minPoint.z() + deltaZ);
+
+        minPoint = minPoint.add(new Vec(deltaX, deltaY, deltaZ));
 
         recomputeMaxPoint();
     }
@@ -106,24 +106,26 @@ public class BlockBoundingBox {
 
     private void recomputeMaxPoint() {
         Point offset = maxPoint.sub(minPoint);
-        for (int x = offset.blockX(); x >= 0; x--) {
-            if (xBlockCounts[x] != 0) {
-                maxPoint = maxPoint.withX(minPoint.x() + x);
-                break;
+        int x = getFirstNonZeroBeforeIndex(xBlockCounts, offset.blockX());
+        int y = getFirstNonZeroBeforeIndex(yBlockCounts, offset.blockY());
+        int z = getFirstNonZeroBeforeIndex(zBlockCounts, offset.blockZ());
+        maxPoint = minPoint.add(new Vec(x, y, z));
+    }
+
+    /**
+     * Returns the index of the first non-zero value in arr before index
+     *
+     * @param arr
+     * @param index
+     * @return
+     */
+    private int getFirstNonZeroBeforeIndex(int[] arr, int index) {
+        for (int i = index; i >= 0; i--) {
+            if (arr[i] != 0) {
+                return i;
             }
         }
-        for (int y = offset.blockY(); y >= 0; y--) {
-            if (yBlockCounts[y] != 0) {
-                maxPoint = maxPoint.withY(minPoint.y() + y);
-                break;
-            }
-        }
-        for (int z = offset.blockZ(); z >= 0; z--) {
-            if (zBlockCounts[z] != 0) {
-                maxPoint = maxPoint.withZ(minPoint.z() + z);
-                break;
-            }
-        }
+        return 0;
     }
 
     private int firstNonZero(int[] arr) {
