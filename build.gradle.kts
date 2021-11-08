@@ -26,6 +26,8 @@ dependencies {
     implementation("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
     val junitPlatformVersion: String by project
     implementation("org.junit.platform:junit-platform-launcher:$junitPlatformVersion")
+
+    testImplementation("org.mockito:mockito-core:4.0.0")
 }
 
 java {

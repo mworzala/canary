@@ -3,6 +3,7 @@ package com.mattworzala.canary.internal.util.ui;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
+import net.minestom.server.entity.fakeplayer.FakePlayer;
 import net.minestom.server.event.EventListener;
 import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.instance.Instance;
@@ -53,12 +54,9 @@ public class CameraPlayer extends Player {
     }
 
     @Override
-    protected boolean addViewer0(@NotNull Player player) {
-        final boolean result = super.addViewer0(player);
-        if (result) {
-            handleTabList(player.getPlayerConnection());
-        }
-        return result;
+    public void updateNewViewer(@NotNull Player player) {
+        super.updateNewViewer(player);
+        handleTabList(player.getPlayerConnection());
     }
 
     /**
@@ -111,6 +109,7 @@ public class CameraPlayer extends Player {
 
         @Override
         public void sendPacket(@NotNull ServerPacket serverPacket, boolean skipTranslating) {
+
             if (forwardWhitelist.stream().anyMatch(cl -> cl.isAssignableFrom(serverPacket.getClass()))) {
                 if (DO_FORWARDING)
                     viewers.forEach(target -> target.getPlayerConnection().sendPacket(serverPacket));

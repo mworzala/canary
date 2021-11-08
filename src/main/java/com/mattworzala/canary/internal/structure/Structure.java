@@ -5,6 +5,7 @@ import net.minestom.server.coordinate.Vec;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockSetter;
 import org.jetbrains.annotations.NotNull;
+import sun.misc.Unsafe;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,16 +19,15 @@ import java.util.Map;
  */
 public class Structure {
 
+    public record BlockDef(int blockId, int blockCount) {
+    }
+
     private String id;
     private Vec size;
 
     Map<Integer, Block> blockmap;
 
     List<BlockDef> blocks;
-
-    public record BlockDef(int blockId, int blockCount) {
-    }
-
 
     public Structure(String id, int sizeX, int sizeY, int sizeZ) {
         this.id = id;

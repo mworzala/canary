@@ -4,6 +4,9 @@ import com.mattworzala.canary.internal.server.instance.block.BoundingBoxHandler;
 import com.mattworzala.canary.internal.structure.JsonStructureIO;
 import com.mattworzala.canary.internal.structure.Structure;
 import com.mattworzala.canary.internal.structure.StructureWriter;
+import com.mattworzala.canary.internal.util.ui.BlockClickingItemStack;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Vec;
@@ -18,6 +21,8 @@ import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockGetter;
+import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.Material;
 import net.minestom.server.network.packet.server.play.BlockEntityDataPacket;
 import net.minestom.server.world.DimensionType;
 
@@ -25,7 +30,10 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.Function;
 
+// REFACTOR : Allow multiple players per test builder
+// REFACTOR : Allow multiple concurrent test builders
 public class TestBuilderController {
 
     private static final int MAX_STRUCTURE_DIMENSION = 48;
@@ -33,12 +41,10 @@ public class TestBuilderController {
     private Point minPoint;
     private Point maxPoint;
 
+    // REFACTOR : Move this to a separate class that doesnt reference minestom classes
     private int[] xBlockCounts = new int[MAX_STRUCTURE_DIMENSION];
     private int[] yBlockCounts = new int[MAX_STRUCTURE_DIMENSION];
     private int[] zBlockCounts = new int[MAX_STRUCTURE_DIMENSION];
-    private List<Integer> blockXCoords = new ArrayList<>();
-    private List<Integer> blockYCoords = new ArrayList<>();
-    private List<Integer> blockZCoords = new ArrayList<>();
 
     private Point structureBlockPos;
     private Block lastOverwrittenBlock;
@@ -47,7 +53,7 @@ public class TestBuilderController {
 
     private Player player;
     private Instance playerPreviousInstance;
-    private Point playerPreviousIntancePos;
+    private Point playerPreviousInstancePos;
 
     private static final EventNode<PlayerEvent> testBuilderPlayerEventNode = EventNode.type("test-builder-controller-player", EventFilter.PLAYER);
 
@@ -77,10 +83,11 @@ public class TestBuilderController {
     public void addPlayer(Player player) {
         this.player = player;
         playerPreviousInstance = player.getInstance();
-        playerPreviousIntancePos = player.getPosition();
+        playerPreviousInstancePos = player.getPosition();
         player.setInstance(testBuilderInstance, new Vec(0, 41, 0));
         System.out.println("tried to set the player instance");
 
+        // REFACTOR : Register events once in constructor in test builder controller
         testBuilderPlayerEventNode.addListener(EventListener.builder(PlayerBlockPlaceEvent.class)
                 .filter(event -> event.getPlayer().equals(player))
                 .handler(playerBlockPlaceEvent -> {
@@ -101,11 +108,28 @@ public class TestBuilderController {
                     removePositionFromBlockCoordLists(playerBlockBreakEvent.getBlockPosition());
                     this.updateStructureOutline();
                 }).build());
+
+        var itemStack = ItemStack.builder(Material.BOOK)
+                .displayName(Component.text("Test Builder", NamedTextColor.GREEN))
+                .build();
+
+        Function<Point, Boolean> leftClick = (p) -> {
+            System.out.println("LEFT CLICK");
+            return false;
+        };
+
+        Function<Point, Boolean> rightClick = (p) -> {
+            System.out.println("RIGHT CLICK");
+            return false;
+        };
+        BlockClickingItemStack bcis = new BlockClickingItemStack(itemStack, leftClick, rightClick);
+        bcis.giveToPlayer(player, player.getHeldSlot());
     }
 
+    // REFACTOR : Prompt to save when leaving test builder
     public void finish() {
         System.out.println("FINISHING BUILDING STRUCTURE: " + name);
-        player.setInstance(playerPreviousInstance, playerPreviousIntancePos);
+        player.setInstance(playerPreviousInstance, playerPreviousInstancePos);
 
 //        Point minPoint = this.minPoint;
 //        Point maxPoint = this.getMaxPoint();
@@ -421,5 +445,9 @@ public class TestBuilderController {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Instance getTestBuilderInstance() {
+        return testBuilderInstance;
     }
 }

@@ -73,6 +73,7 @@ public class TestExecutor implements Tickable {
     private volatile boolean running;
     private TestExecutionListener executionListener;
     private Object classInstance;
+    private int lifetime;
 
     //todo these two records are both stupid
     private static record RawAssertion(ObjectSupplier supplier, List<AssertionStep> steps) {}
@@ -181,6 +182,7 @@ public class TestExecutor implements Tickable {
             return;
         }
 
+        lifetime = 100;
         running = true;
     }
 
@@ -200,6 +202,10 @@ public class TestExecutor implements Tickable {
 
         if (assertions.isEmpty()) {
             end(null);
+        }
+
+        if (--lifetime < 0) {
+            end(new RuntimeException("Test timed out."));
         }
 
 //        try {

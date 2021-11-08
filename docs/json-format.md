@@ -8,6 +8,9 @@
         16,
         16
     ],
+    "markers": {
+        "diamond_block": 123
+    },
     "blockmap": [
         "minecraft:stone",
         "minecraft:cobblestone_stairs[facing=north]",

@@ -1,4 +1,4 @@
-package com.mattworzala.canary.structure;
+package com.mattworzala.canary.internal.structure;
 
 import com.mattworzala.canary.internal.structure.JsonStructureIO;
 import com.mattworzala.canary.internal.structure.Structure;
@@ -13,7 +13,7 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class StructureTests {
+public class TestStructureIO {
     @TempDir
     static Path tmpDir;
     static Path tempStructureFile;

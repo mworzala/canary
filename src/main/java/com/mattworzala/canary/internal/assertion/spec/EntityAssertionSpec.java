@@ -1,5 +1,6 @@
 package com.mattworzala.canary.internal.assertion.spec;
 
+import com.mattworzala.canary.api.supplier.PointSupplier;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Entity;
 
@@ -31,8 +32,15 @@ public class EntityAssertionSpec {
     }
 
     @Condition
+    public static boolean toBeAt(Entity actual, PointSupplier expected) {
+        return actual.getPosition().sameBlock(expected.get());
+    }
+
+    @Condition
     public static boolean toBeAtStrict(Entity actual, Point expected) {
         return actual.getPosition().samePoint(expected);
     }
+
+
 
 }

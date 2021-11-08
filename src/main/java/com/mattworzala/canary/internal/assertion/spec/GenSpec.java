@@ -15,6 +15,8 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface GenSpec {
+    // REFACTOR : Assertion Javadocs (using @Doc annotation on elements)
+
     /**
      * The class which this assertion operates on.
      * <p>
