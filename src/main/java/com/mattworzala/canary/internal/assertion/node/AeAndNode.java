@@ -13,9 +13,9 @@ public class AeAndNode extends AeNode.Binary {
     @Override
     protected @NotNull Result test(Object target) {
         Result left = lhs().evaluate(target), right = rhs().evaluate(target);
-        if (left == Result.FAILED || right == Result.FAILED)
-            return Result.FAILED;
-        return Result.PASSED;
+        if (left == Result.FAIL || right == Result.FAIL)
+            return Result.FAIL;
+        return Result.PASS;
     }
 
     @Override

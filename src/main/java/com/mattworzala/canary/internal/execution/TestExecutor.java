@@ -192,8 +192,8 @@ public class TestExecutor implements Tickable {
         try {
             assertions.removeIf(assn -> {
                 Result result = assn.root.evaluate(assn.supplier.get());
-                System.out.println("RESULT > " + (result == Result.PASSED ? "PASSED" : "FAILED"));
-                return result == Result.PASSED;
+                System.out.println("RESULT > " + (result == Result.PASS ? "PASSED" : "FAILED"));
+                return result == Result.PASS;
             });
         } catch (Throwable throwable) {
             end(throwable);

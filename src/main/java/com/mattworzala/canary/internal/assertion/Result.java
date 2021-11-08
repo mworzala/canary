@@ -1,6 +1,7 @@
 package com.mattworzala.canary.internal.assertion;
 
-public interface Result {
-    Result PASSED = new Result() {};
-    Result FAILED = new Result() {};
+public enum Result {
+    PASS,
+    FAIL,
+    SOFT_PASS,
 }

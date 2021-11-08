@@ -19,7 +19,7 @@ public class ManualTest {
         AeNode root = new AeSimpleParser(steps).parse();
 
         System.out.println(root);
-        System.out.println(root.evaluate(sup.get()) == Result.PASSED);
+        System.out.println(root.evaluate(sup.get()) == Result.PASS);
 
     }
 }

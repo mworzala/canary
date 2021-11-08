@@ -19,7 +19,7 @@ public class AeConditionNode extends AeNode {
     protected @NotNull Result test(Object target) {
         //todo this does not work, we need more information from the test itself.
         //     Specifically error messages are not possible this way, it will need to be supplied by the assertion itself.
-        return condition.test().test(target) ? Result.PASSED : Result.FAILED;
+        return condition.test().test(target) ? Result.PASS : Result.FAIL;
     }
 
     @Override

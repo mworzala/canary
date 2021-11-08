@@ -6,8 +6,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public class AeTestNode extends AeNode {
-    public static final AeTestNode PASSED = new AeTestNode(Result.PASSED);
-    public static final AeTestNode FAILED = new AeTestNode(Result.FAILED);
+    public static final AeTestNode PASSED = new AeTestNode(Result.PASS);
+    public static final AeTestNode FAILED = new AeTestNode(Result.FAIL);
 
     private final Result result;
 

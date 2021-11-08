@@ -15,7 +15,7 @@ public class AeAlwaysNode extends AeNode.Unary {
     //todo docs explaining why we cache only a failed result
     @Override
     protected @NotNull Result test(Object target) {
-        if (cache == null || cache == Result.PASSED) {
+        if (cache == null || cache == Result.PASS) {
             cache = sample(target);
         }
         return cache;
