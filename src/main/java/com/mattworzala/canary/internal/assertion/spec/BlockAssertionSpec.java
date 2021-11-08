@@ -1,5 +1,6 @@
 package com.mattworzala.canary.internal.assertion.spec;
 
+import com.mattworzala.canary.internal.assertion.Result;
 import net.minestom.server.instance.block.Block;
 
 import static com.mattworzala.canary.internal.assertion.spec.GenSpec.*;
@@ -9,8 +10,10 @@ import static com.mattworzala.canary.internal.assertion.spec.GenSpec.*;
 public class BlockAssertionSpec {
 
     @Condition
-    public static boolean toHaveProperty(Block actual, String property, String value) {
-        return value.equals(actual.getProperty(property));
+    public static Result toHaveProperty(Block actual, String property, String value) {
+        if (value.equals(actual.getProperty(property)))
+            return Result.Pass();
+        return Result.Fail("TODO : Not Implemented");
     }
 
 }

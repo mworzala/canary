@@ -21,6 +21,6 @@ public class AssertionBaseTest {
 
         AssertionStep created = steps.get(0);
         assertEquals(AssertionStep.Type.CONDITION, created.type());
-        assertEquals("test", created.condition().debugName());
+        assertEquals("test", created.debugName());
     }
 }

@@ -13,11 +13,15 @@ public class AeAndNode extends AeNode.Binary {
     @Override
     protected @NotNull Result test(Object target) {
         Result left = lhs().evaluate(target), right = rhs().evaluate(target);
-        if (left == Result.FAIL || right == Result.FAIL)
-            return Result.FAIL;
-        if (left == Result.SOFT_PASS || right == Result.SOFT_PASS)
-            return Result.SOFT_PASS;
-        return Result.PASS;
+        // Handle LHS/RHS failure individually for better reporting
+        if (left.isFail())
+            return Result.Fail("Expected left side to pass, but it failed", left);
+        if (right.isFail())
+            return Result.Fail("Expected right side to pass, but it failed", right);
+
+        if (left.isSoftPass() || right.isSoftPass())
+            return Result.SoftPass();
+        return Result.Pass();
     }
 
     @Override

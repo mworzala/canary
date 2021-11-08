@@ -19,11 +19,11 @@ public class AeThenNode extends AeNode.Binary {
             return rhs().test(target);
         }
         Result left = lhs().evaluate(target);
-        if (left == Result.PASS) {
+        if (left.isPass()) {
             testingRight = true;
             return rhs().test(target);
         }
-        return Result.FAIL;
+        return Result.Fail("TODO : Not Implemented");
     }
 
     @Override

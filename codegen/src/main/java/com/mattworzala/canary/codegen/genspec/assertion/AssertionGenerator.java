@@ -219,8 +219,8 @@ public class AssertionGenerator extends RecursiveElementVisitor<TypeSpec.Builder
     // public static boolean ...(Operator actual, ...)
     private static boolean isValidCondition(ExecutableElement element) {
         //todo check first parameter type
+        //todo check return type
         return element.getParameters().size() >= 1 &&
-                element.getReturnType().getKind() == TypeKind.BOOLEAN &&
                 element.getModifiers().contains(Modifier.PUBLIC) &&
                 element.getModifiers().contains(Modifier.STATIC);
     }

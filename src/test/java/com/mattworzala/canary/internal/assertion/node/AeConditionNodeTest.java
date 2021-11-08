@@ -13,8 +13,7 @@ public class AeConditionNodeTest {
 
     @Test
     public void testPassingConditionShouldPass() {
-        AssertionCondition assertionCondition = new AssertionCondition("test", o -> true);
-        AeConditionNode node = new AeConditionNode(assertionCondition);
+        AeConditionNode node = new AeConditionNode("test", () -> null, o -> true);
 
         Assertions.assertEquals(Result.PASS, node.evaluate(null));
     }
@@ -22,15 +21,14 @@ public class AeConditionNodeTest {
     @Test
     public void testFailingConditionShouldFail() {
         AssertionCondition assertionCondition = new AssertionCondition("test", o -> false);
-        AeConditionNode node = new AeConditionNode(assertionCondition);
+        AeConditionNode node = new AeConditionNode("test", () -> null, o -> false);
 
         assertEquals(Result.FAIL, node.evaluate(null));
     }
 
     @Test
     public void testTargetShouldBeForwardedToPredicate() {
-        AssertionCondition assertionCondition = new AssertionCondition("test", o -> (boolean) o);
-        AeConditionNode node = new AeConditionNode(assertionCondition);
+        AeConditionNode node = new AeConditionNode("test", () -> true, o -> (boolean) o);
 
         assertEquals(Result.PASS, node.evaluate(true));
     }
@@ -39,31 +37,20 @@ public class AeConditionNodeTest {
 
     @Test
     public void testExceptionInConditionShouldFail() {
-        AssertionCondition assertionCondition = new AssertionCondition("test", o -> {
+        AeConditionNode node = new AeConditionNode("test", () -> null, o -> {
             throw new RuntimeException("Failure expected");
         });
 
-        AeConditionNode node = new AeConditionNode(assertionCondition);
-
         assertEquals(Result.FAIL, node.evaluate(null));
-    }
-
-    @Test
-    public void testNullConditionShouldThrow() {
-        AssertionCondition assertionCondition = new AssertionCondition("test", null);
-
-        AeConditionNode node = new AeConditionNode(assertionCondition);
-        //todo should this exception occur when constructing the node? probably.
-        //     potentially AssertionCondition#condition could just be @NotNull
-
-        assertThrows(NullPointerException.class, () -> node.evaluate(null));
     }
 
     // toString
 
     @Test
     public void testToString() {
-        AeConditionNode node = new AeConditionNode(new AssertionCondition("test", o -> { throw new IllegalStateException("Should not evaluate assertion for toString"); }));
+        AeConditionNode node = new AeConditionNode("test", () -> null, o -> {
+            throw new IllegalStateException("Should not evaluate assertion for toString");
+        });
 
         assertEquals("test", node.toString());
     }
