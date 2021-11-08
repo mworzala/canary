@@ -11,8 +11,6 @@ import com.squareup.javapoet.*;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementScanner14;
-import javax.lang.model.util.SimpleElementVisitor14;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.MessageFormat;
@@ -168,10 +166,10 @@ public class AssertionGenerator extends RecursiveElementVisitor<TypeSpec.Builder
                 .stream().skip(1)
                 .map(param -> {
                     //todo this is a hack to allow use of not-yet-generated supplier types. Need a better solution
-//                    if (param.asType().toString().equals("PointSupplier")) {
-//                        logger.info("I TRIGGERED");
-//                        return ParameterSpec.builder(ClassName.get(PKG_SUPPLIER, "PointSupplier"), param.getSimpleName().toString()).build();
-//                    }
+                    String typeName = param.asType().toString();
+                    if (typeName.endsWith("Supplier") && typeName.indexOf('.') == -1) {
+                        return ParameterSpec.builder(ClassName.get(PKG_SUPPLIER, typeName), param.getSimpleName().toString()).build();
+                    }
                     return ParameterSpec.builder(ClassName.get(param.asType()), param.getSimpleName().toString()).build();
                 })
                 .forEach(method::addParameter);
