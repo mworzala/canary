@@ -4,6 +4,7 @@ import com.mattworzala.canary.internal.server.instance.block.BoundingBoxHandler;
 import com.mattworzala.canary.internal.structure.JsonStructureIO;
 import com.mattworzala.canary.internal.structure.Structure;
 import com.mattworzala.canary.internal.structure.StructureWriter;
+import com.mattworzala.canary.internal.util.testbuilder.BlockBoundingBox;
 import com.mattworzala.canary.internal.util.ui.BlockClickingItemStack;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -37,14 +38,16 @@ import java.util.function.Function;
 public class TestBuilderController {
 
     private static final int MAX_STRUCTURE_DIMENSION = 48;
+    // put the structure block as low as possible (48 blocks down) without going into negative y
+    private static final int MAX_STRUCTURE_BLOCK_OFFSET = 48;
+//    private Point minPoint;
+//    private Point maxPoint;
 
-    private Point minPoint;
-    private Point maxPoint;
-
+    private BlockBoundingBox blockBoundingBox = new BlockBoundingBox(MAX_STRUCTURE_DIMENSION);
     // REFACTOR : Move this to a separate class that doesnt reference minestom classes
-    private int[] xBlockCounts = new int[MAX_STRUCTURE_DIMENSION];
-    private int[] yBlockCounts = new int[MAX_STRUCTURE_DIMENSION];
-    private int[] zBlockCounts = new int[MAX_STRUCTURE_DIMENSION];
+//    private int[] xBlockCounts = new int[MAX_STRUCTURE_DIMENSION];
+//    private int[] yBlockCounts = new int[MAX_STRUCTURE_DIMENSION];
+//    private int[] zBlockCounts = new int[MAX_STRUCTURE_DIMENSION];
 
     private Point structureBlockPos;
     private Block lastOverwrittenBlock;
@@ -69,12 +72,13 @@ public class TestBuilderController {
         testBuilderInstance = new InstanceContainer(UUID.randomUUID(), DimensionType.OVERWORLD);
         MinecraftServer.getInstanceManager().registerInstance(testBuilderInstance);
 
-        minPoint = new Vec(0, 40, 0);
-        maxPoint = new Vec(5, 41, 5);
+//        minPoint = new Vec(0, 40, 0);
+//        maxPoint = new Vec(5, 41, 5);
         for (int x = 0; x < 5; x++) {
             for (int z = 0; z < 5; z++) {
                 var point = new Vec(x, 40, z);
-                addPositionToBlockCoordLists(point);
+                blockBoundingBox.addBlock(point);
+//                addPositionToBlockCoordLists(point);
                 testBuilderInstance.setBlock(point, Block.STONE);
             }
         }
@@ -96,7 +100,7 @@ public class TestBuilderController {
                 .handler(playerBlockPlaceEvent -> {
                     System.out.println("PLAYER BLOCK PLACE EVENT");
                     System.out.println("BLOCK POS: " + playerBlockPlaceEvent.getBlockPosition());
-                    if (addPositionToBlockCoordLists(playerBlockPlaceEvent.getBlockPosition())) {
+                    if (blockBoundingBox.addBlock(playerBlockPlaceEvent.getBlockPosition())) {
                         this.updateStructureOutline();
                     } else {
                         playerBlockPlaceEvent.setCancelled(true);
@@ -108,7 +112,7 @@ public class TestBuilderController {
                 .handler(playerBlockBreakEvent -> {
                     System.out.println("PLAYER BLOCK BREAK EVENT");
                     System.out.println("BLOCK POS: " + playerBlockBreakEvent.getBlockPosition());
-                    removePositionFromBlockCoordLists(playerBlockBreakEvent.getBlockPosition());
+                    blockBoundingBox.removeBlock(playerBlockBreakEvent.getBlockPosition());
                     this.updateStructureOutline();
                 }).build());
 
@@ -134,14 +138,7 @@ public class TestBuilderController {
         System.out.println("FINISHING BUILDING STRUCTURE: " + name);
         player.setInstance(playerPreviousInstance, playerPreviousInstancePos);
 
-//        Point minPoint = this.minPoint;
-//        Point maxPoint = this.getMaxPoint();
-
-        int sizeX = maxPoint.blockX() - minPoint.blockX() + 1;
-        int sizeY = maxPoint.blockY() - minPoint.blockY() + 1;
-        int sizeZ = maxPoint.blockZ() - minPoint.blockZ() + 1;
-
-        Structure structure = this.readStructureFromWorld(minPoint, sizeX, sizeY, sizeZ);
+        Structure structure = this.readStructureFromWorld(blockBoundingBox.getMinPoint(), blockBoundingBox.getSize());
 
         Path root = FileSystems.getDefault().getPath("..").toAbsolutePath();
         Path filePath = Paths.get(root.toString(), "src", "main", "resources", name + ".json");
@@ -149,163 +146,16 @@ public class TestBuilderController {
         structureWriter.writeStructure(structure, filePath);
     }
 
-    /**
-     * @param point
-     * @return true if block can be successfully added, false if it cannot be
-     */
-    private boolean addPositionToBlockCoordLists(Point point) {
-        Point newMin = minOfPoints(minPoint, point);
-        Point newMax = maxOfPoints(maxPoint, point);
-        Point newSize = newMax.sub(newMin);
-        // if the new block is in a position that cannot be encapsulated by a structure bounding box, don't insert
-        if (newSize.blockX() > MAX_STRUCTURE_DIMENSION || newSize.blockZ() > MAX_STRUCTURE_DIMENSION || newSize.blockY() > MAX_STRUCTURE_DIMENSION) {
-            return false;
-        }
-
-        Point delta = minPoint.sub(newMin);
-        if (delta.blockX() < 0 || delta.blockY() < 0 || delta.blockZ() < 0) {
-            System.out.println("delta had a negative component, which can't happen");
-            return false;
-        }
-
-        shiftArray(xBlockCounts, delta.blockX());
-        shiftArray(yBlockCounts, delta.blockY());
-        shiftArray(zBlockCounts, delta.blockZ());
-        minPoint = newMin;
-        maxPoint = newMax;
-        Point offset = point.sub(minPoint);
-        xBlockCounts[offset.blockX()] += 1;
-        yBlockCounts[offset.blockY()] += 1;
-        zBlockCounts[offset.blockZ()] += 1;
-        return true;
-    }
-
-    /**
-     * Shifts the elements in the array to the right by the shiftAmount
-     * Fills the empty space on the left with zeros
-     * If shiftAmount is negative does a left shift, filling the right with zeros
-     *
-     * @param arr
-     * @param shiftAmount
-     */
-    private void shiftArray(int[] arr, int shiftAmount) {
-        if (shiftAmount == 0)
-            return;
-
-        if (shiftAmount > 0) {
-            int i;
-            for (i = arr.length - 1; i >= shiftAmount; i--) {
-                arr[i] = arr[i - shiftAmount];
-            }
-            for (; i >= 0; i--) {
-                arr[i] = 0;
-            }
-        } else {
-            int i;
-            for (i = 0; i < (arr.length + shiftAmount); i++) {
-                arr[i] = arr[i - shiftAmount];
-            }
-            for (; i < arr.length; i++) {
-                arr[i] = 0;
-            }
-
-        }
-    }
-
-    private void removePositionFromBlockCoordLists(Point point) {
-        Point offset = point.sub(minPoint);
-        xBlockCounts[offset.blockX()] -= 1;
-        yBlockCounts[offset.blockY()] -= 1;
-        zBlockCounts[offset.blockZ()] -= 1;
-
-        int deltaX = firstNonZero(xBlockCounts);
-        shiftArray(xBlockCounts, -deltaX);
-        minPoint = minPoint.withX(minPoint.x() + deltaX);
-        int deltaY = firstNonZero(yBlockCounts);
-        shiftArray(yBlockCounts, -deltaY);
-        minPoint = minPoint.withY(minPoint.y() + deltaY);
-        int deltaZ = firstNonZero(zBlockCounts);
-        shiftArray(zBlockCounts, -deltaZ);
-        minPoint = minPoint.withZ(minPoint.z() + deltaZ);
-
-        recomputeMaxPoint();
-    }
-
-    private void recomputeMaxPoint() {
-        Point offset = maxPoint.sub(minPoint);
-        for (int x = offset.blockX(); x >= 0; x--) {
-            if (xBlockCounts[x] != 0) {
-                maxPoint = maxPoint.withX(minPoint.x() + x);
-                break;
-            }
-        }
-        for (int y = offset.blockY(); y >= 0; y--) {
-            if (yBlockCounts[y] != 0) {
-                maxPoint = maxPoint.withY(minPoint.y() + y);
-                break;
-            }
-        }
-        for (int z = offset.blockZ(); z >= 0; z--) {
-            if (zBlockCounts[z] != 0) {
-                maxPoint = maxPoint.withZ(minPoint.z() + z);
-                break;
-            }
-        }
-    }
-
-    private int firstNonZero(int[] arr) {
-        for (int i = 0; i < arr.length; i++) {
-            if (arr[i] != 0) {
-                return i;
-            }
-        }
-        return arr.length;
-    }
-
     private void updateStructureOutline() {
-        System.out.println("minPoint: " + minPoint);
-        System.out.println("maxPoint: " + maxPoint);
-        System.out.println("xBlockCounts: " + Arrays.toString(xBlockCounts));
-        System.out.println("yBlockCounts: " + Arrays.toString(yBlockCounts));
-        System.out.println("zBlockCounts: " + Arrays.toString(zBlockCounts));
-        Point minPoint = this.minPoint;
-        Point maxPoint = this.maxPoint;
-
-        int sizeX = maxPoint.blockX() - minPoint.blockX() + 1;
-        int sizeY = maxPoint.blockY() - minPoint.blockY() + 1;
-        int sizeZ = maxPoint.blockZ() - minPoint.blockZ() + 1;
-
-        // put the structure block as low as possible (48 blocks down) without going into negative y
-        final int MAX_STRUCTURE_BLOCK_OFFSET = 48;
-        int structureBlockYPos = minPoint.blockY() <= MAX_STRUCTURE_BLOCK_OFFSET ? 0 : minPoint.blockY() - MAX_STRUCTURE_BLOCK_OFFSET;
-        int structureBlockYOffset = minPoint.blockY() - structureBlockYPos;
-
-        // TODO - clean this up and remove the duplication, also do any amount of safety checks
 
         // if this is our first time placing the structure block
         if (structureBlockPos == null) {
-            var boundingBox = BoundingBoxHandler.BLOCK
-                    .withTag(BoundingBoxHandler.Tags.SizeX, sizeX)
-                    .withTag(BoundingBoxHandler.Tags.SizeY, sizeY)
-                    .withTag(BoundingBoxHandler.Tags.SizeZ, sizeZ)
-                    .withTag(BoundingBoxHandler.Tags.PosY, structureBlockYOffset);
-            BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket();
-
-            Point blockPos = minPoint.add(new Vec(0, -structureBlockYOffset, 0));
-            blockEntityDataPacket.blockPosition = blockPos;
-            blockEntityDataPacket.action = 7;
-            blockEntityDataPacket.nbtCompound = boundingBox.nbt();
-
-            player.sendPacket(blockEntityDataPacket);
-
-            System.out.println("first time placing structure block");
-            if (lastOverwrittenBlock != null) {
-                testBuilderInstance.setBlock(structureBlockPos, lastOverwrittenBlock);
-            }
-            lastOverwrittenBlock = testBuilderInstance.getBlock(blockPos);
-            structureBlockPos = blockPos;
-            testBuilderInstance.setBlock(blockPos, boundingBox);
+            recomputeStructureBlockPos();
         } else {
+            Point minPoint = blockBoundingBox.getMinPoint();
+
+            Point size = blockBoundingBox.getSize();
+
             Point structureBlockOffset = minPoint.sub(structureBlockPos);
             int x = structureBlockOffset.blockX();
             int y = structureBlockOffset.blockY();
@@ -316,16 +166,9 @@ public class TestBuilderController {
                     z <= MAX_STRUCTURE_BLOCK_OFFSET) {
                 // if the structure block doesn't need to move
                 System.out.println("Don't need to move structure block, updating offset");
-                var boundingBox = BoundingBoxHandler.BLOCK
-                        .withTag(BoundingBoxHandler.Tags.SizeX, sizeX)
-                        .withTag(BoundingBoxHandler.Tags.SizeY, sizeY)
-                        .withTag(BoundingBoxHandler.Tags.SizeZ, sizeZ)
-                        .withTag(BoundingBoxHandler.Tags.PosX, x)
-                        .withTag(BoundingBoxHandler.Tags.PosZ, z)
-                        .withTag(BoundingBoxHandler.Tags.PosY, y);
+                Block boundingBox = boundingBoxBlockFromSizeAndPos(size, structureBlockOffset);
                 BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket();
 
-//                Point blockPos = minPoint.add(new Vec(0, -structureBlockYOffset, 0));
                 blockEntityDataPacket.blockPosition = structureBlockPos;
                 blockEntityDataPacket.action = 7;
                 blockEntityDataPacket.nbtCompound = boundingBox.nbt();
@@ -334,37 +177,53 @@ public class TestBuilderController {
             } else {
                 // the structure block does need to move
                 System.out.println("Do need to move structure block");
-                var boundingBox = BoundingBoxHandler.BLOCK
-                        .withTag(BoundingBoxHandler.Tags.SizeX, sizeX)
-                        .withTag(BoundingBoxHandler.Tags.SizeY, sizeY)
-                        .withTag(BoundingBoxHandler.Tags.SizeZ, sizeZ)
-                        .withTag(BoundingBoxHandler.Tags.PosY, structureBlockYOffset);
-                BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket();
-
-                Point blockPos = minPoint.add(new Vec(0, -structureBlockYOffset, 0));
-                blockEntityDataPacket.blockPosition = blockPos;
-                blockEntityDataPacket.action = 7;
-                blockEntityDataPacket.nbtCompound = boundingBox.nbt();
-
-                player.sendPacket(blockEntityDataPacket);
-
-                if (lastOverwrittenBlock != null) {
-                    testBuilderInstance.setBlock(structureBlockPos, lastOverwrittenBlock);
-                }
-                lastOverwrittenBlock = testBuilderInstance.getBlock(blockPos);
-                structureBlockPos = blockPos;
-                testBuilderInstance.setBlock(blockPos, boundingBox);
+                recomputeStructureBlockPos();
             }
 
         }
     }
 
-    private Point minOfPoints(Point p1, Point p2) {
-        return new Vec(Math.min(p1.x(), p2.x()), Math.min(p1.y(), p2.y()), Math.min(p1.z(), p2.z()));
+    /**
+     * Fully calculates the position of the structure block,
+     * removes the current structure block if it exists, and sends update to player
+     */
+    private void recomputeStructureBlockPos() {
+        Point minPoint = blockBoundingBox.getMinPoint();
+        Point size = blockBoundingBox.getSize();
+
+        int structureBlockYPos = minPoint.blockY() <= MAX_STRUCTURE_BLOCK_OFFSET ? 0 : minPoint.blockY() - MAX_STRUCTURE_BLOCK_OFFSET;
+        int structureBlockYOffset = minPoint.blockY() - structureBlockYPos;
+
+        Block boundingBox = boundingBoxBlockFromSizeAndYPos(size, structureBlockYOffset);
+        BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket();
+
+        Point blockPos = minPoint.add(new Vec(0, -structureBlockYOffset, 0));
+        blockEntityDataPacket.blockPosition = blockPos;
+        blockEntityDataPacket.action = 7;
+        blockEntityDataPacket.nbtCompound = boundingBox.nbt();
+
+        player.sendPacket(blockEntityDataPacket);
+
+        if (lastOverwrittenBlock != null) {
+            testBuilderInstance.setBlock(structureBlockPos, lastOverwrittenBlock);
+        }
+        lastOverwrittenBlock = testBuilderInstance.getBlock(blockPos);
+        structureBlockPos = blockPos;
+        testBuilderInstance.setBlock(blockPos, boundingBox);
     }
 
-    private Point maxOfPoints(Point p1, Point p2) {
-        return new Vec(Math.max(p1.x(), p2.x()), Math.max(p1.y(), p2.y()), Math.max(p1.z(), p2.z()));
+    private Block boundingBoxBlockFromSizeAndPos(Point size, Point pos) {
+        return BoundingBoxHandler.BLOCK
+                .withTag(BoundingBoxHandler.Tags.SizeX, size.blockX())
+                .withTag(BoundingBoxHandler.Tags.SizeY, size.blockY())
+                .withTag(BoundingBoxHandler.Tags.SizeZ, size.blockZ())
+                .withTag(BoundingBoxHandler.Tags.PosX, pos.blockX())
+                .withTag(BoundingBoxHandler.Tags.PosY, pos.blockY())
+                .withTag(BoundingBoxHandler.Tags.PosZ, pos.blockZ());
+    }
+
+    private Block boundingBoxBlockFromSizeAndYPos(Point size, int yPos) {
+        return boundingBoxBlockFromSizeAndPos(size, new Vec(0, yPos, 0));
     }
 
 
