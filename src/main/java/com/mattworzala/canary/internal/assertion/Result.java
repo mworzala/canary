@@ -2,23 +2,37 @@ package com.mattworzala.canary.internal.assertion;
 
 import net.minestom.server.coordinate.Point;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-public sealed abstract class Result permits Result.PassResult, Result.FailResult {
+import java.util.Objects;
 
+public abstract class Result {
+
+    /**
+     * Represents a {@link java.util.function.Predicate} for {@link Result}s instead of bools.
+     *
+     * @param <T> The type being operated on.
+     */
     @FunctionalInterface
     public interface Predicate<T> {
         Result test(T t);
     }
 
 
+    // Result creation
+
     public static Result Pass() {
-        return PassResult.HARD;
+        return PASS;
     }
+    private static final Result PASS = new Result() {
+        public boolean isPass() { return true; }
+    };
 
     public static Result SoftPass() {
-        return PassResult.SOFT;
+        return SOFT_PASS;
     }
+    private static final Result SOFT_PASS = new Result() {
+        public boolean isSoftPass() { return true; }
+    };
 
 
     public static FailResult Fail(String reason) {
@@ -30,50 +44,28 @@ public sealed abstract class Result permits Result.PassResult, Result.FailResult
     }
 
 
+    // Result Impl
 
+    private Result() {}
 
-
-
-
-    
     public boolean isPass() { return false; }
     public boolean isFail() { return false; }
     public boolean isSoftPass() { return false; }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Result that)) return false;
+        return isPass() == that.isPass() || isSoftPass() == that.isSoftPass() || isFail() == that.isFail();
+    }
 
-    @Nullable
-    public Result getCause() {
-        return null;
+    @Override
+    public int hashCode() {
+        return Objects.hash(isPass(), isSoftPass(), isFail());
     }
 
 
-
-    // TODO : Implement #equals
-
-
-
-
-
-    public static final class PassResult extends Result {
-        private static final Result SOFT = new PassResult(true);
-        private static final Result HARD = new PassResult(false);
-
-        private final boolean soft;
-
-        private PassResult(boolean soft) {
-            this.soft = soft;
-        }
-
-        @Override
-        public boolean isPass() {
-            return !soft;
-        }
-
-        @Override
-        public boolean isSoftPass() {
-            return soft;
-        }
-    }
+    // Failure
 
     public static final class FailResult extends Result {
         private final String reason;
@@ -91,8 +83,8 @@ public sealed abstract class Result permits Result.PassResult, Result.FailResult
         }
 
 
-        @Override
-        public @Nullable Result getCause() {
+        @NotNull
+        public Result getCause() {
             return cause;
         }
 
@@ -112,6 +104,23 @@ public sealed abstract class Result permits Result.PassResult, Result.FailResult
             if (getCause() instanceof FailResult failCause) {
                 failCause.printToStdout(false);
             }
+        }
+
+        @Override
+        public String toString() {
+            return "FAIL{reason=\"" + getReason() + "\"}";
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof FailResult that)) return false;
+            return getReason().equals(that.getReason()) && Objects.equals(getCause(), that.getCause());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getReason(), getCause());
         }
     }
 }

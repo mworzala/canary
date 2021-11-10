@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static com.mattworzala.canary.internal.assertion.Helper.*;
 import static com.mattworzala.canary.internal.assertion.node.AeTestNode.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -16,9 +17,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class AeAlwaysNodeTest {
     private static Stream<Arguments> providePossibleResults() {
         return Stream.of(
-                Arguments.of(PASS, Result.SOFT_PASS),
-                Arguments.of(SOFT_PASS, Result.SOFT_PASS),
-                Arguments.of(FAIL, Result.FAIL)
+                Arguments.of(NODE_PASS, RES_SOFT_PASS),
+                Arguments.of(NODE_SOFT_PASS, RES_SOFT_PASS),
+                Arguments.of(NODE_FAIL, RES_FAIL)
         );
     }
 
@@ -27,7 +28,7 @@ public class AeAlwaysNodeTest {
     public void testResultCombinations(AeNode item, Result expected) {
         AeAlwaysNode node = new AeAlwaysNode(List.of(item));
 
-        assertEquals(expected, node.evaluate(null));
+        assertSameResult(expected, node.evaluate(null));
     }
 
     // Non-standard child count
@@ -41,16 +42,16 @@ public class AeAlwaysNodeTest {
 
     @Test
     public void testExtraChildrenShouldBeIgnored() {
-        AeAlwaysNode node = new AeAlwaysNode(List.of(PASS, FAIL));
+        AeAlwaysNode node = new AeAlwaysNode(List.of(NODE_PASS, NODE_FAIL));
 
-        assertEquals(Result.SOFT_PASS, node.evaluate(null));
+        assertSoftPass(node.evaluate(null));
     }
 
     // toString
 
     @Test
     public void testToString() {
-        AeAlwaysNode node = new AeAlwaysNode(List.of(FAIL));
+        AeAlwaysNode node = new AeAlwaysNode(List.of(NODE_FAIL));
 
         assertEquals("(ALWAYS <test>)", node.toString());
     }
@@ -66,29 +67,29 @@ public class AeAlwaysNodeTest {
 
     @Test
     public void testCacheFailure() {
-        AeTestNode testNode = new AeTestNode(Result.PASS);
+        AeTestNode testNode = new AeTestNode(RES_PASS);
 
         AeAlwaysNode node = new AeAlwaysNode(List.of(testNode));
 
         // Child passing, should check again
-        assertEquals(Result.SOFT_PASS, node.evaluate(null));
+        assertSoftPass(node.evaluate(null));
 
         // Child soft passing, should check again
-        testNode.result = Result.SOFT_PASS;
-        assertEquals(Result.SOFT_PASS, node.evaluate(null));
+        testNode.result = RES_SOFT_PASS;
+        assertSoftPass(node.evaluate(null));
 
         // Child failing
-        testNode.result = Result.FAIL;
-        assertEquals(Result.FAIL, node.evaluate(null));
+        testNode.result = RES_FAIL;
+        assertFail(node.evaluate(null));
 
         // Child now passing, should remain fail
-        testNode.result = Result.PASS;
-        assertEquals(Result.FAIL, node.evaluate(null));
+        testNode.result = RES_PASS;
+        assertFail(node.evaluate(null));
     }
 
     @Test
     public void testChildShouldStopBeingTestedAfterFail() {
-        AeTestNode testNode = new AeTestNode(Result.FAIL);
+        AeTestNode testNode = new AeTestNode(RES_FAIL);
 
         AeAlwaysNode node = new AeAlwaysNode(List.of(testNode));
 
@@ -97,12 +98,12 @@ public class AeAlwaysNodeTest {
         assertEquals(1, testNode.history().count());
 
         // Child should never be tested again (history should remain 1)
-        testNode.result = Result.PASS;
+        testNode.result = RES_PASS;
         node.evaluate(null);
         assertEquals(1, testNode.history().count());
 
         // Child failing
-        testNode.result = Result.SOFT_PASS;
+        testNode.result = RES_SOFT_PASS;
         node.evaluate(null);
         assertEquals(1, testNode.history().count());
     }
