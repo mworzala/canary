@@ -1,36 +1,35 @@
 package com.mattworzala.canary.internal.assertion.node;
 
-import com.mattworzala.canary.internal.assertion.AssertionCondition;
-import com.mattworzala.canary.internal.assertion.Result;
-import com.mattworzala.canary.internal.assertion.node.AeConditionNode;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static com.mattworzala.canary.internal.assertion.Helper.assertFail;
+import static com.mattworzala.canary.internal.assertion.Helper.assertPass;
+import static com.mattworzala.canary.internal.assertion.node.AeTestNode.RES_FAIL;
+import static com.mattworzala.canary.internal.assertion.node.AeTestNode.RES_PASS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AeConditionNodeTest {
 
     @Test
     public void testPassingConditionShouldPass() {
-        AeConditionNode node = new AeConditionNode("test", () -> null, o -> true);
+        AeConditionNode node = new AeConditionNode("test", () -> null, o -> RES_PASS);
 
-        Assertions.assertEquals(Result.PASS, node.evaluate(null));
+        assertPass(node.evaluate(null));
     }
 
     @Test
     public void testFailingConditionShouldFail() {
-        AssertionCondition assertionCondition = new AssertionCondition("test", o -> false);
-        AeConditionNode node = new AeConditionNode("test", () -> null, o -> false);
+        AeConditionNode node = new AeConditionNode("test", () -> null, o -> RES_FAIL);
 
-        assertEquals(Result.FAIL, node.evaluate(null));
+        assertFail(node.evaluate(null));
     }
 
     @Test
     public void testTargetShouldBeForwardedToPredicate() {
-        AeConditionNode node = new AeConditionNode("test", () -> true, o -> (boolean) o);
+        AeConditionNode node = new AeConditionNode("test", () -> true, o -> (boolean) o ? RES_PASS : RES_FAIL);
 
-        assertEquals(Result.PASS, node.evaluate(true));
+        assertPass(node.evaluate(true));
     }
 
     // Condition problems
@@ -41,7 +40,7 @@ public class AeConditionNodeTest {
             throw new RuntimeException("Failure expected");
         });
 
-        assertEquals(Result.FAIL, node.evaluate(null));
+        assertFail(node.evaluate(null));
     }
 
     // toString

@@ -11,6 +11,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static com.mattworzala.canary.internal.assertion.Helper.assertPass;
+import static com.mattworzala.canary.internal.assertion.Helper.assertSameResult;
 import static com.mattworzala.canary.internal.assertion.node.AeTestNode.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -18,17 +20,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class AeAndNodeTest {
     private static Stream<Arguments> providePossibleResults() {
         return Stream.of(
-                Arguments.of(PASS, PASS, Result.PASS),
-                Arguments.of(PASS, SOFT_PASS, Result.SOFT_PASS),
-                Arguments.of(PASS, FAIL, Result.FAIL),
+                Arguments.of(NODE_PASS, NODE_PASS, RES_PASS),
+                Arguments.of(NODE_PASS, NODE_SOFT_PASS, RES_SOFT_PASS),
+                Arguments.of(NODE_PASS, NODE_FAIL, RES_FAIL),
 
-                Arguments.of(SOFT_PASS, PASS, Result.SOFT_PASS),
-                Arguments.of(SOFT_PASS, SOFT_PASS, Result.SOFT_PASS),
-                Arguments.of(SOFT_PASS, FAIL, Result.FAIL),
+                Arguments.of(NODE_SOFT_PASS, NODE_PASS, RES_SOFT_PASS),
+                Arguments.of(NODE_SOFT_PASS, NODE_SOFT_PASS, RES_SOFT_PASS),
+                Arguments.of(NODE_SOFT_PASS, NODE_FAIL, RES_FAIL),
 
-                Arguments.of(FAIL, PASS, Result.FAIL),
-                Arguments.of(FAIL, SOFT_PASS, Result.FAIL),
-                Arguments.of(FAIL, FAIL, Result.FAIL)
+                Arguments.of(NODE_FAIL, NODE_PASS, RES_FAIL),
+                Arguments.of(NODE_FAIL, NODE_SOFT_PASS, RES_FAIL),
+                Arguments.of(NODE_FAIL, NODE_FAIL, RES_FAIL)
         );
     }
 
@@ -37,7 +39,7 @@ public class AeAndNodeTest {
     public void testResultCombinations(AeNode lhs, AeNode rhs, Result expected) {
         AeAndNode node = new AeAndNode(List.of(lhs, rhs));
 
-        assertEquals(expected, node.evaluate(null));
+        assertSameResult(expected, node.evaluate(null));
     }
 
     // Non-standard child count
@@ -45,23 +47,23 @@ public class AeAndNodeTest {
     @ParameterizedTest
     @ValueSource(ints = {0, 1})
     public void testMissingChildShouldFailToEvaluate(int count) {
-        AeAndNode node = new AeAndNode(Collections.nCopies(count, PASS));
+        AeAndNode node = new AeAndNode(Collections.nCopies(count, NODE_PASS));
 
         assertThrows(IllegalStateException.class, () -> node.evaluate(null));
     }
 
     @Test
     public void testExtraChildrenShouldBeIgnored() {
-        AeAndNode node = new AeAndNode(List.of(PASS, PASS, PASS));
+        AeAndNode node = new AeAndNode(List.of(NODE_PASS, NODE_PASS, NODE_PASS));
 
-        assertEquals(Result.PASS, node.evaluate(null));
+        assertPass(node.evaluate(null));
     }
 
     // toString
 
     @Test
     public void testToString() {
-        AeAndNode node = new AeAndNode(List.of(PASS, PASS));
+        AeAndNode node = new AeAndNode(List.of(NODE_PASS, NODE_PASS));
 
         assertEquals("(<test> AND <test>)", node.toString());
     }

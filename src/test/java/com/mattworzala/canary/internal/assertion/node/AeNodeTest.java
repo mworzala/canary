@@ -7,7 +7,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Collections;
 
-import static com.mattworzala.canary.internal.assertion.node.AeTestNode.PASS;
+import static com.mattworzala.canary.internal.assertion.Helper.assertPass;
+import static com.mattworzala.canary.internal.assertion.node.AeTestNode.NODE_PASS;
+import static com.mattworzala.canary.internal.assertion.node.AeTestNode.RES_PASS;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class AeNodeTest {
@@ -16,14 +18,14 @@ public class AeNodeTest {
 
     @Test
     public void testEvaluateShouldReturnSampleResult() {
-        AeNode node = new AeTestNode(Result.PASS);
+        AeNode node = new AeTestNode(RES_PASS);
 
-        assertEquals(Result.PASS, node.evaluate(null));
+        assertPass(node.evaluate(null));
     }
 
     @Test
     public void testEvaluateShouldAddToHistory() {
-        AeNode node = new AeTestNode(Result.PASS);
+        AeNode node = new AeTestNode(RES_PASS);
 
         // Start at 0
         assertEquals(0, node.history().count());
@@ -35,14 +37,14 @@ public class AeNodeTest {
         assertEquals(2, node.history().count());
 
         // Should now contain only PASS values
-        assertTrue(node.history().allMatch(result -> result == Result.PASS));
+        assertTrue(node.history().allMatch(result -> result == RES_PASS));
     }
 
     // sample
 
     @Test
     public void testSampleShouldNotModifyHistory() {
-        AeNode node = new AeTestNode(Result.PASS);
+        AeNode node = new AeTestNode(RES_PASS);
 
         // Start at 0
         assertEquals(0, node.history().count());
@@ -59,17 +61,17 @@ public class AeNodeTest {
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 3})
     public void testGetChildShouldWorkWithOneOrMoreChildren(int count) {
-        AeNode node = new AeTestNode(Collections.nCopies(count, PASS));
+        AeNode node = new AeTestNode(Collections.nCopies(count, NODE_PASS));
 
         for (int i = 0; i < count; i++) {
-            assertEquals(PASS, node.getChild(i));
+            assertEquals(NODE_PASS, node.getChild(i));
         }
     }
 
     @ParameterizedTest
     @ValueSource(ints = {0, 1})
     public void testGetChildShouldDefaultToMissing(int count) {
-        AeNode node = new AeTestNode(Collections.nCopies(count, PASS));
+        AeNode node = new AeTestNode(Collections.nCopies(count, NODE_PASS));
 
         assertEquals(AeNode.MISSING, node.getChild(-1));
         assertEquals(AeNode.MISSING, node.getChild(count));

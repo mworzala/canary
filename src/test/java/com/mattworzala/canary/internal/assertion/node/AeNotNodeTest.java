@@ -9,17 +9,19 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static com.mattworzala.canary.internal.assertion.Helper.assertFail;
+import static com.mattworzala.canary.internal.assertion.Helper.assertSameResult;
 import static com.mattworzala.canary.internal.assertion.node.AeTestNode.*;
-import static com.mattworzala.canary.internal.assertion.node.AeTestNode.FAIL;
+import static com.mattworzala.canary.internal.assertion.node.AeTestNode.NODE_FAIL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AeNotNodeTest {
     private static Stream<Arguments> providePossibleResults() {
         return Stream.of(
-                Arguments.of(PASS, Result.FAIL),
-                Arguments.of(SOFT_PASS, Result.FAIL), //todo is this correct?
-                Arguments.of(FAIL, Result.PASS)
+                Arguments.of(NODE_PASS, RES_FAIL),
+                Arguments.of(NODE_SOFT_PASS, RES_FAIL), //todo is this correct?
+                Arguments.of(NODE_FAIL, RES_PASS)
         );
     }
 
@@ -28,7 +30,7 @@ public class AeNotNodeTest {
     public void testResultCombinations(AeNode item, Result expected) {
         AeNotNode node = new AeNotNode(List.of(item));
 
-        assertEquals(expected, node.evaluate(null));
+        assertSameResult(expected, node.evaluate(null));
     }
 
     // Non-standard child count
@@ -42,16 +44,16 @@ public class AeNotNodeTest {
 
     @Test
     public void testExtraChildrenShouldBeIgnored() {
-        AeNotNode node = new AeNotNode(List.of(PASS, PASS));
+        AeNotNode node = new AeNotNode(List.of(NODE_PASS, NODE_PASS));
 
-        assertEquals(Result.FAIL, node.evaluate(null));
+        assertFail(node.evaluate(null));
     }
 
     // toString
 
     @Test
     public void testToString() {
-        AeNotNode node = new AeNotNode(List.of(FAIL));
+        AeNotNode node = new AeNotNode(List.of(NODE_FAIL));
 
         assertEquals("(NOT <test>)", node.toString());
     }
