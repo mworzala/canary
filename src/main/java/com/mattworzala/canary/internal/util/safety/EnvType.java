@@ -1,13 +1,11 @@
 package com.mattworzala.canary.internal.util.safety;
 
-import org.jetbrains.annotations.ApiStatus;
-
 /**
  * Defines which environment (classloader) a type may be accessed from.
  * <p>
- * This exists only has a hint to the developer.
+ * When a class is not annotated with {@link Env}, it is assumed to be Minestom and may not be accessed by any {@link #PLATFORM} or {@link #GLOBAL} classes.
  */
-@ApiStatus.Internal
+@Env(EnvType.GLOBAL)
 public enum EnvType {
     /**
      * Specifies a type which may be accessed from both platform and global sources.

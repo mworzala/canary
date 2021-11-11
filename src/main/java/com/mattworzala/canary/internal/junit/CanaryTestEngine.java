@@ -21,7 +21,6 @@ public class CanaryTestEngine implements TestEngine {
     private static final Logger logger = LoggerFactory.getLogger(CanaryTestEngine.class);
 
     public static final String ID = "canary-test-engine";
-    public static final String NAME = "Canary Test Engine";
 
     private final boolean isHeadless;
     private ProxyHeadlessServer server = null;

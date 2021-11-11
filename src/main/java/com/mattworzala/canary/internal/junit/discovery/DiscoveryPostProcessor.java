@@ -1,8 +1,5 @@
 package com.mattworzala.canary.internal.junit.discovery;
-
-import com.mattworzala.canary.api.IWAfterEach;
-import com.mattworzala.canary.api.IWBeforeEach;
-import com.mattworzala.canary.api.InWorldTest;
+;
 import com.mattworzala.canary.internal.junit.TestDescriptorVisitor;
 import com.mattworzala.canary.internal.junit.descriptor.CanaryEngineDescriptor;
 import com.mattworzala.canary.internal.junit.descriptor.CanaryTestDescriptor;
@@ -62,9 +59,9 @@ public record DiscoveryPostProcessor(TestDescriptorVisitor... processors) {
      */
     @Env(EnvType.PLATFORM)
     public static class ResolveMethods implements TestDescriptorVisitor {
-        private static final Class<? extends Annotation> inWorldTestAnnotation = ClassLoaders.loadAnnotation(ClassLoaders.MINESTOM, InWorldTest.class);
-        private static final Class<? extends Annotation> iwBeforeEachAnnotation = ClassLoaders.loadAnnotation(ClassLoaders.MINESTOM, IWBeforeEach.class);
-        private static final Class<? extends Annotation> iwAfterEachAnnotation = ClassLoaders.loadAnnotation(ClassLoaders.MINESTOM, IWAfterEach.class);
+        private static final Class<? extends Annotation> inWorldTestAnnotation = ClassLoaders.loadAnnotation(ClassLoaders.MINESTOM, "com.mattworzala.canary.api.InWorldTest");
+        private static final Class<? extends Annotation> iwBeforeEachAnnotation = ClassLoaders.loadAnnotation(ClassLoaders.MINESTOM, "com.mattworzala.canary.api.IWBeforeEach");
+        private static final Class<? extends Annotation> iwAfterEachAnnotation = ClassLoaders.loadAnnotation(ClassLoaders.MINESTOM, "com.mattworzala.canary.api.IWAfterEach");
 
         static {
             assert inWorldTestAnnotation != null;

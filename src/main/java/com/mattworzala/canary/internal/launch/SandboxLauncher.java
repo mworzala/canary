@@ -1,11 +1,14 @@
 package com.mattworzala.canary.internal.launch;
 
 import com.mattworzala.canary.internal.junit.CanaryTestEngine;
+import com.mattworzala.canary.internal.util.safety.Env;
+import com.mattworzala.canary.internal.util.safety.EnvType;
 import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.discovery.DiscoverySelectors;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 
+@Env(EnvType.PLATFORM)
 public class SandboxLauncher {
     /**
      * A JUnit engine discovery request which allows any class in any package.

@@ -1,12 +1,15 @@
 package com.mattworzala.canary.internal.junit.execution;
 
 import com.mattworzala.canary.internal.execution.TestExecutionListener;
+import com.mattworzala.canary.internal.util.safety.Env;
+import com.mattworzala.canary.internal.util.safety.EnvType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.platform.engine.EngineExecutionListener;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestExecutionResult;
 
+@Env(EnvType.GLOBAL)
 public class JUnitTestExecutionListenerAdapter implements TestExecutionListener {
     private final EngineExecutionListener delegate;
 

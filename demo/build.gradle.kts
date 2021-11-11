@@ -13,15 +13,15 @@ repositories {
 }
 
 dependencies {
-    val minestomVariant: String by rootProject
-    val minestomVersion: String by rootProject
+    testImplementation(rootProject)
+
+    val minestomVariant = rootProject.property("minestom.variant") as String
+    val minestomVersion = rootProject.property("minestom.version") as String
     implementation("com.github.$minestomVariant:Minestom:$minestomVersion")
 
-    val junitVersion: String by rootProject
+    val junitVersion = rootProject.property("junit.version") as String
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
-
-    testImplementation(rootProject)
 }
 
 tasks {

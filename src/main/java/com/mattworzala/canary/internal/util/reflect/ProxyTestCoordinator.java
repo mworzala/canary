@@ -2,6 +2,8 @@ package com.mattworzala.canary.internal.util.reflect;
 
 import com.mattworzala.canary.internal.execution.TestExecutionListener;
 import com.mattworzala.canary.internal.junit.descriptor.CanaryEngineDescriptor;
+import com.mattworzala.canary.internal.util.safety.Env;
+import com.mattworzala.canary.internal.util.safety.EnvType;
 
 import java.lang.reflect.Method;
 
@@ -9,6 +11,7 @@ import static com.mattworzala.canary.internal.util.ClassLoaders.MINESTOM;
 import static com.mattworzala.canary.internal.util.ClassLoaders.loadClassRequired;
 import static org.junit.platform.commons.util.ReflectionUtils.*;
 
+@Env(EnvType.PLATFORM)
 public record ProxyTestCoordinator(Object testCoordinator) {
     private static final Class<?> testCoordinatorClass = loadClassRequired(MINESTOM, "com.mattworzala.canary.internal.execution.TestCoordinator");
 
