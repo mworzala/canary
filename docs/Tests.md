@@ -39,3 +39,39 @@ place a zombie. Then we say that we expect that entity to be at the position of 
 The expect statement will be checked every server tick until it either passes (the zombie made it to the diamond block),
 or the default test lifetime is reached.
 
+# Assertions
+
+## Types of assertion methods
+
+- Suppliers
+- Conditions
+- Logic
+
+## Suppliers
+
+Convert from on assertion type to a derived assertion type
+
+ex:
+Entity -> Instance the entity is in Block -> Position of the block
+
+```
+env.expect(entity).instance().toHaveTimeGreaterThan(20);
+```
+
+From an EntityAssertion to and InstanceAssertion using the .instance() supplier
+
+## Condition
+
+Tests some condition on the supplied data
+
+```
+env.expect(entity).toHaveHealth(10);
+```
+
+Checks if the given entity has 10 health
+
+## Logic
+
+Used to combine the results of conditions
+
+
