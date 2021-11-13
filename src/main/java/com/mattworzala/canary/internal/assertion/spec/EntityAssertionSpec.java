@@ -32,7 +32,7 @@ public class EntityAssertionSpec {
             return Result.Pass();
         }
         return Result.Fail("Expected " + actual.getUuid() + " to reach " + expected)
-                .withMarker(expected, 0xFF0000, "Not Reached!");
+                .withMarker(expected, 0xFFFF0000, "Not Reached!");
     }
 
     @Condition

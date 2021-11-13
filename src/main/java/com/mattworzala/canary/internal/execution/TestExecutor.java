@@ -11,6 +11,7 @@ import com.mattworzala.canary.internal.server.instance.block.CanaryBlocks;
 import com.mattworzala.canary.internal.structure.JsonStructureIO;
 import com.mattworzala.canary.internal.structure.Structure;
 import com.mattworzala.canary.internal.util.ui.CameraPlayer;
+import com.mattworzala.canary.internal.util.ui.MarkerUtil;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.Tickable;
 import net.minestom.server.coordinate.Point;
@@ -225,6 +226,12 @@ public class TestExecutor implements Tickable {
         }
 
         if (--lifetime < 0) {
+            // TEMP add the markers from the first fail
+            ((Result.FailResult) assertions.get(0).evaluate(null)).getMarkers().forEach(marker -> {
+                MarkerUtil.Marker adjusted = new MarkerUtil.Marker(marker.position().add(getOrigin()), marker.color(), marker.message());
+                MinecraftServer.getConnectionManager().getOnlinePlayers().forEach(player -> MarkerUtil.sendTestMarker(player, adjusted));
+            });
+
             //todo print the failing tests
             end(new RuntimeException("Test timed out."));
         }

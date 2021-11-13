@@ -135,9 +135,6 @@ public class TestCoordinator {
 
             TestExecutor executor = executors.get(descriptor.getUniqueId());
             executor.execute(listener, completionLatch); // non-blocking (starts execution)
-
-            // temp wait until execution finished
-            while (executor.isRunning()) ;
         }
     }
 

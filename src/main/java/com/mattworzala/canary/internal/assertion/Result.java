@@ -1,8 +1,10 @@
 package com.mattworzala.canary.internal.assertion;
 
+import com.mattworzala.canary.internal.util.ui.MarkerUtil;
 import net.minestom.server.coordinate.Point;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Objects;
 
 public abstract class Result {
@@ -69,23 +71,18 @@ public abstract class Result {
 
     public static final class FailResult extends Result {
         private final String reason;
-
         private final Result cause;
 
+        // Metadata
+        private final List<MarkerUtil.Marker> markers;
+
         public FailResult(String reason, Result cause) {
+            this(reason, cause, List.of());
+        }
+        public FailResult(String reason, Result cause, List<MarkerUtil.Marker> markers) {
             this.reason = reason;
             this.cause = cause;
-        }
-
-        @NotNull
-        public String getReason() {
-            return reason;
-        }
-
-
-        @NotNull
-        public Result getCause() {
-            return cause;
+            this.markers = markers;
         }
 
         @Override
@@ -93,9 +90,23 @@ public abstract class Result {
             return true;
         }
 
+        @NotNull
+        public String getReason() {
+            return reason;
+        }
+
+        @NotNull
+        public Result getCause() {
+            return cause;
+        }
+
+        public List<MarkerUtil.Marker> getMarkers() {
+            return markers;
+        }
+
         public FailResult withMarker(Point location, int color, String message) {
-            // TODO : Implement
-            return this;
+            //todo need to include current markers
+            return new FailResult(getReason(), getCause(), List.of(new MarkerUtil.Marker(location, color, message)));
         }
 
         public void printToStdout(boolean first) {
