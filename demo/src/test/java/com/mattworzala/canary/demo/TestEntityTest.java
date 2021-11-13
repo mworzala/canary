@@ -5,6 +5,8 @@ import com.mattworzala.canary.api.InWorldTest;
 import com.mattworzala.canary.api.TestEnvironment;
 import net.minestom.server.coordinate.Pos;
 
+import static com.mattworzala.canary.api.Expect.expect;
+
 public class TestEntityTest {
 
     //    @InWorldTest
@@ -21,6 +23,6 @@ public class TestEntityTest {
         final var entity = env.spawnEntity(TestEntity::new, new Pos(3, 1, 1));
         final var target = env.spawnEntity(TestEntity::new, new Pos(1, 1, 1));
 //
-        env.expect(entity).toBeAt(target::getPosition);
+        expect(entity).toBeAt(target::getPosition);
     }
 }

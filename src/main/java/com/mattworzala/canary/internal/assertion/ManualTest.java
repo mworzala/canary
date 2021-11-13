@@ -1,6 +1,7 @@
 package com.mattworzala.canary.internal.assertion;
 
 import com.mattworzala.canary.api.Assertions;
+import com.mattworzala.canary.api.Expect;
 import com.mattworzala.canary.api.supplier.ObjectSupplier;
 import com.mattworzala.canary.internal.assertion.node.AeNode;
 import net.minestom.server.coordinate.Vec;

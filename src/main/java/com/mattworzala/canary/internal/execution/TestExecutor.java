@@ -1,11 +1,9 @@
 package com.mattworzala.canary.internal.execution;
 
-import com.mattworzala.canary.api.supplier.ObjectSupplier;
 import com.mattworzala.canary.internal.assertion.AeSimpleParser;
 import com.mattworzala.canary.internal.assertion.AssertionStep;
 import com.mattworzala.canary.internal.assertion.Result;
 import com.mattworzala.canary.internal.assertion.node.AeNode;
-import com.mattworzala.canary.internal.execution.env.TestEnvironmentImpl;
 import com.mattworzala.canary.internal.junit.descriptor.CanaryTestDescriptor;
 import com.mattworzala.canary.internal.server.instance.block.CanaryBlocks;
 import com.mattworzala.canary.internal.structure.JsonStructureIO;
@@ -159,7 +157,9 @@ public class TestExecutor implements Tickable {
             }
 
             // Invoke the actual test method
+            TestEnvironmentImpl.CURRENT.set(environment);
             invokeMethodOptionalParameter(source.getJavaMethod(), classInstance, environment);
+            TestEnvironmentImpl.CURRENT.set(null);
 
             // Compile assertions
             for (var assertionSteps : rawAssertions) {
