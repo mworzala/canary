@@ -67,6 +67,8 @@ public class TestCoordinator {
         var factory = new TestExecutorFactory(this.executors);
         factory.createExecutors(descriptor);
 
+        logger.info("Received {} executable tests", executors.size());
+
 //        indexTestsRecursive(descriptor);
         //todo index
     }

@@ -3,6 +3,7 @@ package com.mattworzala.canary.internal.execution.env;
 import com.mattworzala.canary.api.TestEnvironment;
 import com.mattworzala.canary.api.supplier.EntitySupplier;
 import com.mattworzala.canary.api.supplier.LivingEntitySupplier;
+import com.mattworzala.canary.internal.assertion.AssertionStep;
 import com.mattworzala.canary.internal.execution.TestExecutor;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
@@ -52,14 +53,8 @@ public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironm
 
     // LivingEntity
     @Override
-    public LivingEntitySupplier get(LivingEntity actual) {
-        return null; //todo
-    }
-
-    @Override
     public LivingEntityAssertion expect(LivingEntitySupplier actual) {
-        return null;
-//        return new LivingEntityAssertion(actual, newAssertion(actual));
+        return new LivingEntityAssertion(actual, executor.createEmptyAssertion());
     }
 
     // Entity
@@ -188,9 +183,4 @@ public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironm
         entity.setInstance(getInstance(), position.add(executor().getOrigin()));
         return entity;
     }
-
-//     Private utils
-//    private List<AssertionStep> newAssertion(ObjectSupplier actual) {
-//        return executor.createAssertion(actual);
-//    }
 }

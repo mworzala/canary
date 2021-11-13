@@ -17,6 +17,7 @@ import java.util.Objects;
 public class ClassLoaders {
     private static final Logger logger = LoggerFactory.getLogger(ClassLoaders.class);
 
+    public static final ClassLoader DEFAULT = com.mattworzala.canary.internal.junit.CanaryTestEngine.class.getClassLoader();
     public static final MinestomRootClassLoader MINESTOM = MinestomRootClassLoader.getInstance();
 
     static {

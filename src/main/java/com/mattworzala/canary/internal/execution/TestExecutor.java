@@ -1,7 +1,10 @@
 package com.mattworzala.canary.internal.execution;
 
 import com.mattworzala.canary.api.supplier.ObjectSupplier;
+import com.mattworzala.canary.internal.assertion.AeSimpleParser;
 import com.mattworzala.canary.internal.assertion.AssertionStep;
+import com.mattworzala.canary.internal.assertion.Result;
+import com.mattworzala.canary.internal.assertion.node.AeNode;
 import com.mattworzala.canary.internal.execution.env.TestEnvironmentImpl;
 import com.mattworzala.canary.internal.junit.descriptor.CanaryTestDescriptor;
 import com.mattworzala.canary.internal.server.instance.block.CanaryBlocks;
@@ -61,6 +64,7 @@ public class TestExecutor implements Tickable {
     private final Point origin;
 
     // Sandbox state
+    //TODO: Factor this out of here. Could add some Minestom events which the executor triggers.
     private final Instance sandboxInstance;
     private final CameraPlayer camera;
     private final Point statusGlassBlock;
@@ -72,11 +76,8 @@ public class TestExecutor implements Tickable {
     private Object classInstance;
     private int lifetime;
 
-    //todo these two records are both stupid
-//    private static record RawAssertion(ObjectSupplier supplier, List<AssertionStep> steps) {}
-//    private final List<RawAssertion> rawAssertions = new ArrayList<>();
-//    private static record Assertion(ObjectSupplier supplier, AeNode root) {}
-//    private final List<Assertion> assertions = new ArrayList<>();
+    private final List<List<AssertionStep>> rawAssertions = new ArrayList<>();
+    private final List<AeNode> assertions = new ArrayList<>();
 
     public TestExecutor(CanaryTestDescriptor testDescriptor, InstanceContainer rootInstance, Point offset) {
         this.testDescriptor = testDescriptor;
@@ -126,9 +127,9 @@ public class TestExecutor implements Tickable {
         return origin;
     }
 
-    public List<AssertionStep> createAssertion(ObjectSupplier actual) {
+    public List<AssertionStep> createEmptyAssertion() {
         List<AssertionStep> assertionSteps = new ArrayList<>();
-//        rawAssertions.add(new RawAssertion(actual, assertionSteps));
+        rawAssertions.add(assertionSteps);
         return assertionSteps;
     }
 
@@ -161,18 +162,18 @@ public class TestExecutor implements Tickable {
             invokeMethodOptionalParameter(source.getJavaMethod(), classInstance, environment);
 
             // Compile assertions
-//            for (var assertionSteps : rawAssertions) {
-//                AeNode node = new AeSimpleParser(assertionSteps.steps).parse();
-//                if (node == null) {
-//                    throw new RuntimeException("Failed to compile assertion!"); //todo can show errors here, but probably want stacktrace elements to render
-//                }
-//                assertions.add(new Assertion(assertionSteps.supplier, node));
-//            }
-//            rawAssertions.clear();
-//
-//            for (Assertion assertion : assertions) {
-//                System.out.println(assertion.root.toString());
-//            }
+            for (var assertionSteps : rawAssertions) {
+                AeNode node = new AeSimpleParser(assertionSteps).parse();
+                if (node == null) {
+                    throw new RuntimeException("Failed to compile assertion!"); //todo can show errors here, but probably want stacktrace elements to render
+                }
+                assertions.add(node);
+            }
+            rawAssertions.clear();
+
+            for (var assertion : assertions) {
+                System.out.println(assertion.toString());
+            }
 
         } catch (Throwable throwable) {
             end(throwable);
@@ -187,36 +188,31 @@ public class TestExecutor implements Tickable {
     public void tick(long time) {
 
         try {
-//            assertions.removeIf(assn -> {
-//                Result result = assn.root.evaluate(assn.supplier.get());
-//                System.out.println("RESULT > " + (result == Result.PASS ? "PASSED" : "FAILED"));
-//                return result == Result.PASS;
-//            });
+            boolean anyFail = false;
+            var iter = assertions.iterator();
+            while (iter.hasNext()) {
+                Result result = iter.next().evaluate(null);
+
+                if (result.isPass()) {
+                    iter.remove();
+                } else if (result.isFail()) {
+                    anyFail = true;
+                }
+            }
+
+            if (!anyFail) {
+                // The only remaining tests are soft passes, so we can pass
+                end(null);
+            }
         } catch (Throwable throwable) {
             end(throwable);
             return;
         }
 
-//        if (assertions.isEmpty()) {
-//            end(null);
-//        }
-
         if (--lifetime < 0) {
+            //todo print the failing tests
             end(new RuntimeException("Test timed out."));
         }
-
-//        try {
-//            assertions.forEach(AssertionImpl::tick); //todo
-//        } catch (AssertionError error) {
-//            end(error);
-//            return;
-//        }
-//
-//        assertions.removeIf(AssertionImpl::hasDefinitiveResult);
-//        if (assertions.isEmpty()) {
-//            end(null);
-//        }
-
     }
 
     private boolean isValidTick(InstanceTickEvent event) {
@@ -247,7 +243,7 @@ public class TestExecutor implements Tickable {
         running = false;
         executionListener = null;
         classInstance = null;
-//        assertions.clear();
+        assertions.clear();
 
         // Reset structure
         structure.loadIntoBlockSetter(instance, origin);

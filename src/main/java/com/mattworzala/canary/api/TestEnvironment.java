@@ -54,7 +54,6 @@ public interface TestEnvironment {
 //    default PointAssertion expect(Point actual) { return expect(() -> actual); }
 
     // LivingEntity
-    LivingEntitySupplier get(LivingEntity actual);
     LivingEntityAssertion expect(LivingEntitySupplier actual);
     default LivingEntityAssertion expect(LivingEntity actual) { return expect(() -> actual); }
 

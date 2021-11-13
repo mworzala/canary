@@ -3,16 +3,12 @@ package com.mattworzala.canary.codegen.genspec.supplier;
 import com.mattworzala.canary.codegen.CanaryAnnotationProcessor;
 import com.mattworzala.canary.codegen.RecursiveElementVisitor;
 import com.mattworzala.canary.codegen.util.ElementUtil;
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.TypeName;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 
-import static com.mattworzala.canary.codegen.PackageConstants.PKG_ASSERTION_SPEC;
-import static com.mattworzala.canary.codegen.PackageConstants.PKG_SUPPLIER;
+import static com.mattworzala.canary.codegen.PackageConstants.*;
 
 public class SupplierGenerator extends RecursiveElementVisitor<TypeSpec.Builder> {
     private final CanaryAnnotationProcessor.Logger logger;
@@ -29,7 +25,8 @@ public class SupplierGenerator extends RecursiveElementVisitor<TypeSpec.Builder>
             return null;
         }
         AnnotationValue operator = ElementUtil.getAnnotationMember(genSpec, "operator");
-        if (operator == null) {
+        AnnotationValue superTypeName = ElementUtil.getAnnotationMember(genSpec, "supertype");
+        if (operator == null || superTypeName == null) {
             logger.error("@GenSpec must contain a valid `operator` and `supertype`", element);
             return null;
         }
@@ -41,6 +38,16 @@ public class SupplierGenerator extends RecursiveElementVisitor<TypeSpec.Builder>
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(FunctionalInterface.class);
 
+        // Superclass
+        String supertype = (String) superTypeName.getValue();
+        if (!supertype.isEmpty()) {
+            if (supertype.equals("Assertion"))
+                supertype = "ObjectSupplier";
+            else
+                supertype = supertype.substring(0, supertype.indexOf("Assertion")) + "Supplier";
+
+            typeSpec.addSuperinterface(ClassName.get(PKG_SUPPLIER, supertype));
+        }
 
         // Add the `get` method
         typeSpec.addMethod(MethodSpec.methodBuilder("get")
