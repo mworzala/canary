@@ -15,7 +15,7 @@ public class TestEntityTest {
         final var diamondBlockPos = new Vec(2, 1, 3);
         final var entity = env.spawnEntity(TestEntity::new, new Pos(2, 1, 1));
 
-        env.expect(entity).toBeAt(diamondBlockPos);
+        expect(entity).toBeAt(diamondBlockPos);
     }
 
     @InWorldTest
