@@ -54,7 +54,8 @@ public class AeAndNodeTest {
 
     @Test
     public void testExtraChildrenShouldBeIgnored() {
-        AeAndNode node = new AeAndNode(List.of(NODE_PASS, NODE_PASS, NODE_PASS));
+        //TODO : AND should handle extra children successfully
+        AeAndNode node = new AeAndNode(List.of(NODE_PASS, NODE_PASS, NODE_FAIL));
 
         assertPass(node.evaluate(null));
     }
