@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 
 import static com.mattworzala.canary.internal.util.ReflectionUtils.invokeMethodOptionalParameter;
 
@@ -72,6 +73,7 @@ public class TestExecutor implements Tickable {
     private volatile boolean running;
     private TestExecutionListener executionListener;
     private Object classInstance;
+    private CountDownLatch completionLatch;
     private int lifetime;
 
     private final List<List<AssertionStep>> rawAssertions = new ArrayList<>();
@@ -131,7 +133,7 @@ public class TestExecutor implements Tickable {
         return assertionSteps;
     }
 
-    public void execute(TestExecutionListener listener) {
+    public void execute(TestExecutionListener listener, CountDownLatch completionLatch) {
         if (running) {
             throw new IllegalStateException("Cannot execute a test while it is already running.");
         }
@@ -180,6 +182,7 @@ public class TestExecutor implements Tickable {
             return;
         }
 
+        this.completionLatch = completionLatch;
         lifetime = 100;
         running = true;
     }
@@ -248,6 +251,9 @@ public class TestExecutor implements Tickable {
         // Reset structure
         structure.loadIntoBlockSetter(instance, origin);
         if (sandboxInstance != null) structure.loadIntoBlockSetter(sandboxInstance, origin);
+
+        completionLatch.countDown();
+        completionLatch = null;
     }
 
     private void initialize() {

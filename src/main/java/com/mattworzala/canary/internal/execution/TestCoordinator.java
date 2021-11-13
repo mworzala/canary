@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 import java.util.function.Predicate;
 
 // 1 per server, keeps track of each TestExecutor to run tests given to it, also manages creation and destruction of TestInstances.
@@ -97,26 +98,32 @@ public class TestCoordinator {
 //    }
 
     public void execute(TestExecutionListener listener) {
-        //todo parallel execution
+        CountDownLatch completionLatch = new CountDownLatch(executors.size());
+
         listener.start(engineDescriptor);
 
         for (TestDescriptor descriptor : engineDescriptor.getChildren()) {
-            executeRecursive(listener, descriptor);
+            executeRecursive(listener, descriptor, completionLatch);
         }
 
         listener.end(engineDescriptor);
 
-        engineDescriptor.getChildrenMutable().clear();
+        try {
+            //todo do we want to block this thread?
+            completionLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
-    private void executeRecursive(TestExecutionListener listener, TestDescriptor descriptor) {
+    private void executeRecursive(TestExecutionListener listener, TestDescriptor descriptor, CountDownLatch completionLatch) {
         boolean hasDedicatedExecutor = executors.containsKey(descriptor.getUniqueId());
         if (!hasDedicatedExecutor) {
             // Just execute child
             listener.start(descriptor);
 
             for (TestDescriptor child : descriptor.getChildren()) {
-                executeRecursive(listener, child);
+                executeRecursive(listener, child, completionLatch);
             }
 
             listener.end(descriptor);
@@ -127,7 +134,7 @@ public class TestCoordinator {
             }
 
             TestExecutor executor = executors.get(descriptor.getUniqueId());
-            executor.execute(listener); // non-blocking (starts execution)
+            executor.execute(listener, completionLatch); // non-blocking (starts execution)
 
             // temp wait until execution finished
             while (executor.isRunning()) ;
@@ -141,7 +148,6 @@ public class TestCoordinator {
         if (source instanceof MethodSource) {
             //todo create descriptor
         }
-
 
 
     }
