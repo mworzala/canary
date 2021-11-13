@@ -4,6 +4,8 @@ import com.mattworzala.canary.internal.assertion.AeSimpleParser;
 import com.mattworzala.canary.internal.assertion.AssertionStep;
 import com.mattworzala.canary.internal.assertion.Result;
 import com.mattworzala.canary.internal.assertion.node.AeNode;
+import com.mattworzala.canary.internal.execution.tracker.EntityTracker;
+import com.mattworzala.canary.internal.execution.tracker.Tracker;
 import com.mattworzala.canary.internal.junit.descriptor.CanaryTestDescriptor;
 import com.mattworzala.canary.internal.server.instance.block.CanaryBlocks;
 import com.mattworzala.canary.internal.structure.JsonStructureIO;
@@ -32,6 +34,7 @@ import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -58,6 +61,7 @@ public class TestExecutor implements Tickable {
 
     private final CanaryTestDescriptor testDescriptor;
 
+    private final List<Tracker<?>> trackers = List.of(new EntityTracker()); //todo: add more trackers or remove the system altogether
     private final Instance instance;
     private final Structure structure;
     private final Point origin;
@@ -133,12 +137,20 @@ public class TestExecutor implements Tickable {
         return assertionSteps;
     }
 
+    public <T> void track(T object) {
+        //noinspection unchecked
+        Tracker<T> tracker = (Tracker<T>) trackers.stream().filter(t -> t.canTrack(object)).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No valid tracker for: " + object.toString()));
+        tracker.track(object);
+    }
+
     public void execute(TestExecutionListener listener, CountDownLatch completionLatch) {
         if (running) {
             throw new IllegalStateException("Cannot execute a test while it is already running.");
         }
 
         // Update internal state
+        trackers.forEach(Tracker::release);
         executionListener = listener;
 
         // Instantiate class + execute test method & supporting.
@@ -228,13 +240,6 @@ public class TestExecutor implements Tickable {
 
     private void end(@Nullable Throwable error) {
 
-        // "After Each" methods
-        var environment = new TestEnvironmentImpl(this); // We could keep track of the one from the init method, but it keeps no state so it doesnt really matter.
-        for (Method method : testDescriptor.getPostEffects()) {
-            invokeMethodOptionalParameter(method, classInstance, environment);
-        }
-        //todo reset stuff from test environment (like removing entities)
-
         // "Officially" end test
         executionListener.end(testDescriptor, error);
         setVisualStatus(error == null);
@@ -242,7 +247,17 @@ public class TestExecutor implements Tickable {
             sandboxInstance.setBlock(failureLectern, CanaryBlocks.Lectern(getTestDescriptor().getDisplayName(), error));
         }
 
+        // "After Each" methods
+        var environment = new TestEnvironmentImpl(this); // We could keep track of the one from the init method, but it keeps no state so it doesnt really matter.
+        for (Method method : testDescriptor.getPostEffects()) {
+            invokeMethodOptionalParameter(method, classInstance, environment);
+        }
+
         // Reset state
+        if (error == null) {
+            // Leave tracked items if this was a failure, they will be removed if you try to run the test again anyway.
+            trackers.forEach(Tracker::release);
+        }
         running = false;
         executionListener = null;
         classInstance = null;

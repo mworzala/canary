@@ -97,11 +97,11 @@ public record TestEnvironmentImpl(TestExecutor executor) implements TestEnvironm
 
     @Override
     public <T extends Entity> T spawnEntity(Supplier<T> constructor, Pos position, Consumer<T> config) {
-        //todo we probably want to track the entity
         T entity = constructor.get();
         if (config != null)
             config.accept(entity);
         entity.setInstance(getInstance(), position.add(executor().getOrigin()));
+        executor.track(entity);
         return entity;
     }
 }
