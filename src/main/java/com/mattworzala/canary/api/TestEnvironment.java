@@ -1,7 +1,6 @@
 package com.mattworzala.canary.api;
 
-import com.mattworzala.canary.api.supplier.EntitySupplier;
-import com.mattworzala.canary.api.supplier.LivingEntitySupplier;
+import com.mattworzala.canary.api.supplier.*;
 import com.mattworzala.canary.internal.util.safety.EnvType;
 import com.mattworzala.canary.internal.util.safety.Env;
 import net.minestom.server.coordinate.Point;
@@ -38,35 +37,30 @@ public interface TestEnvironment {
         (somewhere else in a test)
         env.run("press_button", buttonPos);
      */
-    <T> T run(String action, Object... args);
+//    <T> T run(String action, Object... args);
 
     // Assertions
     // @formatter:off
 
     // Pos
-//    PosSupplier get(Pos actual);
-//    PosAssertion expect(PosSupplier actual);
-//    default PosAssertion expect(Pos actual) { return expect(() -> actual); }
+    PosAssertion expect(PosSupplier actual);
+    default PosAssertion expect(Pos actual) { return expect(() -> actual); }
 
-//    // Point/Vec
-//    PointSupplier get(Point actual);
-//    PointAssertion expect(PointSupplier actual);
-//    default PointAssertion expect(Point actual) { return expect(() -> actual); }
+    // Point/Vec
+    PointAssertion expect(PointSupplier actual);
+    default PointAssertion expect(Point actual) { return expect(() -> actual); }
 
     // LivingEntity
-    LivingEntitySupplier get(LivingEntity actual);
     LivingEntityAssertion expect(LivingEntitySupplier actual);
     default LivingEntityAssertion expect(LivingEntity actual) { return expect(() -> actual); }
 
     // Entity
-    EntitySupplier get(Entity actual);
     EntityAssertion expect(EntitySupplier actual);
     default EntityAssertion expect(Entity actual) { return expect(() -> actual); }
 
-//    // Instance
-//    InstanceSupplier get(Instance actual);
-//    InstanceAssertion expect(InstanceSupplier actual);
-//    default InstanceAssertion expect(Instance actual) { return expect(() -> actual); }
+    // Instance
+    InstanceAssertion expect(InstanceSupplier actual);
+    default InstanceAssertion expect(Instance actual) { return expect(() -> actual); }
 
     // @formatter:on
 

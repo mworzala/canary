@@ -1,4 +1,4 @@
-package com.mattworzala.canary.codegen.genspec;
+package com.mattworzala.canary.codegen.genspec.assertion.mixin;
 
 import com.squareup.javapoet.TypeSpec;
 

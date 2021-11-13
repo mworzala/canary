@@ -1,1 +1,3 @@
-com.mattworzala.canary.codegen.genspec.GenSpecAP,aggregating
+com.mattworzala.canary.codegen.genspec.AssertionProcessor,isolating
+com.mattworzala.canary.codegen.genspec.SupplierProcessor,isolating
+com.mattworzala.canary.codegen.genspec.AggregateProcessor,aggregating

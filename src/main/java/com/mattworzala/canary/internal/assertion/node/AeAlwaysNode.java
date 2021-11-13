@@ -15,7 +15,7 @@ public class AeAlwaysNode extends AeNode.Unary {
     //todo docs explaining why we cache only a failed result
     @Override
     protected @NotNull Result test(Object target) {
-        if (cache == null || cache == Result.PASSED) {
+        if (cache == null || !cache.isFail()) {
             cache = sample(target);
         }
         return cache;
@@ -23,11 +23,14 @@ public class AeAlwaysNode extends AeNode.Unary {
 
     @Override
     public @NotNull Result sample(Object target) {
-        return item().evaluate(target);
+        Result proxy = item().evaluate(target);
+        if (proxy.isFail())
+            return Result.Fail("TODO : Not Implemented", proxy);
+        return Result.SoftPass();
     }
 
     @Override
     public String toString() {
-        return "(" + item() + ")";
+        return "(ALWAYS " + item() + ")";
     }
 }

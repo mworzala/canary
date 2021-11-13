@@ -1,10 +1,12 @@
+// Apparently this check does not understand how variables work.
+@file:Suppress("GradlePackageUpdate")
+
 plugins {
     java
 }
 
 group = "com.mattworzala"
-val canaryVersion: String by project
-version = canaryVersion
+version = project.property("canary.version") as String
 
 repositories {
     mavenCentral()
@@ -15,19 +17,19 @@ repositories {
 dependencies {
     annotationProcessor(project(":codegen"))
 
-    //todo should be java-library
-
-    val minestomVariant: String by project
-    val minestomVersion: String by project
+    val minestomVariant = project.property("minestom.variant") as String
+    val minestomVersion = project.property("minestom.version") as String
     implementation("com.github.$minestomVariant:Minestom:$minestomVersion")
 
-    val junitVersion: String by project
+    val junitVersion = project.property("junit.version") as String
     implementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     implementation("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
-    val junitPlatformVersion: String by project
+    val junitPlatformVersion = project.property("junit.platform.version") as String
     implementation("org.junit.platform:junit-platform-launcher:$junitPlatformVersion")
 
-    testImplementation("org.mockito:mockito-core:4.0.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
+    val mockitoVersion = project.property("mockito.version") as String
+    testImplementation("org.mockito:mockito-core:${mockitoVersion}")
 }
 
 java {
@@ -36,6 +38,14 @@ java {
 }
 
 tasks {
+    val doSafetyChecks = project.findProperty("canary.safety") as? String != "none"
+    if (doSafetyChecks) {
+        // Run the safety checker only on the main module
+        getByName<JavaCompile>("compileJava") {
+            options.compilerArgs.add("-Xplugin:CanarySafetyChecks")
+        }
+    }
+
     test {
         useJUnitPlatform {
             excludeEngines("canary-test-engine")

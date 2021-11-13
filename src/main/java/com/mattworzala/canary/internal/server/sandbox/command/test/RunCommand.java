@@ -45,12 +45,12 @@ public class RunCommand extends Command {
     private void onRun(CommandSender sender, CommandContext context) {
         version(sender, NAME, VERSION);
 
-        MinecraftServer.getSchedulerManager().buildTask(() -> {
+        new Thread(() -> {
             TestCoordinator coordinator = server.getTestCoordinator();
             System.out.println("STARTING EXECUTION");
             coordinator.execute(TestExecutionListener.STDOUT);
             System.out.println("EXECUTION FINISHED");
-        }).schedule();
+        }).start();
 
 //        RunFilter runFilter = context.get("filter");
 //        if (runFilter == null) runFilter = RunFilter.ALL;

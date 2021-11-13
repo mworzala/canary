@@ -3,7 +3,7 @@ package com.mattworzala.canary.internal.server;
 import com.mattworzala.canary.api.TestEnvironment;
 import com.mattworzala.canary.internal.util.safety.EnvType;
 import com.mattworzala.canary.internal.util.safety.Env;
-import com.mattworzala.canary.internal.execution.env.TestEnvironmentImpl;
+import com.mattworzala.canary.internal.execution.TestEnvironmentImpl;
 import com.mattworzala.canary.internal.execution.TestCoordinator;
 import net.minestom.server.MinecraftServer;
 

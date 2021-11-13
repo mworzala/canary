@@ -13,20 +13,20 @@ import static org.mockito.ArgumentMatchers.eq;
 
 public class TestTestBuilderController {
 
-    @BeforeEach
-    public void init() {
-        MockitoAnnotations.openMocks(this);
-    }
+//    @BeforeEach
+//    public void init() {
+//        MockitoAnnotations.openMocks(this);
+//    }
 
 
-    @Test
-    public void testAddPlayer() {
-        MinecraftServer.init();
-        TestBuilderController controller = new TestBuilderController("test-builder");
-
-        Player player = Mockito.mock(Player.class);
-        controller.addPlayer(player);
-        Mockito.verify(player).setInstance(eq(controller.getTestBuilderInstance()), any(Vec.class));
-    }
+//    @Test
+//    public void testAddPlayer() {
+//        MinecraftServer.init();
+//        TestBuilderController controller = new TestBuilderController("test-builder");
+//
+//        Player player = Mockito.mock(Player.class);
+//        controller.addPlayer(player);
+//        Mockito.verify(player).setInstance(eq(controller.getTestBuilderInstance()), any(Vec.class));
+//    }
 
 }

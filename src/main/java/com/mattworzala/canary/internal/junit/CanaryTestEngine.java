@@ -21,7 +21,6 @@ public class CanaryTestEngine implements TestEngine {
     private static final Logger logger = LoggerFactory.getLogger(CanaryTestEngine.class);
 
     public static final String ID = "canary-test-engine";
-    public static final String NAME = "Canary Test Engine";
 
     private final boolean isHeadless;
     private ProxyHeadlessServer server = null;
@@ -69,6 +68,7 @@ public class CanaryTestEngine implements TestEngine {
 
     @Override
     public TestDescriptor discover(EngineDiscoveryRequest discoveryRequest, UniqueId uniqueId) {
+        // REFACTOR : Only initialize Minestom if we actually discover tests. Otherwise the engine should silently exit.
         if (this.server == null) init();
 
         CanaryEngineDescriptor discoveryResult = CanaryDiscoverer.discover(discoveryRequest, uniqueId);

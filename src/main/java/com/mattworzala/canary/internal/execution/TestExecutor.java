@@ -1,16 +1,17 @@
 package com.mattworzala.canary.internal.execution;
 
-import com.mattworzala.canary.api.supplier.ObjectSupplier;
-import com.mattworzala.canary.internal.util.ui.CameraPlayer;
-import com.mattworzala.canary.internal.junit.descriptor.CanaryTestDescriptor;
 import com.mattworzala.canary.internal.assertion.AeSimpleParser;
 import com.mattworzala.canary.internal.assertion.AssertionStep;
 import com.mattworzala.canary.internal.assertion.Result;
 import com.mattworzala.canary.internal.assertion.node.AeNode;
-import com.mattworzala.canary.internal.execution.env.TestEnvironmentImpl;
+import com.mattworzala.canary.internal.execution.tracker.EntityTracker;
+import com.mattworzala.canary.internal.execution.tracker.Tracker;
+import com.mattworzala.canary.internal.junit.descriptor.CanaryTestDescriptor;
 import com.mattworzala.canary.internal.server.instance.block.CanaryBlocks;
 import com.mattworzala.canary.internal.structure.JsonStructureIO;
 import com.mattworzala.canary.internal.structure.Structure;
+import com.mattworzala.canary.internal.util.ui.CameraPlayer;
+import com.mattworzala.canary.internal.util.ui.MarkerUtil;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.Tickable;
 import net.minestom.server.coordinate.Point;
@@ -34,9 +35,11 @@ import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 
 import static com.mattworzala.canary.internal.util.ReflectionUtils.invokeMethodOptionalParameter;
 
@@ -59,11 +62,13 @@ public class TestExecutor implements Tickable {
 
     private final CanaryTestDescriptor testDescriptor;
 
+    private final List<Tracker<?>> trackers = List.of(new EntityTracker()); //todo: add more trackers or remove the system altogether
     private final Instance instance;
     private final Structure structure;
     private final Point origin;
 
     // Sandbox state
+    //TODO: Factor this out of here. Could add some Minestom events which the executor triggers.
     private final Instance sandboxInstance;
     private final CameraPlayer camera;
     private final Point statusGlassBlock;
@@ -73,13 +78,11 @@ public class TestExecutor implements Tickable {
     private volatile boolean running;
     private TestExecutionListener executionListener;
     private Object classInstance;
+    private CountDownLatch completionLatch;
     private int lifetime;
 
-    //todo these two records are both stupid
-    private static record RawAssertion(ObjectSupplier supplier, List<AssertionStep> steps) {}
-    private final List<RawAssertion> rawAssertions = new ArrayList<>();
-    private static record Assertion(ObjectSupplier supplier, AeNode root) {}
-    private final List<Assertion> assertions = new ArrayList<>();
+    private final List<List<AssertionStep>> rawAssertions = new ArrayList<>();
+    private final List<AeNode> assertions = new ArrayList<>();
 
     public TestExecutor(CanaryTestDescriptor testDescriptor, InstanceContainer rootInstance, Point offset) {
         this.testDescriptor = testDescriptor;
@@ -129,18 +132,26 @@ public class TestExecutor implements Tickable {
         return origin;
     }
 
-    public List<AssertionStep> createAssertion(ObjectSupplier actual) {
+    public List<AssertionStep> createEmptyAssertion() {
         List<AssertionStep> assertionSteps = new ArrayList<>();
-        rawAssertions.add(new RawAssertion(actual, assertionSteps));
+        rawAssertions.add(assertionSteps);
         return assertionSteps;
     }
 
-    public void execute(TestExecutionListener listener) {
+    public <T> void track(T object) {
+        //noinspection unchecked
+        Tracker<T> tracker = (Tracker<T>) trackers.stream().filter(t -> t.canTrack(object)).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No valid tracker for: " + object.toString()));
+        tracker.track(object);
+    }
+
+    public void execute(TestExecutionListener listener, CountDownLatch completionLatch) {
         if (running) {
             throw new IllegalStateException("Cannot execute a test while it is already running.");
         }
 
         // Update internal state
+        trackers.forEach(Tracker::release);
         executionListener = listener;
 
         // Instantiate class + execute test method & supporting.
@@ -161,20 +172,22 @@ public class TestExecutor implements Tickable {
             }
 
             // Invoke the actual test method
+            TestEnvironmentImpl.CURRENT.set(environment);
             invokeMethodOptionalParameter(source.getJavaMethod(), classInstance, environment);
+            TestEnvironmentImpl.CURRENT.set(null);
 
             // Compile assertions
             for (var assertionSteps : rawAssertions) {
-                AeNode node = new AeSimpleParser(assertionSteps.steps).parse();
+                AeNode node = new AeSimpleParser(assertionSteps).parse();
                 if (node == null) {
                     throw new RuntimeException("Failed to compile assertion!"); //todo can show errors here, but probably want stacktrace elements to render
                 }
-                assertions.add(new Assertion(assertionSteps.supplier, node));
+                assertions.add(node);
             }
             rawAssertions.clear();
 
-            for (Assertion assertion : assertions) {
-                System.out.println(assertion.root.toString());
+            for (var assertion : assertions) {
+                System.out.println(assertion.toString());
             }
 
         } catch (Throwable throwable) {
@@ -182,6 +195,7 @@ public class TestExecutor implements Tickable {
             return;
         }
 
+        this.completionLatch = completionLatch;
         lifetime = 100;
         running = true;
     }
@@ -190,36 +204,37 @@ public class TestExecutor implements Tickable {
     public void tick(long time) {
 
         try {
-            assertions.removeIf(assn -> {
-                Result result = assn.root.evaluate(assn.supplier.get());
-                System.out.println("RESULT > " + (result == Result.PASSED ? "PASSED" : "FAILED"));
-                return result == Result.PASSED;
-            });
+            boolean anyFail = false;
+            var iter = assertions.iterator();
+            while (iter.hasNext()) {
+                Result result = iter.next().evaluate(null);
+
+                if (result.isPass()) {
+                    iter.remove();
+                } else if (result.isFail()) {
+                    anyFail = true;
+                }
+            }
+
+            if (!anyFail) {
+                // The only remaining tests are soft passes, so we can pass
+                end(null);
+            }
         } catch (Throwable throwable) {
             end(throwable);
             return;
         }
 
-        if (assertions.isEmpty()) {
-            end(null);
-        }
-
         if (--lifetime < 0) {
+            // TEMP add the markers from the first fail
+            ((Result.FailResult) assertions.get(0).evaluate(null)).getMarkers().forEach(marker -> {
+                MarkerUtil.Marker adjusted = new MarkerUtil.Marker(marker.position().add(getOrigin()), marker.color(), marker.message());
+                MinecraftServer.getConnectionManager().getOnlinePlayers().forEach(player -> MarkerUtil.sendTestMarker(player, adjusted));
+            });
+
+            //todo print the failing tests
             end(new RuntimeException("Test timed out."));
         }
-
-//        try {
-//            assertions.forEach(AssertionImpl::tick); //todo
-//        } catch (AssertionError error) {
-//            end(error);
-//            return;
-//        }
-//
-//        assertions.removeIf(AssertionImpl::hasDefinitiveResult);
-//        if (assertions.isEmpty()) {
-//            end(null);
-//        }
-
     }
 
     private boolean isValidTick(InstanceTickEvent event) {
@@ -232,13 +247,6 @@ public class TestExecutor implements Tickable {
 
     private void end(@Nullable Throwable error) {
 
-        // "After Each" methods
-        var environment = new TestEnvironmentImpl(this); // We could keep track of the one from the init method, but it keeps no state so it doesnt really matter.
-        for (Method method : testDescriptor.getPostEffects()) {
-            invokeMethodOptionalParameter(method, classInstance, environment);
-        }
-        //todo reset stuff from test environment (like removing entities)
-
         // "Officially" end test
         executionListener.end(testDescriptor, error);
         setVisualStatus(error == null);
@@ -246,7 +254,17 @@ public class TestExecutor implements Tickable {
             sandboxInstance.setBlock(failureLectern, CanaryBlocks.Lectern(getTestDescriptor().getDisplayName(), error));
         }
 
+        // "After Each" methods
+        var environment = new TestEnvironmentImpl(this); // We could keep track of the one from the init method, but it keeps no state so it doesnt really matter.
+        for (Method method : testDescriptor.getPostEffects()) {
+            invokeMethodOptionalParameter(method, classInstance, environment);
+        }
+
         // Reset state
+        if (error == null) {
+            // Leave tracked items if this was a failure, they will be removed if you try to run the test again anyway.
+            trackers.forEach(Tracker::release);
+        }
         running = false;
         executionListener = null;
         classInstance = null;
@@ -255,6 +273,9 @@ public class TestExecutor implements Tickable {
         // Reset structure
         structure.loadIntoBlockSetter(instance, origin);
         if (sandboxInstance != null) structure.loadIntoBlockSetter(sandboxInstance, origin);
+
+        completionLatch.countDown();
+        completionLatch = null;
     }
 
     private void initialize() {

@@ -15,7 +15,6 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface GenSpec {
-    // REFACTOR : Assertion Javadocs (using @Doc annotation on elements)
 
     /**
      * The class which this assertion operates on.
@@ -91,23 +90,38 @@ public @interface GenSpec {
         String value() default "<condition>";
     }
 
-    /* Supplier & Transitions */
+    /* Transitions */
 
-    @Target(ElementType.TYPE)
-    @Retention(RetentionPolicy.SOURCE)
-    @interface Supplier {
-        String name() default "";
-
-        Transition[] transitions() default {};
-    }
-
-
-    @Target(ElementType.TYPE)
+    @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.SOURCE)
     @interface Transition {
-        String name() default "";
+    }
 
-        Class<?> target();
+    /* Javadoc */
+
+    /**
+     * Allows adding Javadocs to the generated AssertionImpl. Newlines will be replaced with &lt;p&gt; tags.
+     * <p>
+     * When annotating a condition, the value represents the main body of the Javadoc.
+     * When annotating a parameter, the value represents the Javadoc for the parameter.
+     * <p>
+     * Note: The `actual` (first) parameter may not be documented.
+     *
+     */
+    @Target({ElementType.METHOD, ElementType.PARAMETER})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface Doc {
+        String value();
+    }
+
+    /**
+     * Internal. Should not be used directly.
+     */
+    @Deprecated
+    @Target(ElementType.TYPE)
+    @Retention(RetentionPolicy.SOURCE)
+    @interface IntermediateAssertion {
+        Class<?> operator();
     }
 
 }

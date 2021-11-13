@@ -98,7 +98,8 @@ public class CameraPlayer extends Player {
                 EntityPositionAndRotationPacket.class,
                 EntityPositionPacket.class,
                 EntityRotationPacket.class,
-                EntityHeadLookPacket.class
+                EntityHeadLookPacket.class,
+                DestroyEntitiesPacket.class
         );
 
         private final List<Player> viewers;

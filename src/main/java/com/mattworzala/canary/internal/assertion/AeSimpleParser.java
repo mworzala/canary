@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 public class AeSimpleParser {
     /** Contains the steps originally provided to the parser */
@@ -47,7 +48,11 @@ public class AeSimpleParser {
     private AeNode parseCondition(@NotNull AssertionStep step) {
         assert step.type() == AssertionStep.Type.AND;
         assert step.condition() != null;
-        return new AeConditionNode(step.condition());
+        return new AeConditionNode(
+                Objects.requireNonNull(step.debugName()),
+                Objects.requireNonNull(step.supplier()),
+                Objects.requireNonNull(step.condition())
+        );
     }
 
     @NotNull
@@ -97,21 +102,5 @@ public class AeSimpleParser {
             throw new RuntimeException("A unary node must be followed by a condition node.");
         }
         return List.of(item);
-    }
-
-    public static void main(String[] args) {
-        List<AssertionStep> steps = new ArrayList<>();
-        steps.add(AssertionStep.NOT);
-        steps.add(new AssertionStep(AssertionStep.Type.CONDITION, new AssertionCondition("a", null)));
-        steps.add(AssertionStep.AND);
-        steps.add(new AssertionStep(AssertionStep.Type.CONDITION, new AssertionCondition("b", null)));
-//        steps.add(AssertionStep.AND);
-//        steps.add(AssertionStep.NOT);
-//        steps.add(new AssertionStep(AssertionStep.Type.CONDITION, "c"));
-
-        var parser = new AeSimpleParser(steps);
-        System.out.println(parser.parse());
-
-
     }
 }

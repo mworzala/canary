@@ -1,5 +1,6 @@
 plugins {
     java
+    id("net.kyori.blossom") version "1.2.0"
 }
 
 group = "com.mattworzala.canary"
@@ -12,18 +13,21 @@ repositories {
 }
 
 dependencies {
-    annotationProcessor("com.google.auto.service:auto-service:1.0")
-    implementation("com.google.auto.service:auto-service:1.0")
+    val autoserviceVersion = rootProject.property("autoservice.version") as String
+    implementation("com.google.auto.service:auto-service:${autoserviceVersion}")
+    annotationProcessor("com.google.auto.service:auto-service:${autoserviceVersion}")
 
-    val minestomVariant: String by rootProject
-    val minestomVersion: String by rootProject
+    val minestomVariant = rootProject.property("minestom.variant") as String
+    val minestomVersion = rootProject.property("minestom.version") as String
     implementation("com.github.$minestomVariant:Minestom:$minestomVersion")
 
-    implementation("com.squareup:javapoet:1.13.0")
+    val javapoetVersion = rootProject.property("javapoet.version") as String
+    implementation("com.squareup:javapoet:${javapoetVersion}")
 
-    val junitVersion: String by rootProject
-    implementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    implementation("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+    //todo why the main source set dependency on JUnit?
+    val junitVersion = rootProject.property("junit.version") as String
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }
 
 tasks {
@@ -31,5 +35,9 @@ tasks {
         useJUnitPlatform()
 
         testLogging.showExceptions = true
+    }
+
+    blossom {
+        replaceToken("\$CODEGEN_VERSION$", project.version)
     }
 }

@@ -12,15 +12,14 @@ val rootProperties = Properties()
 file("${project.rootDir.parent}/gradle.properties").inputStream().use { rootProperties.load(it) }
 
 group = "com.mattworzala.canary"
-val canaryVersion: String by rootProperties
-version = canaryVersion
+version = rootProperties.getProperty("canary.gradle.version")
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    val junitVersion by rootProperties
+    val junitVersion = rootProperties.getProperty("junit.version")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }
@@ -31,7 +30,7 @@ tasks {
     }
 
     blossom {
-        replaceToken("\$CANARY_VERSION$", canaryVersion)
+        replaceToken("\$CANARY_VERSION$", rootProperties.getProperty("canary.version"))
     }
 }
 
@@ -54,13 +53,13 @@ pluginBundle {
         "canary" {
             displayName = "Canary Gradle Plugin"
             tags = listOf("minecraft", "minestom", "junit", "test", "e2e")
-            version = canaryVersion
+            version = project.version as String
         }
     }
 
     mavenCoordinates {
         groupId = "com.mattworzala"
         artifactId = "canary"
-        version = canaryVersion
+        version = project.version as String
     }
 }
