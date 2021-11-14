@@ -5,9 +5,6 @@ import com.mattworzala.canary.internal.structure.JsonStructureIO;
 import com.mattworzala.canary.internal.structure.Structure;
 import com.mattworzala.canary.internal.structure.StructureWriter;
 import com.mattworzala.canary.internal.util.testbuilder.BlockBoundingBox;
-import com.mattworzala.canary.internal.util.ui.BlockClickingItemStack;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Vec;
@@ -18,19 +15,21 @@ import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.PlayerBlockBreakEvent;
 import net.minestom.server.event.player.PlayerBlockPlaceEvent;
 import net.minestom.server.event.trait.PlayerEvent;
+import net.minestom.server.instance.Chunk;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.block.Block;
-import net.minestom.server.item.ItemStack;
-import net.minestom.server.item.Material;
+import net.minestom.server.network.packet.server.ServerPacket;
 import net.minestom.server.network.packet.server.play.BlockEntityDataPacket;
 import net.minestom.server.world.DimensionType;
 
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
-import java.util.function.Function;
 
 // REFACTOR : Allow multiple players per test builder
 // REFACTOR : Allow multiple concurrent test builders
@@ -45,11 +44,11 @@ public class TestBuilderController {
     private Point structureBlockPos;
     private Block lastOverwrittenBlock;
 
-    private Instance testBuilderInstance;
+    private InstanceContainer testBuilderInstance;
 
-    private Player player;
-    private Instance playerPreviousInstance;
-    private Point playerPreviousInstancePos;
+    private List<Player> players = new ArrayList<>();
+    private List<Instance> playersPreviousInstances = new ArrayList<>();
+    private List<Point> playersPreviousInstancePos = new ArrayList<>();
 
     private static final EventNode<PlayerEvent> testBuilderPlayerEventNode = EventNode.type("test-builder-controller-player", EventFilter.PLAYER);
 
@@ -65,6 +64,21 @@ public class TestBuilderController {
         testBuilderInstance = new InstanceContainer(UUID.randomUUID(), DimensionType.OVERWORLD);
         MinecraftServer.getInstanceManager().registerInstance(testBuilderInstance);
 
+        this.placeStartingPlatform();
+    }
+
+    public void reset() {
+        Collection<Chunk> chunks = testBuilderInstance.getChunks();
+        for (Chunk c : chunks) {
+            c.reset();
+        }
+
+        blockBoundingBox = new BlockBoundingBox(MAX_STRUCTURE_DIMENSION);
+        structureBlockPos = null;
+        lastOverwrittenBlock = null;
+    }
+
+    private void placeStartingPlatform() {
         for (int x = 0; x < 5; x++) {
             for (int z = 0; z < 5; z++) {
                 var point = new Vec(x, 40, z);
@@ -72,19 +86,24 @@ public class TestBuilderController {
                 testBuilderInstance.setBlock(point, Block.STONE);
             }
         }
+
     }
 
     public void addMarker(Point p) {
     }
 
     public void addPlayer(Player player) {
-        this.player = player;
-        playerPreviousInstance = player.getInstance();
-        playerPreviousInstancePos = player.getPosition();
+        this.players.add(player);
+        // if this is the first player, load the starting platform
+        if (this.players.size() == 1) {
+            placeStartingPlatform();
+        }
+        playersPreviousInstances.add(player.getInstance());
+        playersPreviousInstancePos.add(player.getPosition());
         player.setInstance(testBuilderInstance, new Vec(0, 41, 0));
-        System.out.println("tried to set the player instance");
 
         // REFACTOR : Register events once in constructor in test builder controller
+        // other things to track: player leaving
         testBuilderPlayerEventNode.addListener(EventListener.builder(PlayerBlockPlaceEvent.class)
                 .filter(event -> event.getPlayer().equals(player))
                 .handler(playerBlockPlaceEvent -> {
@@ -106,22 +125,6 @@ public class TestBuilderController {
                     this.updateStructureOutline();
                 }).build());
 
-        var itemStack = ItemStack.builder(Material.BOOK)
-                .displayName(Component.text("Test Builder", NamedTextColor.GREEN))
-                .build();
-
-        Function<Point, Boolean> leftClick = (p) -> {
-            System.out.println("LEFT CLICK");
-            return false;
-        };
-
-        Function<Point, Boolean> rightClick = (p) -> {
-            System.out.println("RIGHT CLICK");
-            return false;
-        };
-        BlockClickingItemStack bcis = new BlockClickingItemStack(itemStack, leftClick, rightClick);
-        bcis.giveToPlayer(player, player.getHeldSlot());
-
         updateStructureOutline();
     }
 
@@ -141,25 +144,37 @@ public class TestBuilderController {
     }
 
     // REFACTOR : Prompt to save when leaving test builder
+    // TODO - give code stub
     public void finish() {
         System.out.println("FINISHING BUILDING STRUCTURE: " + name);
-        player.setInstance(playerPreviousInstance, playerPreviousInstancePos);
+
+        for (int i = 0; i < players.size(); i++) {
+            Player player = players.get(i);
+            Instance previousInstance = playersPreviousInstances.get(i);
+            Point previousPos = playersPreviousInstancePos.get(i);
+            player.setInstance(previousInstance, previousPos);
+            players.remove(i);
+            playersPreviousInstances.remove(i);
+            playersPreviousInstancePos.remove(i);
+
+        }
 
         Structure structure = Structure.structureFromWorld(testBuilderInstance, name, blockBoundingBox.getMinPoint(), blockBoundingBox.getSize());
 
+        // TODO - do this correctly using env variables
         Path root = FileSystems.getDefault().getPath("..").toAbsolutePath();
         Path filePath = Paths.get(root.toString(), "src", "main", "resources", name + ".json");
         StructureWriter structureWriter = new JsonStructureIO();
         structureWriter.writeStructure(structure, filePath);
+
+        this.reset();
     }
 
     private void updateStructureOutline() {
-        blockBoundingBox.printDebugInfo();
         if (structureBlockPos == null) {
             recomputeStructureBlockPos();
         } else {
             Point minPoint = blockBoundingBox.getMinPoint();
-
             Point size = blockBoundingBox.getSize();
 
             Point structureBlockOffset = minPoint.sub(structureBlockPos);
@@ -171,8 +186,6 @@ public class TestBuilderController {
                     y <= MAX_STRUCTURE_BLOCK_OFFSET &&
                     z <= MAX_STRUCTURE_BLOCK_OFFSET) {
                 // if the structure block doesn't need to move, we just update the size and offset
-                System.out.println("Don't need to move structure block, updating offset");
-                System.out.println("size: " + size);
                 Block boundingBox = boundingBoxBlockFromSizeAndPos(size, structureBlockOffset);
                 BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket();
 
@@ -180,10 +193,9 @@ public class TestBuilderController {
                 blockEntityDataPacket.action = 7;
                 blockEntityDataPacket.nbtCompound = boundingBox.nbt();
 
-                player.sendPacket(blockEntityDataPacket);
+                sendPacketToPlayers(blockEntityDataPacket);
             } else {
                 // the structure block does need to move
-                System.out.println("Do need to move structure block");
                 recomputeStructureBlockPos();
             }
 
@@ -216,7 +228,7 @@ public class TestBuilderController {
         structureBlockPos = blockPos;
         testBuilderInstance.setBlock(blockPos, boundingBox);
 
-        player.sendPacket(blockEntityDataPacket);
+        sendPacketToPlayers(blockEntityDataPacket);
     }
 
     private Block boundingBoxBlockFromSizeAndPos(Point size, Point pos) {
@@ -233,6 +245,12 @@ public class TestBuilderController {
         return boundingBoxBlockFromSizeAndPos(size, new Vec(0, yPos, 0));
     }
 
+    private void sendPacketToPlayers(ServerPacket packet) {
+        for (Player p : players) {
+            p.sendPacket(packet);
+        }
+    }
+
     public String getName() {
         return name;
     }
@@ -241,7 +259,24 @@ public class TestBuilderController {
         this.name = name;
     }
 
+    public List<Player> getPlayers() {
+        return this.players;
+    }
+
+    public boolean hasPlayer(Player p) {
+        for (Player player : this.players) {
+            if (player.getUuid().equals(p.getUuid())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public Instance getTestBuilderInstance() {
         return testBuilderInstance;
+    }
+
+    public void unregister() {
+        MinecraftServer.getInstanceManager().unregisterInstance(testBuilderInstance);
     }
 }

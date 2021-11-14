@@ -1,11 +1,11 @@
 package com.mattworzala.canary.internal.server.sandbox.command;
 
+import com.mattworzala.canary.internal.execution.TestCoordinator;
+import com.mattworzala.canary.internal.execution.TestExecutor;
 import com.mattworzala.canary.internal.server.sandbox.SandboxServer;
 import com.mattworzala.canary.internal.server.sandbox.command.test.BuilderCommand;
 import com.mattworzala.canary.internal.server.sandbox.command.test.FilterCommand;
 import com.mattworzala.canary.internal.server.sandbox.command.test.RunCommand;
-import com.mattworzala.canary.internal.execution.TestCoordinator;
-import com.mattworzala.canary.internal.execution.TestExecutor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -42,7 +42,7 @@ public class TestCommand extends Command {
 
         addSubcommand(new RunCommand(server));  // Run
         addSubcommand(new FilterCommand());     // Filter
-        addSubcommand(new BuilderCommand());    // Builder
+        addSubcommand(new BuilderCommand(server));    // Builder
     }
 
     private void onHelp(CommandSender sender, CommandContext context) {
