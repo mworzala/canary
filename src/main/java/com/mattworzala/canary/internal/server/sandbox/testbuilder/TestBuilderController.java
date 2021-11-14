@@ -5,6 +5,10 @@ import com.mattworzala.canary.internal.structure.JsonStructureIO;
 import com.mattworzala.canary.internal.structure.Structure;
 import com.mattworzala.canary.internal.structure.StructureWriter;
 import com.mattworzala.canary.internal.util.testbuilder.BlockBoundingBox;
+import com.mattworzala.canary.internal.util.ui.BlockClickingItemStack;
+import com.mattworzala.canary.internal.util.ui.ItemBehavior;
+import com.mattworzala.canary.internal.util.ui.Prompt;
+import net.kyori.adventure.text.Component;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Vec;
@@ -19,6 +23,8 @@ import net.minestom.server.instance.Chunk;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.block.Block;
+import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.Material;
 import net.minestom.server.network.packet.server.ServerPacket;
 import net.minestom.server.network.packet.server.play.BlockEntityDataPacket;
 import net.minestom.server.world.DimensionType;
@@ -26,13 +32,8 @@ import net.minestom.server.world.DimensionType;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
-// REFACTOR : Allow multiple players per test builder
-// REFACTOR : Allow multiple concurrent test builders
 public class TestBuilderController {
 
     private static final int MAX_STRUCTURE_DIMENSION = 48;
@@ -49,6 +50,8 @@ public class TestBuilderController {
     private List<Player> players = new ArrayList<>();
     private List<Instance> playersPreviousInstances = new ArrayList<>();
     private List<Point> playersPreviousInstancePos = new ArrayList<>();
+
+    private Map<String, Point> markers = new HashMap<>();
 
     private static final EventNode<PlayerEvent> testBuilderPlayerEventNode = EventNode.type("test-builder-controller-player", EventFilter.PLAYER);
 
@@ -89,7 +92,12 @@ public class TestBuilderController {
 
     }
 
-    public void addMarker(Point p) {
+    public void addMarker(Player player, Point point) {
+        ItemStack leftItem = ItemStack.builder(Material.RED_STAINED_GLASS).displayName(Component.text("")).lore(Component.text("cancel")).build();
+        ItemStack rightItem = ItemStack.builder(Material.GREEN_STAINED_GLASS).build();
+        Prompt.AnvilPromptOption cancel = new Prompt.AnvilPromptOption(leftItem, s -> System.out.println("canceled"));
+        Prompt.AnvilPromptOption confirm = new Prompt.AnvilPromptOption(rightItem, s -> markers.put(s, point));
+        Prompt.anvilPrompt(player, "Marker Name", cancel, confirm);
     }
 
     public void addPlayer(Player player) {
@@ -125,6 +133,10 @@ public class TestBuilderController {
                     this.updateStructureOutline();
                 }).build());
 
+        ItemBehavior markerItem = new MarkerItem(this);
+        BlockClickingItemStack blockClicker = new BlockClickingItemStack(markerItem);
+        blockClicker.giveToPlayer(player, player.getHeldSlot());
+
         updateStructureOutline();
     }
 
@@ -159,7 +171,12 @@ public class TestBuilderController {
 
         }
 
-        Structure structure = Structure.structureFromWorld(testBuilderInstance, name, blockBoundingBox.getMinPoint(), blockBoundingBox.getSize());
+        Point minPoint = blockBoundingBox.getMinPoint();
+        Structure structure = Structure.structureFromWorld(testBuilderInstance, name, minPoint, blockBoundingBox.getSize());
+
+        for (String markerName : markers.keySet()) {
+            structure.addMarker(markerName, markers.get(markerName).sub(minPoint));
+        }
 
         // TODO - do this correctly using env variables
         Path root = FileSystems.getDefault().getPath("..").toAbsolutePath();

@@ -35,6 +35,7 @@ public class Structure {
 
         this.blockmap = new HashMap<>();
         this.blocks = new ArrayList<>();
+        this.markers = new HashMap<>();
     }
 
     public void addMarker(String name, int index) {

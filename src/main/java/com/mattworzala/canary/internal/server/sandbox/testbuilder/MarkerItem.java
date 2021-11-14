@@ -2,6 +2,7 @@ package com.mattworzala.canary.internal.server.sandbox.testbuilder;
 
 import com.mattworzala.canary.internal.util.ui.ItemBehavior;
 import net.minestom.server.coordinate.Point;
+import net.minestom.server.entity.Player;
 
 public class MarkerItem implements ItemBehavior {
     private final TestBuilderController controller;
@@ -11,8 +12,8 @@ public class MarkerItem implements ItemBehavior {
     }
 
     @Override
-    public void onRightClick(Point point) {
-//        controller.addMarker(point);
+    public void onLeftClick(Player player, Point point) {
+        controller.addMarker(player, point);
     }
 
     @Override
