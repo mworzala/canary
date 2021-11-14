@@ -27,6 +27,8 @@ public class Structure {
 
     List<BlockDef> blocks;
 
+    private Map<String, Integer> markers;
+
     public Structure(String id, int sizeX, int sizeY, int sizeZ) {
         this.id = id;
         size = new Vec(sizeX, sizeY, sizeZ);
@@ -34,6 +36,15 @@ public class Structure {
         this.blockmap = new HashMap<>();
         this.blocks = new ArrayList<>();
     }
+
+    public void addMarker(String name, int index) {
+        this.markers.put(name, index);
+    }
+
+    public void addMarker(String name, Point point) {
+        this.markers.put(name, pointToIndex(point));
+    }
+
 
     public void putInBlockMap(int index, Block block) {
         blockmap.put(index, block);
@@ -65,6 +76,26 @@ public class Structure {
 
     public int getSizeZ() {
         return this.size.blockZ();
+    }
+
+    public Point indexToPoint(int index) {
+        int x = index % this.getSizeX();
+        int z = index % (this.getSizeX() * this.getSizeZ()) / this.getSizeZ();
+        int y = index / (this.getSizeX() * this.getSizeZ());
+
+        boolean inBounds = x <= this.getSizeX();
+        inBounds = inBounds || y <= this.getSizeY();
+        inBounds = inBounds || z <= this.getSizeZ();
+
+        if (inBounds) {
+            return new Vec(x, y, z);
+        } else {
+            return null;
+        }
+    }
+
+    public int pointToIndex(Point p) {
+        return (p.blockY() * this.getSizeX() * this.getSizeZ()) + (p.blockZ() * this.getSizeX()) + p.blockX();
     }
 
     /**
@@ -103,6 +134,19 @@ public class Structure {
     public Map<Integer, Block> getBlockMap() {
         return blockmap;
     }
+
+    public Map<String, Integer> getMarkers() {
+        return markers;
+    }
+
+    public Map<String, Point> getMarkersAsPoints() {
+        Map<String, Point> pointMarkers = new HashMap<>();
+        getMarkers().forEach((k, v) -> {
+            pointMarkers.put(k, indexToPoint(v));
+        });
+        return pointMarkers;
+    }
+
 
     public static Structure structureFromWorld(Instance instance, String id, Point origin, Point size) {
         return structureFromWorld(instance, id, origin, size.blockX(), size.blockY(), size.blockZ());
