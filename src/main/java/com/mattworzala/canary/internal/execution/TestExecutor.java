@@ -100,19 +100,21 @@ public class TestExecutor implements Tickable {
         TICK_NODE.addListener(tickListener);
 
         sandboxInstance = MinecraftServer.getInstanceManager().getInstance(new UUID(0, 0));
-        camera = new CameraPlayer(this.instance, new Pos(origin).sub(new Pos(2, 0, 2)), new CopyOnWriteArrayList<>());
         statusGlassBlock = origin.sub(0, 0, 1);
         failureLectern = origin.add(1, 0, -1);
         initialize();
 
-        MinecraftServer.getGlobalEventHandler().addListener(EventListener
-                .builder(PlayerLoginEvent.class)
-                .handler(event -> {
-                    if (event.getPlayer() instanceof CameraPlayer)
-                        return;
-                    camera.addCameraViewer(event.getPlayer());
-                })
-                .build());
+        if (sandboxInstance != null) {
+            camera = new CameraPlayer(this.instance, new Pos(origin).sub(new Pos(2, 0, 2)), new CopyOnWriteArrayList<>());
+            MinecraftServer.getGlobalEventHandler().addListener(EventListener
+                    .builder(PlayerLoginEvent.class)
+                    .handler(event -> {
+                        if (event.getPlayer() instanceof CameraPlayer)
+                            return;
+                        camera.addCameraViewer(event.getPlayer());
+                    })
+                    .build());
+        } else camera = null;
     }
 
     @NotNull
@@ -186,11 +188,6 @@ public class TestExecutor implements Tickable {
                 assertions.add(node);
             }
             rawAssertions.clear();
-
-            for (var assertion : assertions) {
-                System.out.println(assertion.toString());
-            }
-
         } catch (Throwable throwable) {
             end(throwable);
             return;
