@@ -11,10 +11,8 @@ import com.mattworzala.canary.internal.server.instance.block.CanaryBlocks;
 import com.mattworzala.canary.internal.structure.JsonStructureIO;
 import com.mattworzala.canary.internal.structure.Structure;
 import com.mattworzala.canary.internal.util.ui.CameraPlayer;
-import com.mattworzala.canary.internal.util.ui.MarkerUtil;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.Tickable;
-import net.minestom.server.command.builder.arguments.ArgumentWord;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.event.EventFilter;
@@ -31,19 +29,17 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.platform.commons.util.ReflectionUtils;
 import org.junit.platform.engine.support.descriptor.MethodSource;
+import org.opentest4j.AssertionFailedError;
 
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CountDownLatch;
 
 import static com.mattworzala.canary.internal.util.ReflectionUtils.invokeMethodOptionalParameter;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 // one per test method (reused), handles instantiating the test class, invoking the before/run/after methods, cleaning up the test for the next execution (replace structure).
 //   Executing a test is not blocking, it must be ticked until it reports that it has a result.
@@ -201,9 +197,9 @@ public class TestExecutor implements Tickable {
 
     @Override
     public void tick(long time) {
+        List<Result.FailResult> failures = new ArrayList<>();
 
         try {
-            boolean anyFail = false;
             var iter = assertions.iterator();
             while (iter.hasNext()) {
                 Result result = iter.next().evaluate(null);
@@ -211,11 +207,11 @@ public class TestExecutor implements Tickable {
                 if (result.isPass()) {
                     iter.remove();
                 } else if (result.isFail()) {
-                    anyFail = true;
+                    failures.add((Result.FailResult) result);
                 }
             }
 
-            if (!anyFail) {
+            if (failures.isEmpty()) {
                 // The only remaining tests are soft passes, so we can pass
                 end(null);
             }
@@ -227,13 +223,18 @@ public class TestExecutor implements Tickable {
 
         if (--lifetime < 0) {
             // TEMP add the markers from the first fail
-            ((Result.FailResult) assertions.get(0).evaluate(null)).getMarkers().forEach(marker -> {
-                MarkerUtil.Marker adjusted = new MarkerUtil.Marker(marker.position().add(getOrigin()), marker.color(), marker.message());
-                MinecraftServer.getConnectionManager().getOnlinePlayers().forEach(player -> MarkerUtil.sendTestMarker(player, adjusted));
-            });
+//            ((Result.FailResult) assertions.get(0).evaluate(null)).getMarkers().forEach(marker -> {
+//                MarkerUtil.Marker adjusted = new MarkerUtil.Marker(marker.position().add(getOrigin()), marker.color(), marker.message());
+//                MinecraftServer.getConnectionManager().getOnlinePlayers().forEach(player -> MarkerUtil.sendTestMarker(player, adjusted));
+//            });
 
-            //todo print the failing tests
-            end(new RuntimeException("Test timed out."));
+            if (failures.isEmpty()) {
+                end(new RuntimeException("Something went wrong!"));
+            }
+
+            // TODO : Multiple errors
+            Result.FailResult fail = failures.get(0);
+            end(new AssertionFailedError(fail.getReason(), fail.getCauseAsJUnitError()));
         }
     }
 
