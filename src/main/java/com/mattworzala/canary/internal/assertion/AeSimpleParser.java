@@ -46,7 +46,7 @@ public class AeSimpleParser {
 
     @NotNull
     private AeNode parseCondition(@NotNull AssertionStep step) {
-        assert step.type() == AssertionStep.Type.AND;
+        assert step.type() == AssertionStep.Type.CONDITION;
         assert step.condition() != null;
         return new AeConditionNode(
                 Objects.requireNonNull(step.debugName()),

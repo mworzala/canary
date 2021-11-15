@@ -14,6 +14,7 @@ import com.mattworzala.canary.internal.util.ui.CameraPlayer;
 import com.mattworzala.canary.internal.util.ui.MarkerUtil;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.Tickable;
+import net.minestom.server.command.builder.arguments.ArgumentWord;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.event.EventFilter;
@@ -78,7 +79,7 @@ public class TestExecutor implements Tickable {
     private volatile boolean running;
     private TestExecutionListener executionListener;
     private Object classInstance;
-    private CountDownLatch completionLatch;
+    private CompletableFuture<Void> task;
     private int lifetime;
 
     private final List<List<AssertionStep>> rawAssertions = new ArrayList<>();
@@ -99,19 +100,21 @@ public class TestExecutor implements Tickable {
         TICK_NODE.addListener(tickListener);
 
         sandboxInstance = MinecraftServer.getInstanceManager().getInstance(new UUID(0, 0));
-        camera = new CameraPlayer(this.instance, new Pos(origin).sub(new Pos(2, 0, 2)), new CopyOnWriteArrayList<>());
         statusGlassBlock = origin.sub(0, 0, 1);
         failureLectern = origin.add(1, 0, -1);
         initialize();
 
-        MinecraftServer.getGlobalEventHandler().addListener(EventListener
-                .builder(PlayerLoginEvent.class)
-                .handler(event -> {
-                    if (event.getPlayer() instanceof CameraPlayer)
-                        return;
-                    camera.addCameraViewer(event.getPlayer());
-                })
-                .build());
+        if (sandboxInstance != null) {
+            camera = new CameraPlayer(this.instance, new Pos(origin).sub(new Pos(2, 0, 2)), new CopyOnWriteArrayList<>());
+            MinecraftServer.getGlobalEventHandler().addListener(EventListener
+                    .builder(PlayerLoginEvent.class)
+                    .handler(event -> {
+                        if (event.getPlayer() instanceof CameraPlayer)
+                            return;
+                        camera.addCameraViewer(event.getPlayer());
+                    })
+                    .build());
+        } else camera = null;
     }
 
     @NotNull
@@ -145,7 +148,7 @@ public class TestExecutor implements Tickable {
         tracker.track(object);
     }
 
-    public void execute(TestExecutionListener listener, CountDownLatch completionLatch) {
+    public void execute(TestExecutionListener listener, CompletableFuture<Void> task) {
         if (running) {
             throw new IllegalStateException("Cannot execute a test while it is already running.");
         }
@@ -185,17 +188,12 @@ public class TestExecutor implements Tickable {
                 assertions.add(node);
             }
             rawAssertions.clear();
-
-            for (var assertion : assertions) {
-                System.out.println(assertion.toString());
-            }
-
         } catch (Throwable throwable) {
             end(throwable);
             return;
         }
 
-        this.completionLatch = completionLatch;
+        this.task = task;
         lifetime = 100;
         running = true;
     }
@@ -274,8 +272,8 @@ public class TestExecutor implements Tickable {
         structure.loadIntoBlockSetter(instance, origin);
         if (sandboxInstance != null) structure.loadIntoBlockSetter(sandboxInstance, origin);
 
-        completionLatch.countDown();
-        completionLatch = null;
+        task.complete(null);
+        task = null;
     }
 
     private void initialize() {
@@ -297,14 +295,14 @@ public class TestExecutor implements Tickable {
     }
 
     private void loadWorldRegion(Instance instance) {
-        int minBlockX = origin.blockX() - LOAD_AREA, maxBlockX = origin.blockX() + structure.getSizeX() + LOAD_AREA;
-        int minBlockZ = origin.blockZ() - LOAD_AREA, maxBlockZ = origin.blockZ() + structure.getSizeZ() + LOAD_AREA;
+        double minBlockX = origin.blockX() - LOAD_AREA, maxBlockX = origin.blockX() + structure.getSizeX() + LOAD_AREA;
+        double minBlockZ = origin.blockZ() - LOAD_AREA, maxBlockZ = origin.blockZ() + structure.getSizeZ() + LOAD_AREA;
 
         // Load relevant chunks in parallel
         List<CompletableFuture<?>> loadRequests = new ArrayList<>();
-        for (int x = minBlockX / Chunk.CHUNK_SIZE_X; x <= maxBlockX / Chunk.CHUNK_SIZE_X; x++) {
-            for (int z = minBlockZ / Chunk.CHUNK_SIZE_Z; z <= maxBlockZ / Chunk.CHUNK_SIZE_Z; z++) {
-                loadRequests.add(instance.loadChunk(x, z));
+        for (double x = Math.floor(minBlockX / Chunk.CHUNK_SIZE_X); x <= maxBlockX / Chunk.CHUNK_SIZE_X; x++) {
+            for (double z = minBlockZ / Chunk.CHUNK_SIZE_Z; z <= maxBlockZ / Chunk.CHUNK_SIZE_Z; z++) {
+                loadRequests.add(instance.loadChunk((int) x, (int) z));
             }
         }
 
