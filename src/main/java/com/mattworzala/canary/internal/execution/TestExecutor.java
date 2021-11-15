@@ -79,7 +79,7 @@ public class TestExecutor implements Tickable {
     private volatile boolean running;
     private TestExecutionListener executionListener;
     private Object classInstance;
-    private CountDownLatch completionLatch;
+    private CompletableFuture<Void> task;
     private int lifetime;
 
     private final List<List<AssertionStep>> rawAssertions = new ArrayList<>();
@@ -146,7 +146,7 @@ public class TestExecutor implements Tickable {
         tracker.track(object);
     }
 
-    public void execute(TestExecutionListener listener, CountDownLatch completionLatch) {
+    public void execute(TestExecutionListener listener, CompletableFuture<Void> task) {
         if (running) {
             throw new IllegalStateException("Cannot execute a test while it is already running.");
         }
@@ -196,7 +196,7 @@ public class TestExecutor implements Tickable {
             return;
         }
 
-        this.completionLatch = completionLatch;
+        this.task = task;
         lifetime = 100;
         running = true;
     }
@@ -275,8 +275,8 @@ public class TestExecutor implements Tickable {
         structure.loadIntoBlockSetter(instance, origin);
         if (sandboxInstance != null) structure.loadIntoBlockSetter(sandboxInstance, origin);
 
-        completionLatch.countDown();
-        completionLatch = null;
+        task.complete(null);
+        task = null;
 
         System.exit(1);
     }

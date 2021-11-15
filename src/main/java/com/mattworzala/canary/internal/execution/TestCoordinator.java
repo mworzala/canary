@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Predicate;
 
@@ -98,44 +99,47 @@ public class TestCoordinator {
 //    }
 
     public void execute(TestExecutionListener listener) {
-        CountDownLatch completionLatch = new CountDownLatch(executors.size());
-
         listener.start(engineDescriptor);
 
-        for (TestDescriptor descriptor : engineDescriptor.getChildren()) {
-            executeRecursive(listener, descriptor, completionLatch);
-        }
+        CompletableFuture<Void> executionTask = CompletableFuture.allOf(
+                engineDescriptor.getChildren().stream()
+                        .map(child -> executeRecursive(listener, child, CompletableFuture.completedFuture(null)))
+                        .toArray(CompletableFuture[]::new)
+        );
+
+        //todo do we want to block this thread?
+        executionTask.join();
 
         listener.end(engineDescriptor);
-
-        try {
-            //todo do we want to block this thread?
-            completionLatch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
-    private void executeRecursive(TestExecutionListener listener, TestDescriptor descriptor, CountDownLatch completionLatch) {
+    private CompletableFuture<Void> executeRecursive(TestExecutionListener listener, TestDescriptor descriptor, CompletableFuture<Void> task) {
+        CompletableFuture<Void> nextTask = CompletableFuture.completedFuture(null);
         boolean hasDedicatedExecutor = executors.containsKey(descriptor.getUniqueId());
         if (!hasDedicatedExecutor) {
-            // Just execute child
+            // Just execute children
             listener.start(descriptor);
 
-            for (TestDescriptor child : descriptor.getChildren()) {
-                executeRecursive(listener, child, completionLatch);
-            }
+            nextTask = CompletableFuture.allOf(
+                    descriptor.getChildren().stream()
+                            .map(child -> executeRecursive(listener, child, task))
+                            .toArray(CompletableFuture[]::new)
+            );
 
-            listener.end(descriptor);
+            nextTask = nextTask.thenAccept(v -> listener.end(descriptor));
         } else {
             if (!systemTestFilter.test(descriptor)) {
                 logger.info("Skipping {} due to filtering", descriptor.getUniqueId());
-                return;
+                return nextTask;
             }
 
             TestExecutor executor = executors.get(descriptor.getUniqueId());
-            executor.execute(listener, completionLatch); // non-blocking (starts execution)
+            CompletableFuture<Void> executeTask = new CompletableFuture<>();
+            executor.execute(listener, executeTask); // non-blocking (starts execution)
+            nextTask = nextTask.thenCompose(v -> executeTask);
         }
+
+        return nextTask;
     }
 
     private void createExecutorsRecursive(TestDescriptor descriptor) {
