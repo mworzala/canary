@@ -14,6 +14,7 @@ import com.mattworzala.canary.internal.util.ui.CameraPlayer;
 import com.mattworzala.canary.internal.util.ui.MarkerUtil;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.Tickable;
+import net.minestom.server.command.builder.arguments.ArgumentWord;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.event.EventFilter;
@@ -276,6 +277,8 @@ public class TestExecutor implements Tickable {
 
         completionLatch.countDown();
         completionLatch = null;
+
+        System.exit(1);
     }
 
     private void initialize() {
@@ -297,14 +300,16 @@ public class TestExecutor implements Tickable {
     }
 
     private void loadWorldRegion(Instance instance) {
-        int minBlockX = origin.blockX() - LOAD_AREA, maxBlockX = origin.blockX() + structure.getSizeX() + LOAD_AREA;
-        int minBlockZ = origin.blockZ() - LOAD_AREA, maxBlockZ = origin.blockZ() + structure.getSizeZ() + LOAD_AREA;
+        double minBlockX = origin.blockX() - LOAD_AREA, maxBlockX = origin.blockX() + structure.getSizeX() + LOAD_AREA;
+        double minBlockZ = origin.blockZ() - LOAD_AREA, maxBlockZ = origin.blockZ() + structure.getSizeZ() + LOAD_AREA;
+
+        System.out.println("LOADING (" + minBlockX + ", " + minBlockZ + ") to (" + maxBlockX + ", " + maxBlockZ + ")");
 
         // Load relevant chunks in parallel
         List<CompletableFuture<?>> loadRequests = new ArrayList<>();
-        for (int x = minBlockX / Chunk.CHUNK_SIZE_X; x <= maxBlockX / Chunk.CHUNK_SIZE_X; x++) {
-            for (int z = minBlockZ / Chunk.CHUNK_SIZE_Z; z <= maxBlockZ / Chunk.CHUNK_SIZE_Z; z++) {
-                loadRequests.add(instance.loadChunk(x, z));
+        for (double x = Math.floor(minBlockX / Chunk.CHUNK_SIZE_X); x <= maxBlockX / Chunk.CHUNK_SIZE_X; x++) {
+            for (double z = minBlockZ / Chunk.CHUNK_SIZE_Z; z <= maxBlockZ / Chunk.CHUNK_SIZE_Z; z++) {
+                loadRequests.add(instance.loadChunk((int) x, (int) z));
             }
         }
 
