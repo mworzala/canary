@@ -19,13 +19,11 @@ public class JUnitTestExecutionListenerAdapter implements TestExecutionListener 
 
     @Override
     public void start(@NotNull TestDescriptor descriptor) {
-        System.out.println("STARTING " + descriptor.getDisplayName());
         delegate.executionStarted(descriptor);
     }
 
     @Override
     public void end(@NotNull TestDescriptor descriptor, @Nullable Throwable failure) {
-        System.out.println("ENDING " + descriptor.getDisplayName());
         if (failure == null) {
             delegate.executionFinished(descriptor, TestExecutionResult.successful());
         } else {

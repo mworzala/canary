@@ -301,8 +301,6 @@ public class TestExecutor implements Tickable {
         double minBlockX = origin.blockX() - LOAD_AREA, maxBlockX = origin.blockX() + structure.getSizeX() + LOAD_AREA;
         double minBlockZ = origin.blockZ() - LOAD_AREA, maxBlockZ = origin.blockZ() + structure.getSizeZ() + LOAD_AREA;
 
-        System.out.println("LOADING (" + minBlockX + ", " + minBlockZ + ") to (" + maxBlockX + ", " + maxBlockZ + ")");
-
         // Load relevant chunks in parallel
         List<CompletableFuture<?>> loadRequests = new ArrayList<>();
         for (double x = Math.floor(minBlockX / Chunk.CHUNK_SIZE_X); x <= maxBlockX / Chunk.CHUNK_SIZE_X; x++) {
