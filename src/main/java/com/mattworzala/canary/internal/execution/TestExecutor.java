@@ -277,8 +277,6 @@ public class TestExecutor implements Tickable {
 
         task.complete(null);
         task = null;
-
-        System.exit(1);
     }
 
     private void initialize() {
