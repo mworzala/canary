@@ -43,6 +43,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 
 import static com.mattworzala.canary.internal.util.ReflectionUtils.invokeMethodOptionalParameter;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 // one per test method (reused), handles instantiating the test class, invoking the before/run/after methods, cleaning up the test for the next execution (replace structure).
 //   Executing a test is not blocking, it must be ticked until it reports that it has a result.
@@ -219,7 +220,8 @@ public class TestExecutor implements Tickable {
                 end(null);
             }
         } catch (Throwable throwable) {
-            end(throwable);
+            // An unknown error has occurred while evaluating the assertions
+            end(new AssertionError("An unknown error occurred while evaluating an assertion.", throwable));
             return;
         }
 
