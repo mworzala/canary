@@ -2,6 +2,7 @@ package com.mattworzala.canary.internal.server.sandbox.command.test;
 
 import com.mattworzala.canary.internal.server.sandbox.SandboxServer;
 import com.mattworzala.canary.internal.structure.Structure;
+import com.mattworzala.canary.internal.structure.StructureFilesUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minestom.server.MinecraftServer;
@@ -10,6 +11,7 @@ import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.CommandContext;
 import net.minestom.server.command.builder.arguments.ArgumentString;
 import net.minestom.server.command.builder.arguments.ArgumentType;
+import net.minestom.server.command.builder.arguments.ArgumentWord;
 import net.minestom.server.command.builder.condition.CommandCondition;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Player;
@@ -21,6 +23,7 @@ import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import static com.mattworzala.canary.internal.server.sandbox.command.TestCommand.version;
@@ -34,7 +37,9 @@ public class BuilderCommand extends Command {
 
     private final ItemStack testBuilderItem;
 
-    ArgumentString structureName = ArgumentType.String("structure-name");
+    private ArgumentString structureName = ArgumentType.String("structure-name");
+    private ArgumentWord structureFile = ArgumentType.Word("existing-structure-file");
+    private ArgumentWord currentTestBuilders = ArgumentType.Word("test-builder-id");
 
     public BuilderCommand(SandboxServer server) {
         super("builder", "b");
@@ -48,23 +53,17 @@ public class BuilderCommand extends Command {
         CommandCondition notInTestCondition = (sender, commandString) -> !inTestCondition.canUse(sender, commandString);
 
         addConditionalSyntax(inTestCondition, this::onDone, Literal("done"));
+
         addConditionalSyntax(notInTestCondition, this::onNewTest, Literal("new"), structureName);
-
-        addConditionalSyntax(notInTestCondition, ((sender, context) -> {
-            final String name = context.get(structureName);
-//            testBuilderController = new TestBuilderController(name);
-//            testBuilderController.addPlayer(sender.asPlayer());
-//            isPlayerInTestBuilder = true;
-            sender.asPlayer().sendMessage("Making a new structure with name \"" + name + "\"");
-            sender.asPlayer().refreshCommands();
-        }), Literal("duplicate"), ArgumentType.Word("existing-structure-id").from(getExistingStructureNames()), structureName);
-
+        addConditionalSyntax(notInTestCondition, this::onDuplicate, Literal("duplicate"), structureFile.from(getExistingStructureNames()), structureName);
         addConditionalSyntax(notInTestCondition, this::onBuild, Literal("import"));
+        updateCurrentTestBuilders();
+        addConditionalSyntax(notInTestCondition, this::onJoin, Literal("join"), currentTestBuilders);
 
     }
 
     private String[] getExistingStructureNames() {
-        return new String[]{"test1", "test2", "test3"};
+        return StructureFilesUtil.getStructureFiles().toArray(new String[0]);
     }
 
     private ItemStack getTestBuilderItem() {
@@ -78,13 +77,39 @@ public class BuilderCommand extends Command {
 
         server.newTestBuilder(name, commandSender.asPlayer());
         commandSender.asPlayer().sendMessage("Making a new structure with name \"" + name + "\"");
+
+        updateCurrentTestBuilders();
         commandSender.asPlayer().refreshCommands();
     }
 
     private void onDone(@NotNull CommandSender commandSender, @NotNull CommandContext commandContext) {
         server.playerDoneInTestBuilder(commandSender.asPlayer());
+
+        updateCurrentTestBuilders();
         commandSender.asPlayer().refreshCommands();
 
+    }
+
+    private void onDuplicate(@NotNull CommandSender commandSender, @NotNull CommandContext commandContext) {
+        final String structureFile = commandContext.get("existing-structure-file");
+        final String name = commandContext.get(structureName);
+
+        Player player = commandSender.asPlayer();
+
+        server.newTestBuilder(name, player, StructureFilesUtil.structureFromFile(structureFile));
+        player.sendMessage("duplicating structure " + structureFile + " into new structure with name \"" + name + "\"");
+
+        updateCurrentTestBuilders();
+        player.refreshCommands();
+    }
+
+    private void onJoin(@NotNull CommandSender commandSender, @NotNull CommandContext commandContext) {
+        String testBuilderId = commandContext.get("test-builder-id");
+
+        Player player = commandSender.asPlayer();
+        server.addPlayerToTestBuilder(player, testBuilderId);
+
+        player.refreshCommands();
     }
 
     private void onBuild(@NotNull CommandSender commandSender, @NotNull CommandContext commandContext) {
@@ -132,6 +157,7 @@ public class BuilderCommand extends Command {
 
             server.newTestBuilder("test-test", player, structure);
 
+            updateCurrentTestBuilders();
             player.refreshCommands();
 
         }).start();
@@ -141,5 +167,14 @@ public class BuilderCommand extends Command {
         version(sender, NAME, VERSION);
 
         sender.sendMessage("Test builder help...");
+    }
+
+    private void updateCurrentTestBuilders() {
+        List<String> testBuilderNames = server.getExistingTestBuilders();
+        if (testBuilderNames.size() == 0) {
+            currentTestBuilders = currentTestBuilders.from(null);
+        } else {
+            currentTestBuilders = currentTestBuilders.from(testBuilderNames.toArray(new String[0]));
+        }
     }
 }

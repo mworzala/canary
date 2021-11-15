@@ -131,6 +131,8 @@ public class SandboxServer extends HeadlessServer {
      */
     public void addPlayerToTestBuilder(Player player, String name) {
         for (TestBuilderController testBuilder : testBuilderControllers) {
+            System.out.println(testBuilder.getName());
+            System.out.println(testBuilder.getPlayers().stream().map(Player::getUsername).collect(Collectors.joining(", ")));
             if (testBuilder.getName().equals(name)) {
                 playerUUIDInTestBuilder.add(player.getUuid());
                 testBuilder.addPlayer(player);
@@ -141,7 +143,9 @@ public class SandboxServer extends HeadlessServer {
     public void playerDoneInTestBuilder(Player player) {
         for (TestBuilderController testBuilder : testBuilderControllers) {
             if (testBuilder.hasPlayer(player)) {
-                playerUUIDInTestBuilder.remove(player.getUuid());
+                for (Player p : testBuilder.getPlayers()) {
+                    playerUUIDInTestBuilder.remove(p.getUuid());
+                }
                 // TODO - make this just remove the player, not finish the test builder, unless they're the last player
                 testBuilder.finish();
 

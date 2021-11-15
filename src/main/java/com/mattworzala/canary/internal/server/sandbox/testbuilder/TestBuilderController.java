@@ -1,9 +1,8 @@
 package com.mattworzala.canary.internal.server.sandbox.testbuilder;
 
 import com.mattworzala.canary.internal.server.instance.block.BoundingBoxHandler;
-import com.mattworzala.canary.internal.structure.JsonStructureIO;
 import com.mattworzala.canary.internal.structure.Structure;
-import com.mattworzala.canary.internal.structure.StructureWriter;
+import com.mattworzala.canary.internal.structure.StructureFilesUtil;
 import com.mattworzala.canary.internal.util.testbuilder.BlockBoundingBox;
 import com.mattworzala.canary.internal.util.ui.BlockClickingItemStack;
 import com.mattworzala.canary.internal.util.ui.ItemBehavior;
@@ -29,9 +28,6 @@ import net.minestom.server.network.packet.server.ServerPacket;
 import net.minestom.server.network.packet.server.play.BlockEntityDataPacket;
 import net.minestom.server.world.DimensionType;
 
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 public class TestBuilderController {
@@ -95,8 +91,12 @@ public class TestBuilderController {
     public void addMarker(Player player, Point point) {
         ItemStack leftItem = ItemStack.builder(Material.RED_STAINED_GLASS).displayName(Component.text("")).lore(Component.text("cancel")).build();
         ItemStack rightItem = ItemStack.builder(Material.GREEN_STAINED_GLASS).build();
-        Prompt.AnvilPromptOption cancel = new Prompt.AnvilPromptOption(leftItem, s -> System.out.println("canceled"));
-        Prompt.AnvilPromptOption confirm = new Prompt.AnvilPromptOption(rightItem, s -> markers.put(s, point));
+        Prompt.AnvilPromptOption cancel = new Prompt.AnvilPromptOption(leftItem, null);
+        Prompt.AnvilPromptOption confirm = new Prompt.AnvilPromptOption(rightItem, name -> {
+            player.sendMessage("Placed marker named " + name + " at " + point);
+            markers.put(name, point);
+
+        });
         Prompt.anvilPrompt(player, "Marker Name", cancel, confirm);
     }
 
@@ -160,31 +160,28 @@ public class TestBuilderController {
     public void finish() {
         System.out.println("FINISHING BUILDING STRUCTURE: " + name);
 
-        for (int i = 0; i < players.size(); i++) {
-            Player player = players.get(i);
-            Instance previousInstance = playersPreviousInstances.get(i);
-            Point previousPos = playersPreviousInstancePos.get(i);
+        while (players.size() > 0) {
+            Player player = players.get(0);
+            Instance previousInstance = playersPreviousInstances.get(0);
+            Point previousPos = playersPreviousInstancePos.get(0);
             player.setInstance(previousInstance, previousPos);
-            players.remove(i);
-            playersPreviousInstances.remove(i);
-            playersPreviousInstancePos.remove(i);
+            players.remove(0);
+            playersPreviousInstances.remove(0);
+            playersPreviousInstancePos.remove(0);
 
         }
 
         Point minPoint = blockBoundingBox.getMinPoint();
+
         Structure structure = Structure.structureFromWorld(testBuilderInstance, name, minPoint, blockBoundingBox.getSize());
 
         for (String markerName : markers.keySet()) {
             structure.addMarker(markerName, markers.get(markerName).sub(minPoint));
         }
 
-        // TODO - do this correctly using env variables
-        Path root = FileSystems.getDefault().getPath("..").toAbsolutePath();
-        Path filePath = Paths.get(root.toString(), "src", "main", "resources", name + ".json");
-        StructureWriter structureWriter = new JsonStructureIO();
-        structureWriter.writeStructure(structure, filePath);
+        StructureFilesUtil.saveStructureFile(structure, name + ".json");
 
-        this.reset();
+//        this.reset();
     }
 
     private void updateStructureOutline() {
