@@ -41,29 +41,29 @@ public class BuilderCommand extends Command {
     private ArgumentWord structureFile = ArgumentType.Word("existing-structure-file");
     private ArgumentWord currentTestBuilders = ArgumentType.Word("test-builder-id");
 
+    CommandCondition inTestCondition;
+    CommandCondition notInTestCondition;
+
     public BuilderCommand(SandboxServer server) {
         super("builder", "b");
         this.server = server;
 
         this.testBuilderItem = getTestBuilderItem();
 
-//        setDefaultExecutor(this::onBuild);
-
-        CommandCondition inTestCondition = (sender, commandString) -> server.playerInTestBuilder(sender.asPlayer());
-        CommandCondition notInTestCondition = (sender, commandString) -> !inTestCondition.canUse(sender, commandString);
+        inTestCondition = (sender, commandString) -> server.playerInTestBuilder(sender.asPlayer());
+        notInTestCondition = (sender, commandString) -> !inTestCondition.canUse(sender, commandString);
 
         addConditionalSyntax(inTestCondition, this::onDone, Literal("done"));
 
         addConditionalSyntax(notInTestCondition, this::onNewTest, Literal("new"), structureName);
-        addConditionalSyntax(notInTestCondition, this::onDuplicate, Literal("duplicate"), structureFile.from(getExistingStructureNames()), structureName);
-        addConditionalSyntax(notInTestCondition, this::onBuild, Literal("import"));
+
         updateCurrentTestBuilders();
+        addConditionalSyntax(notInTestCondition, this::onDuplicate, Literal("duplicate"), structureFile, structureName);
+        addConditionalSyntax(notInTestCondition, this::onBuild, Literal("import"));
+
+        updateStructureFiles();
         addConditionalSyntax(notInTestCondition, this::onJoin, Literal("join"), currentTestBuilders);
 
-    }
-
-    private String[] getExistingStructureNames() {
-        return StructureFilesUtil.getStructureFiles().toArray(new String[0]);
     }
 
     private ItemStack getTestBuilderItem() {
@@ -80,19 +80,22 @@ public class BuilderCommand extends Command {
 
         updateCurrentTestBuilders();
         commandSender.asPlayer().refreshCommands();
+        server.refreshCommandsForPlayersNotInTestBuilders();
     }
 
     private void onDone(@NotNull CommandSender commandSender, @NotNull CommandContext commandContext) {
         server.playerDoneInTestBuilder(commandSender.asPlayer());
 
         updateCurrentTestBuilders();
-        commandSender.asPlayer().refreshCommands();
+        updateStructureFiles();
+        server.refreshCommandsForPlayersNotInTestBuilders();
+//        commandSender.asPlayer().refreshCommands();
 
     }
 
     private void onDuplicate(@NotNull CommandSender commandSender, @NotNull CommandContext commandContext) {
         final String structureFile = commandContext.get("existing-structure-file");
-        final String name = commandContext.get(structureName);
+        final String name = commandContext.get(structureName.getId());
 
         Player player = commandSender.asPlayer();
 
@@ -100,7 +103,9 @@ public class BuilderCommand extends Command {
         player.sendMessage("duplicating structure " + structureFile + " into new structure with name \"" + name + "\"");
 
         updateCurrentTestBuilders();
+        updateStructureFiles();
         player.refreshCommands();
+        server.refreshCommandsForPlayersNotInTestBuilders();
     }
 
     private void onJoin(@NotNull CommandSender commandSender, @NotNull CommandContext commandContext) {
@@ -159,6 +164,7 @@ public class BuilderCommand extends Command {
 
             updateCurrentTestBuilders();
             player.refreshCommands();
+            server.refreshCommandsForPlayersNotInTestBuilders();
 
         }).start();
     }
@@ -169,12 +175,21 @@ public class BuilderCommand extends Command {
         sender.sendMessage("Test builder help...");
     }
 
+    private void updateStructureFiles() {
+        updateArgumentWord(structureFile, StructureFilesUtil.getStructureFiles());
+    }
+
     private void updateCurrentTestBuilders() {
         List<String> testBuilderNames = server.getExistingTestBuilders();
-        if (testBuilderNames.size() == 0) {
-            currentTestBuilders = currentTestBuilders.from(null);
+        updateArgumentWord(currentTestBuilders, testBuilderNames);
+    }
+
+    private void updateArgumentWord(ArgumentWord arg, List<String> args) {
+        if (args.size() == 0) {
+            arg.from(null);
         } else {
-            currentTestBuilders = currentTestBuilders.from(testBuilderNames.toArray(new String[0]));
+            arg.from(args.toArray(new String[0]));
         }
+
     }
 }

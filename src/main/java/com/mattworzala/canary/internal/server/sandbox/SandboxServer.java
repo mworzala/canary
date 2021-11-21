@@ -17,7 +17,9 @@ import net.minestom.server.event.player.PlayerLoginEvent;
 import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.extras.PlacementRules;
 import net.minestom.server.extras.optifine.OptifineSupport;
+import net.minestom.server.network.packet.server.play.DeclareCommandsPacket;
 import net.minestom.server.resourcepack.ResourcePack;
+import net.minestom.server.utils.PacketUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +28,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -190,6 +193,18 @@ public class SandboxServer extends HeadlessServer {
 
     public boolean playerInTestBuilder(Player p) {
         return playerUUIDInTestBuilder.contains(p.getUuid());
+    }
+
+    public void refreshCommandsForPlayersNotInTestBuilders() {
+        Set<Player> players = getTestCoordinator().getInstance().getPlayers();
+        if (!players.isEmpty()) {
+            Player p = players.stream().findAny().get();
+            // We make the assumptions that the commands for the players in the test coordinate instance are all the same
+            // this would be incorrect if there are any commands with conditions that depend on things other than if the
+            // player is in a test builder or not
+            DeclareCommandsPacket declareCommandsPacket = MinecraftServer.getCommandManager().createDeclareCommandsPacket(p);
+            PacketUtils.sendGroupedPacket(players, declareCommandsPacket);
+        }
     }
 
 }
