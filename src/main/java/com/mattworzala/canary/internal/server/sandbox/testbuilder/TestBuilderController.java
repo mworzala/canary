@@ -63,6 +63,15 @@ public class TestBuilderController {
         testBuilderInstance = new InstanceContainer(UUID.randomUUID(), DimensionType.OVERWORLD);
         MinecraftServer.getInstanceManager().registerInstance(testBuilderInstance);
 
+        // other things to track: player leaving
+        testBuilderPlayerEventNode.addListener(EventListener.builder(PlayerBlockPlaceEvent.class)
+                .filter(event -> this.hasPlayer(event.getPlayer()))
+                .handler(this::playerPlaceBlock).build());
+
+        testBuilderPlayerEventNode.addListener(EventListener.builder(PlayerBlockBreakEvent.class)
+                .filter(event -> this.hasPlayer(event.getPlayer()))
+                .handler(this::playerBreakBlock).build());
+
         this.placeStartingPlatform();
     }
 
@@ -110,29 +119,6 @@ public class TestBuilderController {
         playersPreviousInstancePos.add(player.getPosition());
         player.setInstance(testBuilderInstance, new Vec(0, 41, 0));
 
-        // REFACTOR : Register events once in constructor in test builder controller
-        // other things to track: player leaving
-        testBuilderPlayerEventNode.addListener(EventListener.builder(PlayerBlockPlaceEvent.class)
-                .filter(event -> event.getPlayer().equals(player))
-                .handler(playerBlockPlaceEvent -> {
-                    System.out.println("PLAYER BLOCK PLACE EVENT");
-                    System.out.println("BLOCK POS: " + playerBlockPlaceEvent.getBlockPosition());
-                    if (blockBoundingBox.addBlock(playerBlockPlaceEvent.getBlockPosition())) {
-                        this.updateStructureOutline();
-                    } else {
-                        playerBlockPlaceEvent.setCancelled(true);
-                    }
-                }).build());
-
-        testBuilderPlayerEventNode.addListener(EventListener.builder(PlayerBlockBreakEvent.class)
-                .filter(event -> event.getPlayer().equals(player))
-                .handler(playerBlockBreakEvent -> {
-                    System.out.println("PLAYER BLOCK BREAK EVENT");
-                    System.out.println("BLOCK POS: " + playerBlockBreakEvent.getBlockPosition());
-                    blockBoundingBox.removeBlock(playerBlockBreakEvent.getBlockPosition());
-                    this.updateStructureOutline();
-                }).build());
-
         ItemBehavior markerItem = new MarkerItem(this);
         BlockClickingItemStack blockClicker = new BlockClickingItemStack(markerItem);
         blockClicker.giveToPlayer(player, player.getHeldSlot());
@@ -140,11 +126,23 @@ public class TestBuilderController {
         updateStructureOutline();
     }
 
+    private void playerPlaceBlock(PlayerBlockPlaceEvent playerBlockPlaceEvent) {
+        if (blockBoundingBox.addBlock(playerBlockPlaceEvent.getBlockPosition())) {
+            this.updateStructureOutline();
+        } else {
+            playerBlockPlaceEvent.setCancelled(true);
+        }
+    }
+
+    private void playerBreakBlock(PlayerBlockBreakEvent playerBlockBreakEvent) {
+        blockBoundingBox.removeBlock(playerBlockBreakEvent.getBlockPosition());
+        this.updateStructureOutline();
+    }
+
     public void importStructure(Structure structure) {
         for (int x = 0; x < 5; x++) {
             for (int z = 0; z < 5; z++) {
                 var point = new Vec(x, 40, z);
-//                blockBoundingBox.removeBlock(point);
                 testBuilderInstance.setBlock(point, Block.AIR);
             }
         }
