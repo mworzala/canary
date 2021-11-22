@@ -191,7 +191,7 @@ public class SandboxServer extends HeadlessServer {
         return testBuilderControllers.stream().map(TestBuilderController::getName).collect(Collectors.toList());
     }
 
-    public boolean playerInTestBuilder(Player p) {
+    public boolean isPlayerInTestBuilder(Player p) {
         return playerUUIDInTestBuilder.contains(p.getUuid());
     }
 
@@ -203,7 +203,7 @@ public class SandboxServer extends HeadlessServer {
      * @return
      */
     public TestBuilderController getTestBuilderOfPlayer(Player p) {
-        if (playerInTestBuilder(p)) {
+        if (isPlayerInTestBuilder(p)) {
             for (TestBuilderController testBuilder : testBuilderControllers) {
                 if (testBuilder.hasPlayer(p)) {
                     return testBuilder;

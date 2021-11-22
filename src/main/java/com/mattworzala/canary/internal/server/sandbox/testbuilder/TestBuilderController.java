@@ -158,14 +158,10 @@ public class TestBuilderController {
         System.out.println("FINISHING BUILDING STRUCTURE: " + name);
 
         while (players.size() > 0) {
-            Player player = players.get(0);
-            Instance previousInstance = playersPreviousInstances.get(0);
-            Point previousPos = playersPreviousInstancePos.get(0);
+            Player player = players.remove(0);
+            Instance previousInstance = playersPreviousInstances.remove(0);
+            Point previousPos = playersPreviousInstancePos.remove(0);
             player.setInstance(previousInstance, previousPos);
-            players.remove(0);
-            playersPreviousInstances.remove(0);
-            playersPreviousInstancePos.remove(0);
-
         }
 
         Point minPoint = blockBoundingBox.getMinPoint();

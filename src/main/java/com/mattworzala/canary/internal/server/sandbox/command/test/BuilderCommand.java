@@ -53,7 +53,7 @@ public class BuilderCommand extends Command {
 
         this.testBuilderItem = getTestBuilderItem();
 
-        inTestCondition = (sender, commandString) -> server.playerInTestBuilder(sender.asPlayer());
+        inTestCondition = (sender, commandString) -> server.isPlayerInTestBuilder(sender.asPlayer());
         notInTestCondition = (sender, commandString) -> !inTestCondition.canUse(sender, commandString);
 
         addConditionalSyntax(inTestCondition, this::onDone, Literal("done"));
