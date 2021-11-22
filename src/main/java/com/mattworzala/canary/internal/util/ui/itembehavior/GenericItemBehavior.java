@@ -19,9 +19,14 @@ public class GenericItemBehavior implements ItemBehavior {
     public void onLeftClick(Player player, Point point) {
         if (leftClick != null) {
             try {
-                String argumentsStr = leftClick.handle(player, point);
-                MinecraftServer.getCommandManager().execute(player, baseCommand + " " + argumentsStr);
-            } catch (Exception ignored) {
+                leftClick.handle(player, point)
+                        .thenAccept(str -> {
+                            if (str != null) {
+                                MinecraftServer.getCommandManager().execute(player, baseCommand + " " + str);
+                            }
+                        });
+            } catch (Exception e) {
+                System.out.println("exception happened in onLeftClick: " + e);
             }
         }
 
@@ -31,9 +36,14 @@ public class GenericItemBehavior implements ItemBehavior {
     public void onRightClick(Player player, Point point) {
         if (rightClick != null) {
             try {
-                String argumentsStr = rightClick.handle(player, point);
-                MinecraftServer.getCommandManager().execute(player, baseCommand + " " + argumentsStr);
-            } catch (Exception ignored) {
+                rightClick.handle(player, point)
+                        .thenAccept(str -> {
+                            if (str != null) {
+                                MinecraftServer.getCommandManager().execute(player, baseCommand + " " + str);
+                            }
+                        });
+            } catch (Exception e) {
+                System.out.println("exception happened in onRightClick: " + e);
             }
         }
     }

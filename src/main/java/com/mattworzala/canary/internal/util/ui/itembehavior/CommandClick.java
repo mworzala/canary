@@ -6,6 +6,8 @@ import net.minestom.server.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 public class CommandClick {
 
@@ -17,13 +19,31 @@ public class CommandClick {
         this.args = args;
     }
 
-    public String handle(Player player, Point p) throws Exception {
-        List<String> arguments = new ArrayList<>();
+    public CompletableFuture<String> handle(Player player, Point p) throws Exception {
+        CompletableFuture<String>[] futures;
+        futures = new CompletableFuture[args.size()];
+        int indx = 0;
         for (Argument arg : args) {
-            arguments.add(arg.get(player, p).get());
+            futures[indx] = arg.get(player, p);
+            indx++;
         }
-
-        String joinedArgs = String.join(" ", arguments);
-        return baseCommands + " " + joinedArgs;
+        return CompletableFuture.allOf(futures)
+                .thenApply(new Function<Void, String>() {
+                    @Override
+                    public String apply(Void unused) {
+                        List<String> results = new ArrayList<>(args.size());
+                        for (CompletableFuture<String> f : futures) {
+                            try {
+                                results.add(f.get());
+                            } catch (Exception e) {
+                                return (String) null;
+                            }
+                        }
+                        String joinedArgs = String.join(" ", results);
+                        System.out.println("returning \"" + baseCommands + " " + joinedArgs + "\"");
+                        return baseCommands + " " + joinedArgs;
+                    }
+                });
     }
+
 }
