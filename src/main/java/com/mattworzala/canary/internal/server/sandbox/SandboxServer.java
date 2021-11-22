@@ -195,6 +195,25 @@ public class SandboxServer extends HeadlessServer {
         return playerUUIDInTestBuilder.contains(p.getUuid());
     }
 
+    /**
+     * Gets the test builder that the given player is currently in
+     * If the current player is not in a test builder, returns null
+     *
+     * @param p
+     * @return
+     */
+    public TestBuilderController getTestBuilderOfPlayer(Player p) {
+        if (playerInTestBuilder(p)) {
+            for (TestBuilderController testBuilder : testBuilderControllers) {
+                if (testBuilder.hasPlayer(p)) {
+                    return testBuilder;
+                }
+            }
+        }
+
+        return null;
+    }
+
     public void refreshCommandsForPlayersNotInTestBuilders() {
         Set<Player> players = getTestCoordinator().getInstance().getPlayers();
         if (!players.isEmpty()) {

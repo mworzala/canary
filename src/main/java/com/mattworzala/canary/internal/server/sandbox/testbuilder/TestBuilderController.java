@@ -5,8 +5,8 @@ import com.mattworzala.canary.internal.structure.Structure;
 import com.mattworzala.canary.internal.structure.StructureFilesUtil;
 import com.mattworzala.canary.internal.util.testbuilder.BlockBoundingBox;
 import com.mattworzala.canary.internal.util.ui.BlockClickingItemStack;
-import com.mattworzala.canary.internal.util.ui.ItemBehavior;
-import com.mattworzala.canary.internal.util.ui.Prompt;
+import com.mattworzala.canary.internal.util.ui.itembehavior.ItemBehavior;
+import com.mattworzala.canary.internal.util.ui.itembehavior.argument.Arguments;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Point;
@@ -97,16 +97,8 @@ public class TestBuilderController {
 
     }
 
-    public void addMarker(Player player, Point point) {
-        ItemStack leftItem = ItemStack.builder(Material.RED_STAINED_GLASS).displayName(Component.text("")).lore(Component.text("cancel")).build();
-        ItemStack rightItem = ItemStack.builder(Material.GREEN_STAINED_GLASS).build();
-        Prompt.AnvilPromptOption cancel = new Prompt.AnvilPromptOption(leftItem, null);
-        Prompt.AnvilPromptOption confirm = new Prompt.AnvilPromptOption(rightItem, name -> {
-            player.sendMessage("Placed marker named " + name + " at " + point);
-            markers.put(name, point);
-
-        });
-        Prompt.anvilPrompt(player, "Marker Name", cancel, confirm);
+    public void addMarker(Point point, String name) {
+        markers.put(name, point);
     }
 
     public void addPlayer(Player player) {
@@ -119,7 +111,14 @@ public class TestBuilderController {
         playersPreviousInstancePos.add(player.getPosition());
         player.setInstance(testBuilderInstance, new Vec(0, 41, 0));
 
-        ItemBehavior markerItem = new MarkerItem(this);
+        ItemStack leftItem = ItemStack.builder(Material.RED_STAINED_GLASS).displayName(Component.text("")).lore(Component.text("cancel")).build();
+        ItemStack rightItem = ItemStack.builder(Material.GREEN_STAINED_GLASS).build();
+        ItemBehavior markerItem = ItemBehavior.builder("test builder edit")
+                .onLeftClick("marker")
+                .arg(Arguments.CLICKED_BLOCK)
+                .arg(Arguments.StringPromptAnvil("marker name", leftItem, rightItem))
+                .build();
+//        ItemBehavior markerItem = new MarkerItem(this);
         BlockClickingItemStack blockClicker = new BlockClickingItemStack(markerItem);
         blockClicker.giveToPlayer(player, player.getHeldSlot());
 

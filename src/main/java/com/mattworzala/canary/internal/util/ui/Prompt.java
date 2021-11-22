@@ -16,6 +16,7 @@ import net.minestom.server.item.ItemStack;
 import net.minestom.server.network.packet.client.play.ClientNameItemPacket;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -109,5 +110,74 @@ public class Prompt {
                 }).build());
 
         MinecraftServer.getGlobalEventHandler().addChild(inventoryNode);
+    }
+
+
+    /**
+     * Shows the player an anvil inventory with the given title
+     * The player can click in the left slot to cancel, or the right slot to "confirm"
+     * Closing the inventory is also considered canceling
+     * Both the cancel callback and the right-hand callback get given whatever text the player has entered
+     *
+     * @param player
+     * @param title
+     * @param cancelOption
+     * @param rightHandOption
+     */
+    public static String blockingAnvilPrompt(Player player, String title, AnvilPromptOption cancelOption, AnvilPromptOption rightHandOption) {
+        AnvilInventory anvilInventory = new AnvilInventory(title);
+        anvilInventory.setItemStack(ANVIL_LHS_SLOT, cancelOption.item);
+        anvilInventory.setItemStack(ANVIL_RHS_SLOT, rightHandOption.item);
+
+        // Minestom does not currently handle NameItem packets, so we set the listener
+        // TODO - do this using events
+        AtomicReference<String> name = new AtomicReference<>("");
+        MinecraftServer.getPacketListenerManager().setListener(ClientNameItemPacket.class, (packet, player1) -> {
+            name.set(packet.itemName);
+//            anvilInventory.setItemStack(ANVIL_RHS_SLOT, rightHandOption.item);
+//            anvilInventory.setRepairCost((short) 0);
+        });
+
+        System.out.println("countdownlatch creation thread is: " + Thread.currentThread().getName());
+        CountDownLatch doneLatch = new CountDownLatch(1);
+        new Thread(() -> {
+            anvilInventory.addInventoryCondition((p, slot, clickType, inventoryConditionResult) -> {
+                if (slot == ANVIL_LHS_SLOT) {
+                    cancelOption.callback.accept(name.get());
+                    p.closeInventory();
+                    doneLatch.countDown();
+                }
+                if (slot == ANVIL_RHS_SLOT) {
+                    rightHandOption.callback.accept(name.get());
+                    p.closeInventory();
+                    System.out.println("handle confirm thread is: " + Thread.currentThread().getName());
+                    doneLatch.countDown();
+                }
+                inventoryConditionResult.setCancel(true);
+            });
+            player.openInventory(anvilInventory);
+
+            // listen for the player closing the inventory to cancel
+            EventNode<InventoryEvent> inventoryNode = EventNode.type("inventory-listener", EventFilter.INVENTORY);
+
+            inventoryNode.addListener(EventListener.builder(InventoryCloseEvent.class)
+                    .handler(inventoryCloseEvent -> {
+                        if (inventoryCloseEvent.getPlayer().getUuid().equals(player.getUuid()) &&
+                                inventoryCloseEvent.getInventory().equals(anvilInventory)) {
+                            cancelOption.callback.accept(name.get());
+                            doneLatch.countDown();
+                        }
+                    }).build());
+
+            MinecraftServer.getGlobalEventHandler().addChild(inventoryNode);
+
+        }).start();
+        try {
+            doneLatch.await();
+            return name.get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

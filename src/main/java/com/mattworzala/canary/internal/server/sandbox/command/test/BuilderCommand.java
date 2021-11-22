@@ -1,6 +1,7 @@
 package com.mattworzala.canary.internal.server.sandbox.command.test;
 
 import com.mattworzala.canary.internal.server.sandbox.SandboxServer;
+import com.mattworzala.canary.internal.server.sandbox.command.test.builder.EditCommand;
 import com.mattworzala.canary.internal.structure.Structure;
 import com.mattworzala.canary.internal.structure.StructureFilesUtil;
 import net.kyori.adventure.text.Component;
@@ -47,6 +48,8 @@ public class BuilderCommand extends Command {
     public BuilderCommand(SandboxServer server) {
         super("builder", "b");
         this.server = server;
+
+        addSubcommand(new EditCommand(server));
 
         this.testBuilderItem = getTestBuilderItem();
 

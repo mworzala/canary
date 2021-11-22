@@ -1,4 +1,4 @@
-package com.mattworzala.canary.internal.util.ui;
+package com.mattworzala.canary.internal.util.ui.itembehavior;
 
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Player;
@@ -25,5 +25,10 @@ public interface ItemBehavior {
                 })
                 .build();
     }
+
+    static ItemBehaviorBuilder builder(String baseCommand) {
+        return new ItemBehaviorBuilder(baseCommand);
+    }
+
 
 }

@@ -1,5 +1,6 @@
 package com.mattworzala.canary.internal.util.ui;
 
+import com.mattworzala.canary.internal.util.ui.itembehavior.ItemBehavior;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.EventFilter;
@@ -31,7 +32,6 @@ public class BlockClickingItemStack {
 
     public void giveToPlayer(Player player, int slot) {
         ItemStack itemStack = this.item.getItem();
-        ;
         player.getInventory().setItemStack(slot, itemStack);
 
         blockBreakEventEventListener =
