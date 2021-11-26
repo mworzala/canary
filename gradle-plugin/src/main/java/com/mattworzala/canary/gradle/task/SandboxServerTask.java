@@ -7,7 +7,7 @@ import org.gradle.api.tasks.SourceSet;
 
 import java.io.File;
 
-public class SandboxServerTask extends JavaExec { //todo switch to javaexec
+public class SandboxServerTask extends JavaExec {
     public SandboxServerTask() {
         dependsOn("testClasses", "classes"); // Do not depend on `build` because it depends on `test` (indirectly)
 
@@ -21,7 +21,7 @@ public class SandboxServerTask extends JavaExec { //todo switch to javaexec
         SourceSet testSourceSet = javaPlugin.getSourceSets().getByName(SourceSet.TEST_SOURCE_SET_NAME);
 
         // Set options
-        jvmArgs(); //todo
+        jvmArgs("-ea");
         args(); //todo
         environment("CANARY_TEST_RESOURCES", new File(getProject().getProjectDir(), "src/test/resources")); //todo this does not handle people with weird source sets.
 
