@@ -24,7 +24,6 @@ public class CanaryPlugin implements Plugin<Project> {
             project.getRepositories().mavenCentral();
 
             // Add canary dependency
-//            System.out.println("// testImplementation 'com.mattworzala:canary:" + extension.getVersion() + "'");
             project.getDependencies().add("testImplementation", "com.mattworzala:canary:" + extension.getVersion());
         });
 
