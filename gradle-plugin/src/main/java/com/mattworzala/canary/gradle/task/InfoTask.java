@@ -21,7 +21,8 @@ public class InfoTask extends DefaultTask {
             System.out.println("==================");
 
             // Canary Version
-            System.out.println("Version\t\t" + extension.getVersion());
+            System.out.println("Canary\t\t" + extension.getVersion());
+            System.out.println("Gradle\t\t" + CanaryPlugin.VERSION);
 
             // Minestom Version
             List<String> minestomVersions = resolveMinestomVersions();

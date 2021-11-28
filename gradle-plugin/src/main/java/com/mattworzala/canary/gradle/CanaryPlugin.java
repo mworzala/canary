@@ -8,6 +8,7 @@ import org.gradle.api.plugins.JavaBasePlugin;
 
 public class CanaryPlugin implements Plugin<Project> {
     public static final String GROUP = "canary";
+    public static final String VERSION = "$CANARY_GRADLE_VERSION$";
 
     @Override
     public void apply(Project project) {
@@ -22,9 +23,9 @@ public class CanaryPlugin implements Plugin<Project> {
             // Ensure central repo is present
             project.getRepositories().mavenCentral();
 
-            // Add canary dependency todo needs to be published first
-            System.out.println("// testImplementation 'com.mattworzala:canary:" + extension.getVersion() + "'");
-//            project.getDependencies().add("testImplementation", "com.mattworzala:canary:" + extension.getVersion());
+            // Add canary dependency
+//            System.out.println("// testImplementation 'com.mattworzala:canary:" + extension.getVersion() + "'");
+            project.getDependencies().add("testImplementation", "com.mattworzala:canary:" + extension.getVersion());
         });
 
         // Register sandbox creation task

@@ -30,6 +30,7 @@ tasks {
     }
 
     blossom {
+        replaceToken("\$CANARY_GRADLE_VERSION$", rootProperties.getProperty("canary.gradle.version"))
         replaceToken("\$CANARY_VERSION$", rootProperties.getProperty("canary.version"))
     }
 }

@@ -1,6 +1,7 @@
 rootProject.name = "canary"
 
 include("codegen")
-include("demo")
+
+includeBuild("demo")
 
 includeBuild("gradle-plugin")

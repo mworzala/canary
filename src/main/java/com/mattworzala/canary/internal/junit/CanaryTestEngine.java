@@ -1,6 +1,7 @@
 package com.mattworzala.canary.internal.junit;
 
 import com.mattworzala.canary.internal.junit.descriptor.CanaryEngineDescriptor;
+import com.mattworzala.canary.internal.junit.descriptor.CanaryTestDescriptor;
 import com.mattworzala.canary.internal.junit.discovery.CanaryDiscoverer;
 import com.mattworzala.canary.internal.junit.execution.JUnitTestExecutionListenerAdapter;
 import com.mattworzala.canary.internal.util.reflect.ProxyHeadlessServer;
@@ -9,9 +10,11 @@ import com.mattworzala.canary.internal.util.reflect.ProxyTestCoordinator;
 import com.mattworzala.canary.internal.util.MinestomMixin;
 import com.mattworzala.canary.internal.util.safety.EnvType;
 import com.mattworzala.canary.internal.util.safety.Env;
+import org.jetbrains.annotations.NotNull;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.engine.*;
+import org.junit.platform.engine.support.descriptor.MethodSource;
 
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
@@ -68,11 +71,21 @@ public class CanaryTestEngine implements TestEngine {
 
     @Override
     public TestDescriptor discover(EngineDiscoveryRequest discoveryRequest, UniqueId uniqueId) {
-        // REFACTOR : Only initialize Minestom if we actually discover tests. Otherwise the engine should silently exit.
-        if (this.server == null) init();
 
         CanaryEngineDescriptor discoveryResult = CanaryDiscoverer.discover(discoveryRequest, uniqueId);
 
+        // Count the received tests, and exit early if zero
+        CountingVisitor visitor = new CountingVisitor();
+        visitor.visit(discoveryResult);
+        logger.debug(() -> "Discovered " + visitor.getCount() + " tests");
+        if (visitor.getCount() == 0) {
+            return discoveryResult;
+        }
+
+        // There is at least one test, continue with initialization
+        if (this.server == null) init();
+
+        // Load tests into server
         ProxyTestCoordinator coordinator = server.getTestCoordinator();
         coordinator.indexTests(discoveryResult);
 
@@ -88,6 +101,7 @@ public class CanaryTestEngine implements TestEngine {
         ProxyTestCoordinator coordinator = server.getTestCoordinator();
         var junitListener = new JUnitTestExecutionListenerAdapter(request.getEngineExecutionListener());
         coordinator.execute(junitListener); // No filter set, will execute all tests
+
         // TestCoordinator#execute blocks until complete.
 
         stopServer();
@@ -105,6 +119,20 @@ public class CanaryTestEngine implements TestEngine {
 
     public void stopServer() {
         server.stop();
+    }
+
+    private static class CountingVisitor implements TestDescriptorVisitor {
+        private int count = 0;
+
+        @Override
+        public boolean visitTestMethod(@NotNull CanaryTestDescriptor test, @NotNull MethodSource source) {
+            count++;
+            return TestDescriptorVisitor.super.visitTestMethod(test, source);
+        }
+
+        public int getCount() {
+            return count;
+        }
     }
 
 

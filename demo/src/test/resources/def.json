@@ -1,0 +1,15 @@
+{
+  "id": "def",
+  "size": [
+    5,
+    1,
+    5
+  ],
+  "blockmap": [
+    {
+      "block": "minecraft:stone"
+    }
+  ],
+  "blocks": "0,25",
+  "markers": {}
+}
