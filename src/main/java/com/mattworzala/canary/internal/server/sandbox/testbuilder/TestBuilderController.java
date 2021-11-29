@@ -58,6 +58,7 @@ public class TestBuilderController {
             .arg(Arguments.StringPromptAnvil("marker name", leftItem, rightItem))
             .build();
     private final ItemBehavior BLOCK_HANDLER_ITEM_BEHAVIOR = ItemBehavior.builder("test builder edit")
+            .setItemStack(ItemStack.builder(Material.STICK).build())
             .onLeftClick("handler")
             .arg(Arguments.CLICKED_BLOCK)
             .arg(Arguments.ChatResponsePrompt("Handler for block:"))
@@ -133,8 +134,8 @@ public class TestBuilderController {
                 .arg(Arguments.StringPromptAnvil("marker name", leftItem, rightItem))
                 .build();
 //        ItemBehavior markerItem = new MarkerItem(this);
-//        BlockClickingItemStack blockClicker = new BlockClickingItemStack(MARKER_ITEM_BEHAVIOR);
-//        blockClicker.giveToPlayer(player, player.getHeldSlot());
+        BlockClickingItemStack blockClicker = new BlockClickingItemStack(MARKER_ITEM_BEHAVIOR);
+        blockClicker.giveToPlayer(player, player.getHeldSlot());
         BlockClickingItemStack handlerSetter = new BlockClickingItemStack(BLOCK_HANDLER_ITEM_BEHAVIOR);
         handlerSetter.giveToPlayer(player, player.getHeldSlot() + 1);
 
