@@ -62,7 +62,7 @@ public class BuilderCommand extends Command {
 
         updateCurrentTestBuilders();
         addConditionalSyntax(notInTestCondition, this::onDuplicate, Literal("duplicate"), structureFile, structureName);
-        addConditionalSyntax(notInTestCondition, this::onBuild, Literal("import"));
+        addConditionalSyntax(notInTestCondition, this::onImport, Literal("import"));
 
         updateStructureFiles();
         addConditionalSyntax(notInTestCondition, this::onJoin, Literal("join"), currentTestBuilders);
@@ -120,7 +120,7 @@ public class BuilderCommand extends Command {
         player.refreshCommands();
     }
 
-    private void onBuild(@NotNull CommandSender commandSender, @NotNull CommandContext commandContext) {
+    private void onImport(@NotNull CommandSender commandSender, @NotNull CommandContext commandContext) {
         new Thread(() -> {
             Player player = commandSender.asPlayer();
 

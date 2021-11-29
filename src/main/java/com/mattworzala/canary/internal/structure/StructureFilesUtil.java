@@ -1,9 +1,9 @@
 package com.mattworzala.canary.internal.structure;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,7 +28,7 @@ public class StructureFilesUtil {
 
     /**
      * @param file A file path returned by getStructureFiles()
-     * @return
+     * @return The structure read from the given file path
      */
     public static Structure structureFromFile(String file) {
         Path path = Paths.get(getStructureTopFile(), file);
@@ -41,24 +41,16 @@ public class StructureFilesUtil {
      * @return A list of all the structure files along with their path in the folder defined by CANARY_TEST_RESOURCES
      */
     public static List<String> getStructureFiles() {
-        File structureResourceDirectory = new File(getStructureTopFile());
-        return recursiveGetSubFiles(structureResourceDirectory);
-    }
+        try {
+            Path basePath = Paths.get(getStructureTopFile());
 
-    private static List<String> recursiveGetSubFiles(File top) {
-        File children[] = top.listFiles();
-
-        List<String> files = new ArrayList<>();
-
-        for (File child : children) {
-            if (child.isDirectory()) {
-                files.addAll(recursiveGetSubFiles(child).stream().map(s -> child.getName() + "/" + s).collect(Collectors.toList()));
-            } else {
-                files.add(child.getName());
-            }
+            return Files.walk(basePath)
+                    .filter(Files::isRegularFile)
+                    .map(p -> basePath.relativize(p).toString())
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
-        return files;
     }
-
-
 }

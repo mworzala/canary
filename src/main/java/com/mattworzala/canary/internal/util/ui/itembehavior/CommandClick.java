@@ -19,14 +19,9 @@ public class CommandClick {
         this.args = args;
     }
 
-    public CompletableFuture<String> handle(Player player, Point p) throws Exception {
-        CompletableFuture<String>[] futures;
-        futures = new CompletableFuture[args.size()];
-        int indx = 0;
-        for (Argument arg : args) {
-            futures[indx] = arg.get(player, p);
-            indx++;
-        }
+    public CompletableFuture<String> handle(Player player, Point p) {
+        CompletableFuture<String>[] futures = args.stream().map(arg -> arg.get(player, p)).toArray(CompletableFuture[]::new);
+
         return CompletableFuture.allOf(futures)
                 .thenApply(new Function<Void, String>() {
                     @Override
