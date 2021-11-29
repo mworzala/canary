@@ -91,6 +91,50 @@ RHS (100/0) : TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
 
 TEST:       testWalkToPoint
 ASSERTION:  entity1@<1, 1, 1> THEN entity2@<2, 2, 2>
+FAILURE:    left
+
+SANDBOX:
+[testWalkToEntity] [GO] [LOG] entity1@<1, 1, 1> THEN entity2@<2, 2, 2>
+The left condition never passed.
+↳ entity1 did not reach <1, 1, 1>
+
+----------------------------------------------------------------------------------------------------------------------
+
+TEST:       testWalkToPoint
+ASSERTION:  entity1@<1, 1, 1> THEN entity2@<2, 2, 2>
+FAILURE:    right
+
+SANDBOX:
+[testWalkToEntity] [GO] [LOG] entity1@<1, 1, 1> THEN entity2@<2, 2, 2>
+The right condition did not pass after the left condition passed (at step 25).
+↳ entity2 did not reach <2, 2, 2>
+
+
+HEADLESS:
+Error: com.mattworzala.canary.demo.TestEntityTest.testWalkToPoint - entity1@<1, 1, 1> THEN entity2@<2, 2, 2>
+The right condition did not pass after the left condition passed (at step 25).
+↳ entity2 did not reach <2, 2, 2>
+
+<fold group> Complete Log
+
+</fold group>
+
+----------------------------------------------------------------------------------------------------------------------
+
+TEST:       testWalkToPoint
+ASSERTION:  ALWAYS entity1@<1, 1, 1>
+
+SANDBOX:
+[testWalkToEntity] [GO] [LOG] ALWAYS entity1@<1, 1, 1>
+The condition passed (at step 25).
+
+HEADLESS:
+Error: com.mattworzala.canary.demo.TestEntityTest.testWalkToPoint - ALWAYS entity1@<1, 1, 1>
+The condition passed (at step 25).
+
+<fold group> Complete Log
+
+</fold group>
 
 
 
