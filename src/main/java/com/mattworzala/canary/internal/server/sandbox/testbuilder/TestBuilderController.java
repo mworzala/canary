@@ -49,6 +49,20 @@ public class TestBuilderController {
 
     private Map<String, Point> markers = new HashMap<>();
 
+
+    private ItemStack leftItem = ItemStack.builder(Material.RED_STAINED_GLASS).displayName(Component.text("")).lore(Component.text("cancel")).build();
+    private ItemStack rightItem = ItemStack.builder(Material.GREEN_STAINED_GLASS).build();
+    private final ItemBehavior MARKER_ITEM_BEHAVIOR = ItemBehavior.builder("test builder edit")
+            .onLeftClick("marker")
+            .arg(Arguments.CLICKED_BLOCK)
+            .arg(Arguments.StringPromptAnvil("marker name", leftItem, rightItem))
+            .build();
+    private final ItemBehavior BLOCK_HANDLER_ITEM_BEHAVIOR = ItemBehavior.builder("test builder edit")
+            .onLeftClick("handler")
+            .arg(Arguments.CLICKED_BLOCK)
+            .arg(Arguments.ChatResponsePrompt("Handler for block:"))
+            .build();
+
     private static final EventNode<PlayerEvent> testBuilderPlayerEventNode = EventNode.type("test-builder-controller-player", EventFilter.PLAYER);
 
     static {
@@ -119,8 +133,10 @@ public class TestBuilderController {
                 .arg(Arguments.StringPromptAnvil("marker name", leftItem, rightItem))
                 .build();
 //        ItemBehavior markerItem = new MarkerItem(this);
-        BlockClickingItemStack blockClicker = new BlockClickingItemStack(markerItem);
-        blockClicker.giveToPlayer(player, player.getHeldSlot());
+//        BlockClickingItemStack blockClicker = new BlockClickingItemStack(MARKER_ITEM_BEHAVIOR);
+//        blockClicker.giveToPlayer(player, player.getHeldSlot());
+        BlockClickingItemStack handlerSetter = new BlockClickingItemStack(BLOCK_HANDLER_ITEM_BEHAVIOR);
+        handlerSetter.giveToPlayer(player, player.getHeldSlot() + 1);
 
         updateStructureOutline();
     }
