@@ -46,6 +46,20 @@ Step 6 : entity1 was at <0, 0, 0>
 ...
 </fold group>
 
+AGGREGATE INFORMATION
+message:    "${ENTITY} did not reach ${POS}" % (entity1, <1, 1, 1>)
+descriptor:
+- class:    com.mattworzala.canary.demo.TestEntityTest
+- test id:  testWalkToPoint
+- location: 55:25 (line:character)
+history:
+- num pass: 1
+- num fail: 119
+- history items
+
+FACTS
+fact("{} did not reach {}", actual, actual.getPosition())
+
 ----------------------------------------------------------------------------------------------------------------------
 
 TEST:       testWalkToPoint
@@ -69,6 +83,23 @@ RHS (0/100) : FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
 <fold group> Complete Log
 
 </fold group>
+
+AGGREGATE INFORMATION
+message:    """
+            The left and right conditions were not true at the same time.
+            LHS (${LEFT_PASSES}/${LEFT_FAILS}) : ${LEFT_HISTORY_SHORT}
+            ↳ ${LEFT_PARENT}
+            LHS (${RIGHT_PASSES}/${RIGHT_FAILS}) : ${RIGHT_HISTORY_SHORT}
+            ↳ ${RIGHT_PARENT}
+            """ % (entity1, <1, 1, 1>)
+descriptor:
+- class:    com.mattworzala.canary.demo.TestEntityTest
+- test id:  testWalkToPoint
+- location: 55:25 (line:character)
+
+FACTS (?)
+simpleFact("The left and right conditions were not true at the same time.")
+fact("LHS (%d/%d) : %s", ???)
 
 ----------------------------------------------------------------------------------------------------------------------
 
