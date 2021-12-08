@@ -86,7 +86,7 @@ public class JsonStructureIO implements StructureWriter, StructureReader {
             if (sizeList.size() != 3) {
                 throw new JsonParseException("expected the size to be an array of 3 elements");
             }
-            return new Vec(sizeList.get(0), sizeList.get(0), sizeList.get(2));
+            return new Vec(sizeList.get(0), sizeList.get(1), sizeList.get(2));
         }
     }
 

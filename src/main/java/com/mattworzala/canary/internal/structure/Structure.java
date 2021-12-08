@@ -78,7 +78,7 @@ public class Structure {
      */
     private void setBlockInBlockSetter(int index, @NotNull Block block, BlockSetter blockSetter, Point offset) {
         int x = index % this.getSizeX();
-        int z = index % (this.getSizeX() * this.getSizeZ()) / this.getSizeZ();
+        int z = index % (this.getSizeX() * this.getSizeZ()) / this.getSizeX();
         int y = index / (this.getSizeX() * this.getSizeZ());
         assert x <= this.getSizeX();
         assert y <= this.getSizeY();
