@@ -2,7 +2,6 @@ package com.mattworzala.canary.internal.util;
 
 import com.mattworzala.canary.internal.util.safety.EnvType;
 import com.mattworzala.canary.internal.util.safety.Env;
-import net.minestom.server.extras.selfmodification.MinestomRootClassLoader;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -18,19 +17,7 @@ public class ClassLoaders {
     private static final Logger logger = LoggerFactory.getLogger(ClassLoaders.class);
 
     public static final ClassLoader DEFAULT = com.mattworzala.canary.internal.junit.CanaryTestEngine.class.getClassLoader();
-    public static final MinestomRootClassLoader MINESTOM = MinestomRootClassLoader.getInstance();
-
-    static {
-        // Protect relevant packages on first init
-        MINESTOM.protectedPackages.add("org.junit");
-        MINESTOM.protectedPackages.add("com.mattworzala.canary.internal.junit");
-        MINESTOM.protectedPackages.add("com.mattworzala.canary.internal.launch");
-        MINESTOM.protectedPackages.add("com.mattworzala.canary.internal.util.reflect");
-        MINESTOM.protectedClasses.add("com.mattworzala.canary.internal.util.ClassLoaders");
-        MINESTOM.protectedClasses.add("com.mattworzala.canary.internal.util.MinestomMixin");
-        MINESTOM.protectedClasses.add("com.mattworzala.canary.internal.util.ReflectionUtils");
-        MINESTOM.protectedClasses.add("com.mattworzala.canary.internal.execution.TestExecutionListener");
-    }
+    public static final ClassLoader MINESTOM = ;
 
     @NotNull
     public static Class<?> loadClassRequired(ClassLoader classLoader, Class<?> target) {

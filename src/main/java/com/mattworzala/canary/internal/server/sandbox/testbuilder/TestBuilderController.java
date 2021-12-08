@@ -20,7 +20,6 @@ import net.minestom.server.event.trait.PlayerEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.block.Block;
-import net.minestom.server.instance.block.BlockGetter;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.network.packet.server.play.BlockEntityDataPacket;
@@ -286,12 +285,9 @@ public class TestBuilderController {
                     .withTag(BoundingBoxHandler.Tags.SizeY, sizeY)
                     .withTag(BoundingBoxHandler.Tags.SizeZ, sizeZ)
                     .withTag(BoundingBoxHandler.Tags.PosY, structureBlockYOffset);
-            BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket();
 
             Point blockPos = minPoint.add(new Vec(0, -structureBlockYOffset, 0));
-            blockEntityDataPacket.blockPosition = blockPos;
-            blockEntityDataPacket.action = 7;
-            blockEntityDataPacket.nbtCompound = boundingBox.nbt();
+            BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket(blockPos, 7, boundingBox.nbt());
 
             player.sendPacket(blockEntityDataPacket);
 
@@ -320,12 +316,8 @@ public class TestBuilderController {
                         .withTag(BoundingBoxHandler.Tags.PosX, x)
                         .withTag(BoundingBoxHandler.Tags.PosZ, z)
                         .withTag(BoundingBoxHandler.Tags.PosY, y);
-                BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket();
 
-//                Point blockPos = minPoint.add(new Vec(0, -structureBlockYOffset, 0));
-                blockEntityDataPacket.blockPosition = structureBlockPos;
-                blockEntityDataPacket.action = 7;
-                blockEntityDataPacket.nbtCompound = boundingBox.nbt();
+                BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket(structureBlockPos, 7, boundingBox.nbt());
 
                 player.sendPacket(blockEntityDataPacket);
             } else {
@@ -336,12 +328,9 @@ public class TestBuilderController {
                         .withTag(BoundingBoxHandler.Tags.SizeY, sizeY)
                         .withTag(BoundingBoxHandler.Tags.SizeZ, sizeZ)
                         .withTag(BoundingBoxHandler.Tags.PosY, structureBlockYOffset);
-                BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket();
 
                 Point blockPos = minPoint.add(new Vec(0, -structureBlockYOffset, 0));
-                blockEntityDataPacket.blockPosition = blockPos;
-                blockEntityDataPacket.action = 7;
-                blockEntityDataPacket.nbtCompound = boundingBox.nbt();
+                BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket(blockPos, 7, boundingBox.nbt());
 
                 player.sendPacket(blockEntityDataPacket);
 
@@ -386,7 +375,7 @@ public class TestBuilderController {
             for (int z = 0; z < sizeZ; z++) {
                 for (int x = 0; x < sizeX; x++) {
 //                    System.out.println("(" + (origin.blockX() + x) + ", " + (origin.blockY() + y) + ", " + (origin.blockZ() + z));
-                    Block b = this.testBuilderInstance.getBlock(origin.blockX() + x, origin.blockY() + y, origin.blockZ() + z, BlockGetter.Condition.NONE);
+                    Block b = this.testBuilderInstance.getBlock(origin.blockX() + x, origin.blockY() + y, origin.blockZ() + z, Block.Getter.Condition.NONE);
                     // if this is the very first block
                     if (lastBlock == null) {
                         if (blockSet.add(b)) {

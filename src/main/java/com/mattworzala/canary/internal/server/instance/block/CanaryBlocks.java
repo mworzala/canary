@@ -2,7 +2,6 @@ package com.mattworzala.canary.internal.server.instance.block;
 
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.instance.block.Block;
-import net.minestom.server.instance.block.BlockSetter;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintWriter;
@@ -29,7 +28,7 @@ public interface CanaryBlocks {
     }
 
 
-    static void placeBeacon(@NotNull BlockSetter target, @NotNull Point pos) {
+    static void placeBeacon(@NotNull Block.Setter target, @NotNull Point pos) {
         target.setBlock(pos, Beacon);
         target.setBlock(pos.sub(-1, 1, -1), Block.IRON_BLOCK);
         target.setBlock(pos.sub(0, 1, -1), Block.IRON_BLOCK);

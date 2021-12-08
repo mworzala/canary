@@ -79,7 +79,7 @@ public class Prompt {
         // TODO - do this using events
         AtomicReference<String> name = new AtomicReference<>("");
         MinecraftServer.getPacketListenerManager().setListener(ClientNameItemPacket.class, (packet, player1) -> {
-            name.set(packet.itemName);
+            name.set(packet.itemName());
 //            anvilInventory.setItemStack(ANVIL_RHS_SLOT, rightHandOption.item);
 //            anvilInventory.setRepairCost((short) 0);
         });

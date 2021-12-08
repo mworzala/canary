@@ -3,9 +3,7 @@ package com.mattworzala.canary.internal.structure;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.instance.block.Block;
-import net.minestom.server.instance.block.BlockSetter;
 import org.jetbrains.annotations.NotNull;
-import sun.misc.Unsafe;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -76,7 +74,7 @@ public class Structure {
      * @param block
      * @param blockSetter
      */
-    private void setBlockInBlockSetter(int index, @NotNull Block block, BlockSetter blockSetter, Point offset) {
+    private void setBlockInBlockSetter(int index, @NotNull Block block, Block.Setter blockSetter, Point offset) {
         int x = index % this.getSizeX();
         int z = index % (this.getSizeX() * this.getSizeZ()) / this.getSizeX();
         int y = index / (this.getSizeX() * this.getSizeZ());
@@ -87,7 +85,7 @@ public class Structure {
         blockSetter.setBlock(offset.add(x, y, z), block);
     }
 
-    public void loadIntoBlockSetter(BlockSetter blockSetter, Point offset) {
+    public void loadIntoBlockSetter(Block.Setter blockSetter, Point offset) {
         int blockIndex = 0;
         for (BlockDef def : blocks) {
             Block block = blockmap.get(def.blockId);

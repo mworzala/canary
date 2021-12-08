@@ -36,11 +36,6 @@ public class BasicGenerator implements ChunkGenerator {
     }
 
     @Override
-    public void fillBiomes(Biome[] biomes, int chunkX, int chunkZ) {
-        Arrays.fill(biomes, Biome.PLAINS);
-    }
-
-    @Override
     public List<ChunkPopulator> getPopulators() {
         return null;
     }
