@@ -38,17 +38,6 @@ public class CanaryTestEngine implements TestEngine {
         //Do not do init in constructor in case test engine is disabled.
     }
 
-    private void init() {
-        // Inject Mixin (must be done before creating the server, since it will load a large part of Minestom into the classloader on its own)
-        MinestomMixin.inject();
-        // Create server
-        if (isHeadless) {
-            this.server = ProxyHeadlessServer.create();
-        } else {
-            this.server = ProxySandboxServer.create();
-        }
-    }
-
     @Override
     public String getId() {
         return ID;
@@ -69,42 +58,58 @@ public class CanaryTestEngine implements TestEngine {
         return Optional.of("0.0.1");
     }
 
+    public ProxyHeadlessServer getServer() {
+        return server;
+    }
+
     @Override
-    public TestDescriptor discover(EngineDiscoveryRequest discoveryRequest, UniqueId uniqueId) {
-
-        CanaryEngineDescriptor discoveryResult = CanaryDiscoverer.discover(discoveryRequest, uniqueId);
-
-        // Count the received tests, and exit early if zero
-        CountingVisitor visitor = new CountingVisitor();
-        visitor.visit(discoveryResult);
-        logger.debug(() -> "Discovered " + visitor.getCount() + " tests");
-        if (visitor.getCount() == 0) {
-            return discoveryResult;
-        }
-
-        // There is at least one test, continue with initialization
-        if (this.server == null) init();
-
-        // Load tests into server
-        ProxyTestCoordinator coordinator = server.getTestCoordinator();
-        coordinator.indexTests(discoveryResult);
-
-        return discoveryResult;
+    public CanaryEngineDescriptor discover(EngineDiscoveryRequest discoveryRequest, UniqueId uniqueId) {
+        return CanaryDiscoverer.discover(discoveryRequest, uniqueId);
     }
 
     @Override
     public void execute(ExecutionRequest request) {
+
+        // PRE VALIDATION
+
+        CanaryEngineDescriptor root = (CanaryEngineDescriptor) request.getRootTestDescriptor();
+
+        // Count the received tests, and exit early if zero
+        CountingVisitor visitor = new CountingVisitor();
+        visitor.visit(root);
+        logger.debug(() -> "Discovered " + visitor.getCount() + " tests");
+        if (visitor.getCount() == 0) return;
+
+        // There is at least one test, continue with initialization
+        if (this.server == null) init();
+
+        // EXECUTE
+
         // Start server on random port
         startServer();
 
-        // Execute all with no filter
+        // Load tests into server
         ProxyTestCoordinator coordinator = server.getTestCoordinator();
+        coordinator.indexTests(root);
+
+        // Execute all with no filter
         var junitListener = new JUnitTestExecutionListenerAdapter(request.getEngineExecutionListener());
         coordinator.execute(junitListener); // No filter set, will execute all tests
 
         // TestCoordinator#execute blocks until complete.
 
         stopServer();
+    }
+
+    public void init() {
+        // Inject Mixin (must be done before creating the server, since it will load a large part of Minestom into the classloader on its own)
+        MinestomMixin.inject();
+        // Create server
+        if (isHeadless) {
+            this.server = ProxyHeadlessServer.create();
+        } else {
+            this.server = ProxySandboxServer.create();
+        }
     }
 
     public void startServer() {
