@@ -98,7 +98,8 @@ public class CameraPlayer extends Player {
                 TimeUpdatePacket.class
         );
 
-        public static List<Class<?>> forwardWhitelist = List.of(
+        public static List<Class<?>> forwardWhitelist = List.of( // PLAYERS WILL BREAK PROBABLY
+                SpawnEntityPacket.class,
                 SpawnLivingEntityPacket.class,
                 EntityMetaDataPacket.class,
                 EntityEquipmentPacket.class,
