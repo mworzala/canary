@@ -7,19 +7,26 @@ import net.minestom.server.entity.fakeplayer.FakePlayer;
 import net.minestom.server.event.EventListener;
 import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.instance.Instance;
+import net.minestom.server.network.packet.server.CachedPacket;
+import net.minestom.server.network.packet.server.SendablePacket;
 import net.minestom.server.network.packet.server.ServerPacket;
 import net.minestom.server.network.packet.server.play.*;
 import net.minestom.server.network.player.PlayerConnection;
 import net.minestom.server.utils.time.TimeUnit;
 import net.minestom.server.utils.validate.Check;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class CameraPlayer extends Player {
+    private static final Logger logger = LoggerFactory.getLogger(CameraPlayer.class);
+
     public static volatile boolean DO_FORWARDING = true;
     public static volatile boolean DO_DEBUG_LOG = false;
 
@@ -77,7 +84,7 @@ public class CameraPlayer extends Player {
 
     @NotNull
     private static String generateName() {
-        return "_cny_" + ThreadLocalRandom.current().ints(97, 123)
+        return "_cny_" + ThreadLocalRandom.current().ints(97, 123) //todo move to a stringutil class
                 .limit(10)
                 .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append);
     }
@@ -111,16 +118,25 @@ public class CameraPlayer extends Player {
         }
 
         @Override
-        public void sendPacket(@NotNull ServerPacket serverPacket, boolean skipTranslating) {
+        public void sendPacket(@NotNull SendablePacket packet) {
+            if (packet instanceof ServerPacket serverPacket) {
+                forward(serverPacket);
+            } else if (packet instanceof CachedPacket cachedPacket) {
+                forward(cachedPacket.packet());
+            } else {
+                logger.warn("Unknown packet type: {}", packet.getClass().getName());
+            }
+        }
 
+        private void forward(@NotNull ServerPacket serverPacket) {
             if (forwardWhitelist.stream().anyMatch(cl -> cl.isAssignableFrom(serverPacket.getClass()))) {
                 if (DO_FORWARDING)
                     viewers.forEach(target -> target.getPlayerConnection().sendPacket(serverPacket));
                 if (DO_DEBUG_LOG)
-                    System.out.println("FWD >> " + serverPacket.getClass().getSimpleName());
+                    logger.debug("Forwarding packet:\t{}", serverPacket.getClass().getName());
             } else if (debugBlacklist.stream().noneMatch(cl -> cl.isAssignableFrom(serverPacket.getClass()))) {
                 if (DO_DEBUG_LOG)
-                    System.out.println("NOFWD >> " + serverPacket.getClass().getSimpleName());
+                    logger.debug("Witnessed packet:\t{}", serverPacket.getClass().getName());
             }
         }
 

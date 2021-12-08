@@ -18,6 +18,10 @@ public class SandboxLauncher {
             .build();
 
     public static void main(String[] args) {
+        System.setProperty("minestom.viewable-packet", "false");
+
+
+
         var engine = new CanaryTestEngine(false);
 
         // Handle discovery (preps server)
