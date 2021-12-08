@@ -46,7 +46,6 @@ public class Structure {
         this.markers.put(name, pointToIndex(point));
     }
 
-
     public void putInBlockMap(int index, Block block) {
         blockmap.put(index, block);
     }
@@ -81,8 +80,8 @@ public class Structure {
 
     public Point indexToPoint(int index) {
         int x = index % this.getSizeX();
-        int z = index % (this.getSizeX() * this.getSizeZ()) / this.getSizeZ();
         int y = index / (this.getSizeX() * this.getSizeZ());
+        int z = index % (this.getSizeX() * this.getSizeZ()) / this.getSizeX();
 
         boolean inBounds = x <= this.getSizeX();
         inBounds = inBounds || y <= this.getSizeY();
@@ -107,14 +106,10 @@ public class Structure {
      * @param blockSetter
      */
     private void setBlockInBlockSetter(int index, @NotNull Block block, BlockSetter blockSetter, Point offset) {
-        int x = index % this.getSizeX();
-        int z = index % (this.getSizeX() * this.getSizeZ()) / this.getSizeX();
-        int y = index / (this.getSizeX() * this.getSizeZ());
-        assert x <= this.getSizeX();
-        assert y <= this.getSizeY();
-        assert z <= this.getSizeZ();
-
-        blockSetter.setBlock(offset.add(x, y, z), block);
+        Point p = this.indexToPoint(index);
+        if (p != null) {
+            blockSetter.setBlock(offset.add(p), block);
+        }
     }
 
     public void loadIntoBlockSetter(BlockSetter blockSetter, Point offset) {
