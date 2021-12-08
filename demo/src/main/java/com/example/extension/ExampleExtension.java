@@ -24,7 +24,6 @@ public class ExampleExtension extends Extension {
 
         MinecraftServer.getGlobalEventHandler().addListener(PlayerSpawnEvent.class, event -> {
             final var player = event.getPlayer();
-            player.setPermissionLevel(4);
 
             if (event.isFirstSpawn()) {
                 player.getInventory().addItemStack(ItemStack.of(Material.RAIL));

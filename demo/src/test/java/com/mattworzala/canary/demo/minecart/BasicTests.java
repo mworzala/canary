@@ -6,7 +6,7 @@ import com.mattworzala.canary.api.TestEnvironment;
 import net.minestom.server.coordinate.Pos;
 
 public class BasicTests {
-    @InWorldTest
+//    @InWorldTest
     public void straightConstantSpeed(TestEnvironment env) {
         var minecart = env.spawnEntity(MinecartEntity::new, new Pos(1, 1, 1));
 
