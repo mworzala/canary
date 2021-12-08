@@ -2,7 +2,7 @@ package com.mattworzala.canary.internal.execution;
 
 import com.mattworzala.canary.internal.junit.descriptor.CanaryEngineDescriptor;
 import com.mattworzala.canary.internal.junit.descriptor.CanaryTestDescriptor;
-import com.mattworzala.canary.internal.server.instance.BasicGenerator;
+import com.mattworzala.canary.internal.server.instance.VoidGenerator;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Vec;
@@ -73,7 +73,7 @@ public class TestExecutorFactory {
     private TestExecutor createExecutor(CanaryTestDescriptor descriptor) {
         var testInstance = new InstanceContainer(UUID.randomUUID(), DimensionType.OVERWORLD);
         MinecraftServer.getInstanceManager().registerInstance(testInstance);
-        testInstance.setChunkGenerator(new BasicGenerator());
+        testInstance.setChunkGenerator(new VoidGenerator());
 
         var executor = new TestExecutor(descriptor, testInstance, nextValidPosition);
         // Increment depth

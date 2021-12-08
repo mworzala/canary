@@ -18,7 +18,7 @@ public class TestEntityTest {
         expect(entity).toBeAt(diamondBlockPos);
     }
 
-    @InWorldTest
+//    @InWorldTest
     public void testWalkToEntity(TestEnvironment env) {
         final var entity = env.spawnEntity(TestEntity::new, new Pos(3, 1, 1));
         final var target = env.spawnEntity(TestEntity::new, new Pos(1, 1, 1));

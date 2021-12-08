@@ -43,6 +43,8 @@ public class CameraPlayer extends Player {
                         .build());
 
         MinecraftServer.getConnectionManager().startPlayState(this, false);
+
+        setNoGravity(true);
     }
 
     public void addCameraViewer(@NotNull Player player) {
