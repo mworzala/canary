@@ -10,7 +10,7 @@ import static com.mattworzala.canary.api.Expect.expect;
 
 public class TestEntityTest {
 
-    @InWorldTest
+//    @InWorldTest
     public void testWalkToDiamondBlock(TestEnvironment env) {
         final var diamondBlockPos = new Vec(2, 1, 3);
         final var entity = env.spawnEntity(TestEntity::new, new Pos(2, 1, 1));
@@ -18,7 +18,7 @@ public class TestEntityTest {
         expect(entity).toBeAt(diamondBlockPos);
     }
 
-    @InWorldTest
+//    @InWorldTest
     public void testWalkToEntity(TestEnvironment env) {
         final var entity = env.spawnEntity(TestEntity::new, new Pos(3, 1, 1));
         final var target = env.spawnEntity(TestEntity::new, new Pos(1, 1, 1));

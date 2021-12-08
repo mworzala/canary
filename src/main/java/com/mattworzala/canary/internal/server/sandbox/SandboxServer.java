@@ -78,7 +78,7 @@ public class SandboxServer extends HeadlessServer {
 
                 if (!RESOURCE_PACK_HASH.isEmpty()) {
                     ResourcePack resourcePack = ResourcePack.optional(RESOURCE_PACK_URL, RESOURCE_PACK_HASH);
-                    event.getPlayer().setResourcePack(resourcePack);
+//                    event.getPlayer().setResourcePack(resourcePack);
                 }
             }
         });
@@ -93,7 +93,6 @@ public class SandboxServer extends HeadlessServer {
         commands.register(new CanaryCommand());
         commands.register(new TestCommand(this));
         commands.register(new InstanceCommand());
-        commands.register(new EntityCommand());
         commands.register(PromptCommand.getInstance());
     }
 

@@ -21,7 +21,7 @@ public class SandboxServerTask extends JavaExec {
         SourceSet testSourceSet = javaPlugin.getSourceSets().getByName(SourceSet.TEST_SOURCE_SET_NAME);
 
         // Set options
-        jvmArgs("-ea");
+        jvmArgs("-ea", "-Dminestom.extension.indevfolder.classes=classes/java/main", "-Dminestom.extension.indevfolder.resources=resources/main");
         args(); //todo
         environment("CANARY_TEST_RESOURCES", new File(getProject().getProjectDir(), "src/test/resources")); //todo this does not handle people with weird source sets.
 
