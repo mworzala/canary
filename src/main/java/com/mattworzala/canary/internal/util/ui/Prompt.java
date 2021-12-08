@@ -4,13 +4,17 @@ import com.mattworzala.canary.internal.server.sandbox.command.PromptCommand;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.TextColor;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.color.Color;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.EventFilter;
 import net.minestom.server.event.EventListener;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.inventory.InventoryCloseEvent;
+import net.minestom.server.event.player.PlayerChatEvent;
 import net.minestom.server.event.trait.InventoryEvent;
+import net.minestom.server.event.trait.PlayerEvent;
 import net.minestom.server.inventory.type.AnvilInventory;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.network.packet.client.play.ClientNameItemPacket;
@@ -33,6 +37,11 @@ public class Prompt {
     }
 
     ;
+    private static final EventNode<PlayerEvent> promptPlayerChatEventNode = EventNode.type("prompt-player-chat-event", EventFilter.PLAYER);
+
+    static {
+        MinecraftServer.getGlobalEventHandler().addChild(promptPlayerChatEventNode);
+    }
 
     /**
      * Gives the player a main prompt and then a list of clickable options
@@ -42,8 +51,8 @@ public class Prompt {
      * @param prompt        First text to show the player
      * @param promptOptions All the options to show the player
      */
-    public static void chatPrompt(Player player, String prompt, List<ChatPromptOption> promptOptions) {
-        player.sendMessage(Component.text(prompt));
+    public static void chatPrompt(Player player, Component prompt, List<ChatPromptOption> promptOptions) {
+        player.sendMessage(prompt);
         PromptCommand promptCommand = PromptCommand.getInstance();
         for (ChatPromptOption option : promptOptions) {
 
@@ -57,6 +66,30 @@ public class Prompt {
 
             player.sendMessage(textOption);
         }
+    }
+
+    public static void chatResponsePrompt(Player player, Component prompt, Consumer<String> callback) {
+        player.sendMessage(prompt);
+        PromptCommand promptCommand = PromptCommand.getInstance();
+
+        String command = promptCommand.registerCommand((s, c) -> {
+            System.out.println("canceling chat response prompt");
+            callback.accept(null);
+        });
+
+        final TextComponent textOption = Component.text("cancel").color(TextColor.color(new Color(255, 0, 0)))
+                .clickEvent(ClickEvent.runCommand(command));
+
+        player.sendMessage(textOption);
+        promptPlayerChatEventNode.addListener(EventListener.builder(PlayerChatEvent.class)
+                .filter(e -> e.getPlayer().getUuid().equals(player.getUuid()))
+                .expireCount(1)
+                .handler(event -> {
+                            event.setCancelled(true);
+                            callback.accept(event.getMessage());
+                        }
+                ).build()
+        );
     }
 
     /**

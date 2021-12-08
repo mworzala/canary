@@ -1,9 +1,11 @@
 package com.mattworzala.canary.internal.server.sandbox;
 
-import com.mattworzala.canary.internal.util.safety.EnvType;
-import com.mattworzala.canary.internal.util.safety.Env;
 import com.mattworzala.canary.internal.server.HeadlessServer;
 import com.mattworzala.canary.internal.server.sandbox.command.*;
+import com.mattworzala.canary.internal.server.sandbox.testbuilder.TestBuilderController;
+import com.mattworzala.canary.internal.structure.Structure;
+import com.mattworzala.canary.internal.util.safety.Env;
+import com.mattworzala.canary.internal.util.safety.EnvType;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.CommandManager;
 import net.minestom.server.coordinate.Pos;
@@ -15,13 +17,20 @@ import net.minestom.server.event.player.PlayerLoginEvent;
 import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.extras.PlacementRules;
 import net.minestom.server.extras.optifine.OptifineSupport;
+import net.minestom.server.network.packet.server.play.DeclareCommandsPacket;
 import net.minestom.server.resourcepack.ResourcePack;
+import net.minestom.server.utils.PacketUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Env(EnvType.MINESTOM)
 public class SandboxServer extends HeadlessServer {
@@ -40,6 +49,10 @@ public class SandboxServer extends HeadlessServer {
         }
         RESOURCE_PACK_HASH = hash;
     }
+
+    private List<TestBuilderController> testBuilderControllers = new ArrayList<>();
+    private List<UUID> playerUUIDInTestBuilder = new ArrayList<>();
+
 
     @Override
     public void initServer() {
@@ -83,4 +96,134 @@ public class SandboxServer extends HeadlessServer {
         commands.register(new EntityCommand());
         commands.register(PromptCommand.getInstance());
     }
+
+    /**
+     * Make a new test builder, add the given player to it
+     *
+     * @param name   Name for the test
+     * @param player The player to put into the test builder
+     */
+    public void newTestBuilder(String name, Player player) {
+        TestBuilderController controller = getNewTestBuilderController(name);
+        player.sendMessage("there are " + testBuilderControllers.size() + " current test builder controllers");
+        controller.addPlayer(player);
+        playerUUIDInTestBuilder.add(player.getUuid());
+    }
+
+    /**
+     * Make a new test builder, add the given player to it, import the given structure
+     *
+     * @param name      Name for the test
+     * @param player    The player to put into the test builder
+     * @param structure The structure to import into the test builder
+     */
+    public void newTestBuilder(String name, Player player, Structure structure) {
+        TestBuilderController controller = getNewTestBuilderController(name);
+        player.sendMessage("there are " + testBuilderControllers.size() + " current test builder controllers");
+        controller.importStructure(structure);
+        controller.addPlayer(player);
+        playerUUIDInTestBuilder.add(player.getUuid());
+    }
+
+    /**
+     * Adds the player to the existing test builder with the given name.
+     * If there is no test builder with that name, nothing happens
+     *
+     * @param player
+     * @param name
+     */
+    public void addPlayerToTestBuilder(Player player, String name) {
+        for (TestBuilderController testBuilder : testBuilderControllers) {
+            System.out.println(testBuilder.getName());
+            System.out.println(testBuilder.getPlayers().stream().map(Player::getUsername).collect(Collectors.joining(", ")));
+            if (testBuilder.getName().equals(name)) {
+                playerUUIDInTestBuilder.add(player.getUuid());
+                testBuilder.addPlayer(player);
+            }
+        }
+    }
+
+    public void playerDoneInTestBuilder(Player player) {
+        for (TestBuilderController testBuilder : testBuilderControllers) {
+            if (testBuilder.hasPlayer(player)) {
+                for (Player p : testBuilder.getPlayers()) {
+                    playerUUIDInTestBuilder.remove(p.getUuid());
+                }
+                // TODO - make this just remove the player, not finish the test builder, unless they're the last player
+                testBuilder.finish();
+
+                if (testBuilder.getPlayers().size() == 0) {
+                    if (testBuilderControllers.size() > 1) {
+                        testBuilder.unregister();
+                        testBuilderControllers.remove(testBuilder);
+                    } else {
+                        testBuilder.reset();
+                    }
+                }
+
+                return;
+            }
+        }
+    }
+
+
+    /**
+     * @param name
+     * @return A test builder controller with the given name, that is in the controller list
+     */
+    private TestBuilderController getNewTestBuilderController(String name) {
+        for (TestBuilderController controller : testBuilderControllers) {
+            if (controller.getPlayers().size() == 0) {
+                controller.setName(name);
+                return controller;
+            }
+        }
+        var testBuilderController = new TestBuilderController(name);
+        testBuilderControllers.add(testBuilderController);
+        return testBuilderController;
+    }
+
+
+    /**
+     * @return The names of all the currently active test builders
+     */
+    public List<String> getExistingTestBuilders() {
+        return testBuilderControllers.stream().map(TestBuilderController::getName).collect(Collectors.toList());
+    }
+
+    public boolean isPlayerInTestBuilder(Player p) {
+        return playerUUIDInTestBuilder.contains(p.getUuid());
+    }
+
+    /**
+     * Gets the test builder that the given player is currently in
+     * If the current player is not in a test builder, returns null
+     *
+     * @param p
+     * @return
+     */
+    public TestBuilderController getTestBuilderOfPlayer(Player p) {
+        if (isPlayerInTestBuilder(p)) {
+            for (TestBuilderController testBuilder : testBuilderControllers) {
+                if (testBuilder.hasPlayer(p)) {
+                    return testBuilder;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public void refreshCommandsForPlayersNotInTestBuilders() {
+        Set<Player> players = getTestCoordinator().getInstance().getPlayers();
+        if (!players.isEmpty()) {
+            Player p = players.stream().findAny().get();
+            // We make the assumptions that the commands for the players in the test coordinate instance are all the same
+            // this would be incorrect if there are any commands with conditions that depend on things other than if the
+            // player is in a test builder or not
+            DeclareCommandsPacket declareCommandsPacket = MinecraftServer.getCommandManager().createDeclareCommandsPacket(p);
+            PacketUtils.sendGroupedPacket(players, declareCommandsPacket);
+        }
+    }
+
 }

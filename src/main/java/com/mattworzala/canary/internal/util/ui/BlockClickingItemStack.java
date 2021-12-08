@@ -1,7 +1,7 @@
 package com.mattworzala.canary.internal.util.ui;
 
+import com.mattworzala.canary.internal.util.ui.itembehavior.ItemBehavior;
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.EventFilter;
 import net.minestom.server.event.EventListener;
@@ -11,13 +11,12 @@ import net.minestom.server.event.player.PlayerUseItemOnBlockEvent;
 import net.minestom.server.event.trait.PlayerEvent;
 import net.minestom.server.item.ItemStack;
 
-import java.util.function.Function;
-
 public class BlockClickingItemStack {
 
-    private final ItemStack itemStack;
-    private final Function<Point, Boolean> leftClickHandler;
-    private final Function<Point, Boolean> rightClickHandler;
+    //    private final ItemStack itemStack;
+//    private final Function<Point, Boolean> leftClickHandler;
+//    private final Function<Point, Boolean> rightClickHandler;
+    ItemBehavior item;
     private EventListener<PlayerBlockBreakEvent> blockBreakEventEventListener;
     private EventListener<PlayerUseItemOnBlockEvent> useItemOnBlockEventEventListener;
 
@@ -27,14 +26,13 @@ public class BlockClickingItemStack {
         MinecraftServer.getGlobalEventHandler().addChild(eventNode);
     }
 
-    public BlockClickingItemStack(ItemStack itemStack, Function<Point, Boolean> leftHandle, Function<Point, Boolean> rightHandler) {
-        this.itemStack = itemStack;
-        this.leftClickHandler = leftHandle;
-        this.rightClickHandler = rightHandler;
+    public BlockClickingItemStack(ItemBehavior item) {
+        this.item = item;
     }
 
     public void giveToPlayer(Player player, int slot) {
-        player.getInventory().setItemStack(slot, this.itemStack);
+        ItemStack itemStack = this.item.getItem();
+        player.getInventory().setItemStack(slot, itemStack);
 
         blockBreakEventEventListener =
                 EventListener.builder(PlayerBlockBreakEvent.class)
@@ -42,24 +40,26 @@ public class BlockClickingItemStack {
                         .filter(event -> {
                             Player p = event.getPlayer();
                             short heldSlot = p.getHeldSlot();
-                            return p.getInventory().getItemStack(heldSlot).equals(this.itemStack);
+                            return p.getInventory().getItemStack(heldSlot).equals(itemStack);
                         })
                         .handler((event) -> {
-                            if (leftClickHandler.apply(event.getBlockPosition())) {
-                                removeListenersFromEventNode();
-                                clearHeldItem(event.getPlayer());
-                            }
+                            this.item.onLeftClick(event.getPlayer(), event.getBlockPosition());
+//                            if (leftClickHandler.apply(event.getBlockPosition())) {
+//                                removeListenersFromEventNode();
+//                                clearHeldItem(event.getPlayer());
+//                            }
                             event.setCancelled(true);
                         }).build();
 
         useItemOnBlockEventEventListener = EventListener.builder(PlayerUseItemOnBlockEvent.class)
                 .filter(event -> event.getPlayer().equals(player))
-                .filter(event -> event.getItemStack().equals(this.itemStack))
+                .filter(event -> event.getItemStack().equals(itemStack))
                 .handler((event) -> {
-                    if (rightClickHandler.apply(event.getPosition())) {
-                        removeListenersFromEventNode();
-                        clearHeldItem(event.getPlayer());
-                    }
+                    this.item.onRightClick(event.getPlayer(), event.getPosition());
+//                    if (rightClickHandler.apply(event.getPosition())) {
+//                        removeListenersFromEventNode();
+//                        clearHeldItem(event.getPlayer());
+//                    }
                 }).build();
 
         eventNode.addListener(blockBreakEventEventListener);

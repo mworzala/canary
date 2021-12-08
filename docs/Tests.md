@@ -39,3 +39,105 @@ place a zombie. Then we say that we expect that entity to be at the position of 
 The expect statement will be checked every server tick until it either passes (the zombie made it to the diamond block),
 or the default test lifetime is reached.
 
+# Assertions
+
+## Types of assertion methods
+
+- Suppliers
+- Conditions
+- Logic
+
+## Suppliers
+
+Convert from on assertion type to a derived assertion type
+
+ex:
+Entity -> Instance the entity is in Block -> Position of the block
+
+```
+env.expect(entity).instance().toHaveTimeGreaterThan(20);
+```
+
+From an EntityAssertion to and InstanceAssertion using the .instance() supplier
+
+## Condition
+
+Tests some condition on the supplied data
+
+```
+env.expect(entity).toHaveHealth(10);
+```
+
+Checks if the given entity has 10 health
+
+## Logic
+
+Used to combine the results of conditions
+
+# How assertions are parsed
+
+Operators further right have higher Items further to the A AND B AND C => ((A AND B) AND C)
+A AND B OR C => ((A AND B) OR C)
+
+```
+         AND
+        /   \
+      AND    C
+     /   \
+    A     B
+```
+
+Operators Binary Operators:
+
+- and
+- or
+- then
+
+Unary Operators
+
+- not
+- always
+
+```
+Grammar:
+terminals: {and, or, then, not, always, cond} //cond stands in for any condition
+E -> A | O | T | U 
+A -> E and E 
+O -> E or E 
+T -> E then E 
+U -> not U | always U | cond
+```
+
+This grammar has the notable property that unary operators do not operate on general expressions. You can not write an
+expression that parses as (NOT (A AND B)), you would instead get ((NOT A) AND B). The logically equivalent, and possible
+to write expression that is equivalent to (NOT (A AND B)) would be ((NOT A) OR (NOT B))
+. [De Morgan's laws](https://en.wikipedia.org/wiki/De_Morgan%27s_laws)
+
+### Operator Behavior
+
+**AND**
+Logical and, && in java, contains no state
+
+**OR**
+Logical or, || in java, contains no state
+
+**THEN**
+A stateful operator used to make assertions about things being true after other things. See [this page](Then) for more
+details, in particular with how it interacts with always.
+
+**NOT**
+Logical not, ! in java, contains no state
+
+**ALWAYS**
+A stateful operator to express that some condition is always true while it is being tested. Is the only 'blocking'
+operator in that it cannot pass immediately, can only pass after the entire lifetime of the test has elapsed, but may be
+able to fail earlier.
+
+```
+expect(player).always().toHaveHealth(10)
+```
+
+Will run for the entire lifespan of the test, only passing once the lifetime has been reached, and the player's health
+has always been 10. If at any point the player's health stops being 10, then will fail for the rest of the test.
+
+
