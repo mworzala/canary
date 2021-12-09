@@ -20,7 +20,6 @@ import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.PlayerUseItemOnBlockEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
-import net.minestom.server.instance.block.BlockGetter;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import org.jetbrains.annotations.NotNull;
@@ -180,7 +179,7 @@ public class BuilderCommand extends Command {
             for (int z = 0; z < sizeZ; z++) {
                 for (int x = 0; x < sizeX; x++) {
 //                    System.out.println("(" + (origin.blockX() + x) + ", " + (origin.blockY() + y) + ", " + (origin.blockZ() + z));
-                    Block b = instance.getBlock(origin.blockX() + x, origin.blockY() + y, origin.blockZ() + z, BlockGetter.Condition.NONE);
+                    Block b = instance.getBlock(origin.blockX() + x, origin.blockY() + y, origin.blockZ() + z, Block.Getter.Condition.NONE);
                     // if this is the very first block
                     if (lastBlock == null) {
                         if (blockSet.add(b)) {

@@ -17,6 +17,9 @@ repositories {
 dependencies {
     annotationProcessor(project(":codegen"))
 
+    val annotationsVersion = project.property("annotations.version") as String
+    implementation("org.jetbrains:annotations:$annotationsVersion")
+
     val minestomVariant = project.property("minestom.variant") as String
     val minestomVersion = project.property("minestom.version") as String
     implementation("com.github.$minestomVariant:Minestom:$minestomVersion")

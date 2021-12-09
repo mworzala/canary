@@ -5,10 +5,8 @@ import net.minestom.server.instance.ChunkGenerator;
 import net.minestom.server.instance.ChunkPopulator;
 import net.minestom.server.instance.batch.ChunkBatch;
 import net.minestom.server.instance.block.Block;
-import net.minestom.server.world.biomes.Biome;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class BasicGenerator implements ChunkGenerator {
@@ -33,11 +31,6 @@ public class BasicGenerator implements ChunkGenerator {
                 batch.setBlock(x, 40, z, topBlock);
             }
         }
-    }
-
-    @Override
-    public void fillBiomes(Biome[] biomes, int chunkX, int chunkZ) {
-        Arrays.fill(biomes, Biome.PLAINS);
     }
 
     @Override

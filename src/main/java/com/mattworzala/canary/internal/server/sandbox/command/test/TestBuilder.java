@@ -58,12 +58,9 @@ public class TestBuilder {
                 .withTag(BoundingBoxHandler.Tags.SizeX, this.getSize().blockX())
                 .withTag(BoundingBoxHandler.Tags.SizeY, this.getSize().blockY())
                 .withTag(BoundingBoxHandler.Tags.SizeZ, this.getSize().blockZ());
-        BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket();
 
         Point blockPos = this.getOrigin().add(new Vec(0, -1, 0));
-        blockEntityDataPacket.blockPosition = blockPos;
-        blockEntityDataPacket.action = 7;
-        blockEntityDataPacket.nbtCompound = boundingBox.nbt();
+        BlockEntityDataPacket blockEntityDataPacket = new BlockEntityDataPacket(blockPos, 7, boundingBox.nbt());
 
         player.getInstance().setBlock(blockPos, boundingBox);
         player.sendPacketToViewersAndSelf(blockEntityDataPacket);

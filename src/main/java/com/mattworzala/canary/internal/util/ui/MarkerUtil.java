@@ -11,9 +11,7 @@ public class MarkerUtil {
         marker.write(buffer);
         buffer.writeInt(50000);
 
-        PluginMessagePacket messagePacket = new PluginMessagePacket();
-        messagePacket.channel = "minecraft:debug/game_test_add_marker";
-        messagePacket.data = buffer.toByteArray();
+        PluginMessagePacket messagePacket = new PluginMessagePacket("minecraft:debug/game_test_add_marker", buffer.toByteArray());
 
         player.sendPacket(messagePacket);
     }
