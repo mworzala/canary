@@ -17,13 +17,14 @@ repositories {
 dependencies {
     annotationProcessor(project(":codegen"))
 
+
     val minestomVariant = project.property("minestom.variant") as String
     val minestomVersion = project.property("minestom.version") as String
     implementation("com.github.$minestomVariant:Minestom:$minestomVersion")
 
     val junitVersion = project.property("junit.version") as String
     implementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    implementation("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+    implementation("org.junit.jupiter:junit-jupiter-engine:$junitVersion") //todo should depend on platform engine instead?
     val junitPlatformVersion = project.property("junit.platform.version") as String
     implementation("org.junit.platform:junit-platform-launcher:$junitPlatformVersion")
 

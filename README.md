@@ -7,6 +7,7 @@ Canary is a way of writing tests for [Minestom](https://minestom.net/).
 TODO
 
 ```
+testImplementation("com.mattworzala:canary-junit:1.1.0")
 ```
 
 ## Usage

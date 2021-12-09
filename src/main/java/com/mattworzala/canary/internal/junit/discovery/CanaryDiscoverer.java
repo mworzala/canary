@@ -2,8 +2,8 @@ package com.mattworzala.canary.internal.junit.discovery;
 
 import com.mattworzala.canary.internal.junit.descriptor.CanaryEngineDescriptor;
 import com.mattworzala.canary.internal.util.ClassLoaders;
-import com.mattworzala.canary.internal.util.safety.EnvType;
 import com.mattworzala.canary.internal.util.safety.Env;
+import com.mattworzala.canary.internal.util.safety.EnvType;
 import org.junit.platform.commons.util.ClassFilter;
 import org.junit.platform.engine.EngineDiscoveryRequest;
 import org.junit.platform.engine.TestDescriptor;
@@ -22,6 +22,10 @@ import static org.junit.platform.commons.util.ReflectionUtils.*;
 
 @Env(EnvType.PLATFORM)
 public class CanaryDiscoverer {
+    //TODO: Discovery rework, we can use junit more effectively which will simplify and be more closely tied to junits rules
+    // - org/junit/jupiter/engine/discovery/predicates/ has a bunch of predicates which can replace the ones defined here, or perhaps more likely just create my own version since theirs are internal
+    // -
+
 
     // Ensure the class is public, not abstract, not an inner class (handled later) and contains at least one `InWorldTest` method.
     // We can filter out `InWorldTest` classes later, however, we are going to reload all selected classes into the minestom classloader in the next step, so better to filter more here.

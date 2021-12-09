@@ -12,4 +12,21 @@ public class BasicTests {
 
         env.expect(minecart).toBeAt(new Pos(3, 1, 1));
     }
+
+//    @ParameterizedInWorldTest
+//    @StructureSource("minecart_basic_*")
+//    @MethodSource("basicAToBProvider")
+//    public void basicAToBTests(TestEnvironment env, Pos expectedPos) {
+//        var minecart = env.spawnEntity(MinecartEntity::new, new Pos(1, 1, 1));
+//
+//        env.expect(minecart).toBeAt(expectedPos);
+//    }
+//
+//    private static Stream<Arguments> basicAToBProvider() {
+//        return Stream.of(
+//                of(new Pos(3, 1, 1)),
+//                of(new Pos(3, 4, 2))
+//                // ...
+//        );
+//    }
 }
