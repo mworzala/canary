@@ -1,10 +1,10 @@
 package com.example.extension.command;
 
-import com.example.extension.entity.TestEntity;
+import com.example.extension.minecart.BrokeEntity;
 import net.minestom.server.command.CommandSender;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.CommandContext;
-import net.minestom.server.coordinate.Pos;
+import net.minestom.server.instance.block.Block;
 import org.jetbrains.annotations.NotNull;
 
 public class EntityCommand extends Command {
@@ -20,7 +20,11 @@ public class EntityCommand extends Command {
         var player = sender.asPlayer();
         player.sendMessage("Summoning test entity.");
 
-        TestEntity entity = new TestEntity();
-        entity.setInstance(player.getInstance(), player.getPosition().add(2, 0, 0));
+        for (int i = 0; i < 20; i++) {
+            player.getInstance().setBlock(player.getPosition().add(0, 0, i), Block.RAIL);
+        }
+
+        var entity = new BrokeEntity();
+        entity.setInstance(player.getInstance(), player.getPosition());
     }
 }

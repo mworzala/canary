@@ -1,0 +1,18 @@
+{
+  "id": "fallingBetweenRails",
+  "size": [
+    6,
+    4,
+    3
+  ],
+  "blockmap": [
+    {
+      "block": "minecraft:stone"
+    },
+    {
+      "block": "minecraft:rail[shape=east_west,waterlogged=false]"
+    }
+  ],
+  "blocks": "0,18;-1,7;0,2;1,2;-1,14;0,2;-1,16;1,2;-1,9",
+  "markers": {}
+}

@@ -1,0 +1,18 @@
+{
+  "id": "sidways",
+  "size": [
+    5,
+    2,
+    5
+  ],
+  "blockmap": [
+    {
+      "block": "minecraft:cobblestone"
+    },
+    {
+      "block": "minecraft:rail[shape=north_south,waterlogged=false]"
+    }
+  ],
+  "blocks": "0,3;-1,2;0,3;-1,2;0,3;-1,2;0,3;-1,2;0,3;-1,8;1,1;-1,4;1,1;-1,4;1,1;-1,8",
+  "markers": {}
+}

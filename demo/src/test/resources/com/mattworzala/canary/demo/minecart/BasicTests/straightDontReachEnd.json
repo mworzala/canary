@@ -1,0 +1,18 @@
+{
+  "id": "straightDontReachEnd",
+  "size": [
+    6,
+    2,
+    3
+  ],
+  "blockmap": [
+    {
+      "block": "minecraft:stone"
+    },
+    {
+      "block": "minecraft:rail[shape=east_west,waterlogged=false]"
+    }
+  ],
+  "blocks": "0,18;-1,7;1,2;-1,9",
+  "markers": {}
+}

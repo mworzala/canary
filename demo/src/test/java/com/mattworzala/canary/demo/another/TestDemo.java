@@ -1,12 +1,11 @@
 package com.mattworzala.canary.demo.another;
 
 import com.example.extension.entity.TestEntity;
-import com.mattworzala.canary.api.InWorldTest;
 import com.mattworzala.canary.api.TestEnvironment;
 import net.minestom.server.coordinate.Pos;
 
 public class TestDemo {
-    @InWorldTest
+//    @InWorldTest
     public void anotherTest(TestEnvironment env) {
         var entity = env.spawnEntity(TestEntity::new, new Pos(1, 1, 1));
 
