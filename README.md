@@ -21,7 +21,7 @@ public class TestEntityTest {
         final var entity = env.spawnEntity(TestEntity::new, new Pos(0, 41, 0));
         final var target = env.spawnEntity(TestEntity::new, new Pos(2, 41, 0));
 
-        env.expect(entity).toBeAt(target::getPosition);
+        expect(entity).toBeAt(target::getPosition);
     }
 }
 
