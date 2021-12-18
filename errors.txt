@@ -1,0 +1,199 @@
+Some general thoughts on error reporting both in sandbox and headless mode.
+
+Notes:
+Fold groups are cool, but not necessary. We can just print the entire log in that case. Perhaps worth coloring it grey to mark it as background info
+
+Relevant
+https://docs.github.com/en/actions/learn-github-actions/workflow-commands-for-github-actions#grouping-log-lines
+https://github.com/OndraM/ci-detector
+https://docs.adventure.kyori.net/text
+
+
+SANDBOX ALL PASS
+Testing complete
+<green>All tests passed.
+
+----------------------------------------------------------------------------------------------------------------------
+
+TEST:       testWalkToPoint
+ASSERTION:  entity1@<1, 1, 1>
+
+FAIL:       entity1 did not reach <1, 1, 1>
+
+SANDBOX:
+Testing complete.
+1 test failed
+
+[testWalkToPoint] [GO] [LOG] entity1@<1, 1, 1>
+entity1 did not reach <1, 1, 1>
+
+HEADLESS:
+Testing complete.
+1 test failed.
+
+Error: com.mattworzala.canary.demo.TestEntityTest.testWalkToPoint - entity1@<1, 1, 1>
+entity1 did not reach <1, 1, 1>
+
+<fold group> Complete Log
+entity1@<1, 1, 1> pass/fail rate: 1/119
+Step 0 : entity1 was at <0, 0, 0>
+Step 1 : entity1 was at <0, 0, 0>
+Step 2 : entity1 was at <0, 0, 0>
+Step 3 : entity1 was at <0, 0, 0>
+Step 4 : entity1 was at <0, 0, 0>
+Step 5 : entity1 was at <0, 0, 0>
+Step 6 : entity1 was at <0, 0, 0>
+...
+</fold group>
+
+AGGREGATE INFORMATION
+message:    "${ENTITY} did not reach ${POS}" % (entity1, <1, 1, 1>)
+descriptor:
+- class:    com.mattworzala.canary.demo.TestEntityTest
+- test id:  testWalkToPoint
+- location: 55:25 (line:character)
+history:
+- num pass: 1
+- num fail: 119
+- history items
+
+FACTS
+fact("{} did not reach {}", actual, actual.getPosition())
+
+----------------------------------------------------------------------------------------------------------------------
+
+TEST:       testWalkToPoint
+ASSERTION:  entity1@<2, 2, 2> AND entity2@<3, 3, 3>
+
+SANDBOX:
+[testWalkToPoint] [GO] [LOG] entity1@<2, 2, 2> AND entity2@<3, 3, 3>
+The left and right conditions were not true at the same time.
+LHS (25/75) : TTFFTTFFFFTFTFTTFFTTFFFFTFTFTTFFTTFFFFTFTFTTFFTTFFFFTFTFTTFFTTFFFFTFTF
+↳ entity1 did not reach <2, 2, 2>
+RHS (0/100) : FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+↳ entity2 did not reach <3, 3, 3>
+
+HEADLESS:
+
+Error: com.mattworzala.canary.demo.TestEntityTest.testWalkToPoint - entity1@<2, 2, 2> AND entity2@<3, 3, 3>
+The left and right conditions were not true at the same time. The history can be found below:
+LHS (25/75) : TTFFTTFFFFTFTFTTFFTTFFFFTFTFTTFFTTFFFFTFTFTTFFTTFFFFTFTFTTFFTTFFFFTFTF
+RHS (0/100) : FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+
+<fold group> Complete Log
+
+</fold group>
+
+AGGREGATE INFORMATION
+message:    """
+            The left and right conditions were not true at the same time.
+            LHS (${LEFT_PASSES}/${LEFT_FAILS}) : ${LEFT_HISTORY_SHORT}
+            ↳ ${LEFT_PARENT}
+            LHS (${RIGHT_PASSES}/${RIGHT_FAILS}) : ${RIGHT_HISTORY_SHORT}
+            ↳ ${RIGHT_PARENT}
+            """ % (entity1, <1, 1, 1>)
+descriptor:
+- class:    com.mattworzala.canary.demo.TestEntityTest
+- test id:  testWalkToPoint
+- location: 55:25 (line:character)
+
+FACTS (?)
+simpleFact("The left and right conditions were not true at the same time.")
+fact("LHS (%d/%d) : %s", ???)
+
+----------------------------------------------------------------------------------------------------------------------
+
+TEST:       testWalkToPoint
+ASSERTION:  entity1@<2, 2, 2> AND entity2@<3, 3, 3> AND entity3@<4, 4, 4>
+
+SANDBOX:
+[testWalkToPoint] [GO] [LOG] (entity1@<2, 2, 2> AND entity2@<3, 3, 3>) AND entity3@<4, 4, 4>
+The left and right conditions were not true at the same time.
+LHS (0/100) : FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+↳ The left and right conditions were not true at the same time.
+  LHS (25/75) : TTFFTTFFFFTFTFTTFFTTFFFFTFTFTTFFTTFFFFTFTFTTFFTTFFFFTFTFTTFFTTFFFFTFTF
+  ↳ entity1 did not reach <2, 2, 2>
+  RHS (0/100) : FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  ↳ entity2 did not reach <3, 3, 3>
+RHS (100/0) : TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+// no message because it only passed
+
+----------------------------------------------------------------------------------------------------------------------
+
+TEST:       testWalkToPoint
+ASSERTION:  entity1@<1, 1, 1> THEN entity2@<2, 2, 2>
+FAILURE:    left
+
+SANDBOX:
+[testWalkToEntity] [GO] [LOG] entity1@<1, 1, 1> THEN entity2@<2, 2, 2>
+The left condition never passed.
+↳ entity1 did not reach <1, 1, 1>
+
+----------------------------------------------------------------------------------------------------------------------
+
+TEST:       testWalkToPoint
+ASSERTION:  entity1@<1, 1, 1> THEN entity2@<2, 2, 2>
+FAILURE:    right
+
+SANDBOX:
+[testWalkToEntity] [GO] [LOG] entity1@<1, 1, 1> THEN entity2@<2, 2, 2>
+The right condition did not pass after the left condition passed (at step 25).
+↳ entity2 did not reach <2, 2, 2>
+
+
+HEADLESS:
+Error: com.mattworzala.canary.demo.TestEntityTest.testWalkToPoint - entity1@<1, 1, 1> THEN entity2@<2, 2, 2>
+The right condition did not pass after the left condition passed (at step 25).
+↳ entity2 did not reach <2, 2, 2>
+
+<fold group> Complete Log
+
+</fold group>
+
+----------------------------------------------------------------------------------------------------------------------
+
+TEST:       testWalkToPoint
+ASSERTION:  ALWAYS entity1@<1, 1, 1>
+
+SANDBOX:
+[testWalkToEntity] [GO] [LOG] ALWAYS entity1@<1, 1, 1>
+The condition passed (at step 25).
+
+HEADLESS:
+Error: com.mattworzala.canary.demo.TestEntityTest.testWalkToPoint - ALWAYS entity1@<1, 1, 1>
+The condition passed (at step 25).
+
+<fold group> Complete Log
+
+</fold group>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

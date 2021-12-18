@@ -31,7 +31,8 @@ public class EntityAssertionSpec {
         if (actual.getPosition().sameBlock(expected)) {
             return Result.Pass();
         }
-        return Result.Fail("Expected " + actual.getUuid() + " to reach " + expected)
+        return Result.Fail("Expected " + actual.getUuid() + " to reach " + expected + ", was " + actual.getPosition().asVec())
+                .withValues(expected, actual.getPosition())
                 .withMarker(expected, 0xFFFF0000, "Not Reached!");
     }
 

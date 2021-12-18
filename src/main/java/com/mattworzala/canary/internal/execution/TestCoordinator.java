@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
 import java.util.function.Predicate;
 
 // 1 per server, keeps track of each TestExecutor to run tests given to it, also manages creation and destruction of TestInstances.

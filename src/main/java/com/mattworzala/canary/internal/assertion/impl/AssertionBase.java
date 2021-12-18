@@ -1,13 +1,10 @@
 package com.mattworzala.canary.internal.assertion.impl;
 
 import com.mattworzala.canary.api.supplier.ObjectSupplier;
-import com.mattworzala.canary.internal.assertion.AssertionCondition;
 import com.mattworzala.canary.internal.assertion.AssertionStep;
 import com.mattworzala.canary.internal.assertion.Result;
-import com.mattworzala.canary.internal.assertion.spec.EntityAssertionSpec;
 
 import java.util.List;
-import java.util.function.Predicate;
 
 public class AssertionBase<T, This extends AssertionBase<T, This>> {
     protected final ObjectSupplier supplier;
