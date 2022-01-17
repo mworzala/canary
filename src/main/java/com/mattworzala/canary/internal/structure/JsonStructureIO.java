@@ -9,7 +9,7 @@ import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockHandler;
 import org.jglrxavpok.hephaistos.nbt.NBTCompound;
 import org.jglrxavpok.hephaistos.nbt.NBTException;
-import org.jglrxavpok.hephaistos.nbt.SNBTParser;
+import org.jglrxavpok.hephaistos.parser.SNBTParser;
 
 import java.io.*;
 import java.lang.reflect.Type;

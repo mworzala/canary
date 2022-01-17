@@ -7,13 +7,15 @@ import com.mattworzala.canary.internal.junit.execution.JUnitTestExecutionListene
 import com.mattworzala.canary.internal.util.reflect.ProxyHeadlessServer;
 import com.mattworzala.canary.internal.util.reflect.ProxySandboxServer;
 import com.mattworzala.canary.internal.util.reflect.ProxyTestCoordinator;
-import com.mattworzala.canary.internal.util.MinestomMixin;
-import com.mattworzala.canary.internal.util.safety.EnvType;
 import com.mattworzala.canary.internal.util.safety.Env;
+import com.mattworzala.canary.internal.util.safety.EnvType;
 import org.jetbrains.annotations.NotNull;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
-import org.junit.platform.engine.*;
+import org.junit.platform.engine.EngineDiscoveryRequest;
+import org.junit.platform.engine.ExecutionRequest;
+import org.junit.platform.engine.TestEngine;
+import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 
 import java.util.Optional;
@@ -103,7 +105,7 @@ public class CanaryTestEngine implements TestEngine {
 
     public void init() {
         // Inject Mixin (must be done before creating the server, since it will load a large part of Minestom into the classloader on its own)
-        MinestomMixin.inject();
+//        MinestomMixin.inject();
         // Create server
         if (isHeadless) {
             this.server = ProxyHeadlessServer.create();
