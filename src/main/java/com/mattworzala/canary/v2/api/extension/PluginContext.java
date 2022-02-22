@@ -1,4 +1,4 @@
-package com.mattworzala.canary.v2.api.plugin;
+package com.mattworzala.canary.v2.api.extension;
 
 /**
  * The context of a test extension. Provides access to test data as well as resources currently active.
